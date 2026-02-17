@@ -6,18 +6,36 @@
   // Importar Supabase dinámicamente
   // ------------------------------
   let supabase = null;
-  (async () => {
-    try {
-      const mod = await import("https://esm.sh/@supabase/supabase-js");
-      const createClient = mod.createClient;
-      supabase = createClient(
-        "https://ojpyfjgkffmzwvukjagf.supabase.co",
-        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9qcHlmamdrZmZtend2dWtqYWdmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQxNDIwMzYsImV4cCI6MjA3OTcxODAzNn0.dlVYmoMumBse_O1PLBx0FeNITqY4YktefD6l_uonSgo"
-      );
-    } catch (err) {
-      console.error("Error cargando Supabase:", err);
+  let isInitializing = false;
+
+  async function initSupabase(retries = 3) {
+    if (supabase) return supabase;
+    if (isInitializing) {
+      while (isInitializing) await new Promise(r => setTimeout(r, 100));
+      return supabase;
     }
-  })();
+    isInitializing = true;
+
+    for (let i = 0; i < retries; i++) {
+      try {
+        const mod = await import("https://esm.sh/@supabase/supabase-js");
+        const createClient = mod.createClient;
+        supabase = createClient(
+          "https://ojpyfjgkffmzwvukjagf.supabase.co",
+          "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9qcHlmamdrZmZtend2dWtqYWdmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQxNDIwMzYsImV4cCI6MjA3OTcxODAzNn0.dlVYmoMumBse_O1PLBx0FeNITqY4YktefD6l_uonSgo"
+        );
+        console.log("Supabase inicializado correctamente");
+        break;
+      } catch (err) {
+        console.error(`Error cargando Supabase (intento ${i + 1}):`, err);
+        if (i < retries - 1) await new Promise(r => setTimeout(r, 1000 * (i + 1)));
+      }
+    }
+    isInitializing = false;
+    return supabase;
+  }
+
+  initSupabase();
 
   // ------------------------------
   // Estado global
@@ -105,8 +123,14 @@
         .eq("username", localSession.user)
         .maybeSingle();
 
-      if (error || !data) {
+      if (error) {
+        console.error("Error de conexión con Supabase durante la verificación:", error);
+        return true; // Asumimos sesión válida para evitar logouts accidentales por red
+      }
+
+      if (!data) {
         // usuario no existe -> logout
+        console.warn("Usuario no encontrado en la base de datos, cerrando sesión");
         logout();
         return false;
       }
@@ -353,14 +377,14 @@
     loginBtn.classList.add("loading");
     if (status) status.innerText = "";
 
-    // Si supabase no está listo aún, esperar un poco
+    // Si supabase no está listo aún, intentar inicializarlo
     if (!supabase) {
-      console.warn("Supabase no cargado aún, reintentando en 500ms...");
-      await new Promise(r => setTimeout(r, 500));
+      console.warn("Supabase no cargado aún, intentando inicializar...");
+      await initSupabase(2);
       if (!supabase) {
         loginBtn.classList.remove("loading");
         if (status) {
-          status.innerText = "Error de conexión";
+          status.innerText = "Error de conexión con el servidor";
           status.style.color = "#ff4d4d";
         }
         return;
@@ -393,7 +417,12 @@
         }
       }
 
-      if (!data || error) {
+      if (error) {
+        console.error("Error de búsqueda durante login:", error);
+        throw error; // Ir al catch de red
+      }
+
+      if (!data) {
         // Login fallido (no existe)
         loginBtn.classList.remove("loading");
         loginBtn.innerText = "Entrar";
