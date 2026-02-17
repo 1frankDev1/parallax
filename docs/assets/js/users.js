@@ -1,12 +1,35 @@
 // ----------------------------- 
 //  Conexión directa a Supabase 
 // ----------------------------- 
-import { createClient } from "https://esm.sh/@supabase/supabase-js"; 
- 
-const supabase = createClient( 
-    "https://ojpyfjgkffmzwvukjagf.supabase.co", 
-    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9qcHlmamdrZmZtend2dWtqYWdmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQxNDIwMzYsImV4cCI6MjA3OTcxODAzNn0.dlVYmoMumBse_O1PLBx0FeNITqY4YktefD6l_uonSgo" 
-); 
+let supabase = null;
+let isInitializing = false;
+
+async function initSupabase(retries = 3) {
+    if (supabase) return supabase;
+    if (isInitializing) {
+        while (isInitializing) await new Promise(r => setTimeout(r, 100));
+        return supabase;
+    }
+    isInitializing = true;
+    for (let i = 0; i < retries; i++) {
+        try {
+            const mod = await import("https://esm.sh/@supabase/supabase-js");
+            supabase = mod.createClient(
+                "https://ojpyfjgkffmzwvukjagf.supabase.co",
+                "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9qcHlmamdrZmZtend2dWtqYWdmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQxNDIwMzYsImV4cCI6MjA3OTcxODAzNn0.dlVYmoMumBse_O1PLBx0FeNITqY4YktefD6l_uonSgo"
+            );
+            console.log("Supabase inicializado en users.js");
+            break;
+        } catch (err) {
+            console.error(`Error cargando Supabase en users.js (intento ${i+1}):`, err);
+            if (i < retries - 1) await new Promise(r => setTimeout(r, 1000 * (i+1)));
+        }
+    }
+    isInitializing = false;
+    return supabase;
+}
+
+initSupabase();
  
 // Global session object 
 let session = null; 
@@ -122,14 +145,28 @@ async function doLogin() {
         return; 
     } 
     status.innerText = ""; 
+
+    if (!supabase) {
+        await initSupabase(2);
+        if (!supabase) {
+            status.innerText = "Error de conexión con el servidor";
+            return;
+        }
+    }
  
     const { data, error } = await supabase 
         .from("usuarios") 
         .select("username, password, role") 
         .eq("username", username) 
-        .single(); 
+        .maybeSingle();
  
-    if (error || !data || data.password !== password) { 
+    if (error) {
+        console.error("Login error:", error);
+        status.innerText = "Error de conexión";
+        return;
+    }
+
+    if (!data || data.password !== password) {
         status.innerText = "Usuario o contraseña incorrectos"; 
         return; 
     } 
