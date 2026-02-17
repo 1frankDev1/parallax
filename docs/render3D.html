@@ -1,0 +1,1052 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title data-key="title">3D Product Customizer</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="./assets/css/badge.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* --- Global Styles & Variables --- */
+:root {
+    --primary-color: #ff6600;
+    --primary-color-dark: #e65c00;
+    --dark-blue: #0a192f;
+    --light-slate: #ccd6f6;
+    --slate: #8892b0;
+    --white: #ffffff;
+    --background-color: #f0f2f5;
+    --card-background: #ffffff;
+    --font-family: 'Poppins', sans-serif;
+}
+
+body, html {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    font-family: var(--font-family);
+    background-color: var(--background-color);
+    color: var(--dark-blue);
+    line-height: 1.6;
+}
+
+/* --- Layout --- */
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+/* --- Header & Footer --- */
+.main-header, .main-footer {
+    padding: 20px 0;
+    background-color: var(--card-background);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+}
+
+.main-header .container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+/* --- Language Switch --- */
+.language-switch {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.lang-label {
+    font-weight: 600;
+    color: var(--slate);
+}
+
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 50px;
+    height: 28px;
+}
+
+.switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    transition: .4s;
+    border-radius: 28px;
+}
+
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 20px;
+    width: 20px;
+    left: 4px;
+    bottom: 4px;
+    background-color: white;
+    transition: .4s;
+    border-radius: 50%;
+}
+
+input:checked + .slider {
+    background-color: var(--primary-color);
+}
+
+input:checked + .slider:before {
+    transform: translateX(22px);
+}
+
+.logo {
+    width: 150px;
+    height: auto;
+}
+
+.main-footer {
+    text-align: center;
+    margin-top: 60px;
+    color: var(--slate);
+    border-top: 1px solid #e0e0e0;
+    opacity: 0;
+    transition: opacity 0.6s ease-out;
+    display: none;
+}
+
+.main-footer.visible {
+    opacity: 1;
+}
+
+/* --- Hero Section --- */
+.hero-section {
+    text-align: center;
+    padding: 80px 0;
+    background-color: var(--card-background);
+}
+
+.hero-section h1 {
+    font-size: 3em;
+    font-weight: 700;
+    color: var(--dark-blue);
+    margin-bottom: 20px;
+}
+
+.hero-section p {
+    font-size: 1.2em;
+    color: var(--slate);
+    margin-bottom: 40px;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+#drop-zone {
+    border: 3px dashed #dce4f0;
+    border-radius: 15px;
+    padding: 40px;
+    cursor: pointer;
+    transition: background-color 0.3s, border-color 0.3s;
+    max-width: 500px;
+    margin: 0 auto;
+}
+
+#drop-zone p {
+    margin: 0;
+    font-size: 1em;
+    color: var(--slate);
+}
+
+#drop-zone.drag-over {
+    background-color: #f7faff;
+    border-color: var(--primary-color);
+}
+
+#file-name {
+    margin-top: 20px;
+    font-weight: 600;
+    color: var(--primary-color);
+}
+
+/* --- Showcase Section --- */
+.showcase-section {
+    padding: 80px 0;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+    display: none; /* Ocultar completamente al inicio */
+}
+
+.showcase-section.visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.showcase-section h2 {
+    text-align: center;
+    font-size: 2.5em;
+    font-weight: 700;
+    margin-bottom: 60px;
+}
+
+/* --- Chessboard Grid --- */
+.chessboard-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 30px;
+    align-items: center;
+}
+
+.full-width-cell {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 20px 0;
+}
+
+/* --- Menu Component Styles --- */
+.menu-container-cell {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 0; /* Remove vertical padding */
+}
+
+
+
+
+.text-cell {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 400px;
+    background-color: var(--card-background);
+    border-radius: 20px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+    transition: transform 0.6s ease-out, box-shadow 0.3s ease, opacity 0.6s ease-out;
+    opacity: 0;
+    transform: translateY(30px);
+}
+
+.text-cell.is-visible, .model-cell.is-visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.model-cell {
+    position: relative; /* For positioning the zoom button */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 400px;
+    background-color: var(--card-background);
+    border-radius: 20px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+    overflow: hidden;
+    transition: transform 0.6s ease-out, box-shadow 0.3s ease, opacity 0.6s ease-out;
+    opacity: 0;
+    transform: translateY(30px);
+}
+
+.text-cell:hover, .model-cell:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 12px 35px rgba(0, 0, 0, 0.1);
+}
+
+.text-content {
+    padding: 40px;
+    text-align: center;
+}
+
+.text-content h2 {
+    font-size: 1.8em;
+    margin-bottom: 15px;
+    color: var(--primary-color);
+    font-weight: 600;
+}
+
+.text-content p {
+    color: var(--slate);
+    font-size: 1em;
+}
+
+model-viewer {
+    width: 100%;
+    height: 100%;
+    min-height: 400px; /* Match cell height */
+    --progress-bar-color: var(--primary-color);
+}
+
+#slideshow-canvas {
+    width: 100%;
+    height: 100%;
+    min-height: 400px;
+    display: block;
+}
+
+.error-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(255, 255, 255, 0.9);
+    color: var(--dark-blue);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    padding: 20px;
+    font-weight: 600;
+    opacity: 0;
+    transition: opacity 0.3s;
+    pointer-events: none;
+}
+
+.error-overlay.visible {
+    opacity: 1;
+}
+
+/* --- Zoom Toggle Button --- */
+.zoom-toggle {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    width: 40px;
+    height: 40px;
+    background-color: rgba(255, 255, 255, 0.8);
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23333"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/><path d="M12 10h-2v2H9v-2H7V9h2V7h1v2h2v1z"/></svg>');
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: 24px;
+    transition: background-color 0.3s, transform 0.3s;
+    z-index: 10;
+}
+
+.zoom-toggle:hover {
+    background-color: rgba(255, 255, 255, 1);
+    transform: scale(1.1);
+}
+
+.zoom-toggle.active {
+    background-color: var(--primary-color);
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/><path d="M7 9h5v1H7z"/></svg>');
+}
+
+/* --- Spinner --- */
+.spinner {
+    border: 4px solid rgba(0, 0, 0, 0.1);
+    border-left-color: var(--primary-color);
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    animation: spin 1s linear infinite;
+    margin: 20px auto 0;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* --- Loading Overlay --- */
+#loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(255, 255, 255, 0.9);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+#loading-overlay .spinner {
+    width: 60px;
+    height: 60px;
+    margin-bottom: 20px;
+}
+
+#loading-overlay p {
+    font-size: 1.2em;
+    font-weight: 600;
+    color: var(--dark-blue);
+}
+
+/* --- Scroll Down Indicator --- */
+.scroll-indicator {
+    margin-top: 30px; /* Position it below the file name */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    color: var(--slate);
+    opacity: 0; /* Hidden by default */
+    transition: opacity 0.5s ease;
+    pointer-events: none; /* Make it non-interactive */
+}
+
+.scroll-indicator.visible {
+    opacity: 1;
+    animation: fadeIn 1s forwards;
+    pointer-events: auto; /* Make it interactive when visible */
+}
+
+.scroll-indicator span {
+    font-weight: 600;
+    font-size: 1.3em; /* Increased font size */
+    animation: pulse-text 2.5s infinite; /* Added pulse animation */
+}
+
+.scroll-indicator svg {
+    width: 36px; /* Slightly larger icon */
+    height: 36px;
+    animation: subtle-scroll 2.5s infinite; /* Added scroll animation */
+}
+
+@keyframes subtle-scroll {
+    0%, 100% {
+        transform: translateY(0);
+        opacity: 1;
+    }
+    50% {
+        transform: translateY(10px); /* Gentle downward motion */
+        opacity: 0.8;
+    }
+}
+
+@keyframes pulse-text {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.6; /* Soft blink effect */
+    }
+}
+
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+/* --- Responsive Design --- */
+@media (max-width: 992px) {
+    .chessboard-grid {
+        grid-template-columns: 1fr;
+    }
+
+    /* In mobile, always show text first, then model */
+    .chessboard-grid > div {
+        order: 99; /* Default order for all items */
+    }
+
+    /* For rows where text comes second on desktop, swap them on mobile */
+    /* Row 2 */
+    .chessboard-grid > div:nth-child(3) { /* model-cell */
+        order: 4;
+    }
+    .chessboard-grid > div:nth-child(4) { /* text-cell */
+        order: 3;
+    }
+
+    /* Row 4 */
+    .chessboard-grid > div:nth-child(7) { /* model-cell */
+        order: 8;
+    }
+    .chessboard-grid > div:nth-child(8) { /* text-cell */
+        order: 7;
+    }
+}
+
+@media (max-width: 768px) {
+    .hero-section h1 {
+        font-size: 2.2em;
+    }
+
+    .hero-section p {
+        font-size: 1em;
+    }
+
+    .showcase-section h2 {
+        font-size: 2em;
+    }
+
+    .text-content h2 {
+        font-size: 1.5em;
+    }
+}
+
+    </style>
+</head>
+<body>
+          <!-- ICONO Y BADGE (sin barra, con margen propio) -->  
+<img id="login-icon" class="login-icon" src="./assets/img/user.svg">  
+  
+  <!-- Placa del usuario -->  
+<div id="user-badge" class="user-badge hidden" style="position: fixed;">  
+  <div id="badge-username"></div>  
+  <div id="badge-role"></div>  
+</div>  
+  
+<!-- Menú ahora fuera del badge -->  
+<div id="badge-menu" class="hidden">  
+  <button id="logout-btn" class="logout-btn">Cerrar sesión</button>  
+</div>  
+  
+  
+<!-- PANEL DE LOGIN -->  
+<div id="login-panel" class="login-panel hidden">  
+  
+  <h3>Iniciar sesión</h3>  
+  
+  <input id="user" class="input" placeholder="Usuario">  
+  <input id="pass" class="input" type="password" placeholder="Contraseña">  
+  
+  <button id="login-btn" class="login-btn">Entrar</button>  
+  
+  <!-- Estado del login -->  
+  <div id="login-status" class="status"></div>  
+</div>  
+  
+<!-- TU DRAWER -->  
+<menutech-drawer id="main-drawer" class="hidden"></menutech-drawer>  
+  
+  
+  <!-- NAVBAR NEOMÓRFICO INFERIOR -->  
+<div class="neo-nav-container">  
+    <button id="neoNavBack" class="neo-nav-btn">  
+        <svg viewBox="0 0 24 24" class="neo-nav-icon">  
+            <path d="M15 18l-6-6 6-6" stroke="currentColor" stroke-width="2"  
+                  fill="none" stroke-linecap="round" stroke-linejoin="round"/>  
+        </svg>  
+    </button>  
+  
+    <button id="neoNavHome" class="neo-nav-btn">  
+        <svg viewBox="0 0 24 24" class="neo-nav-icon">  
+            <path d="M3 11l9-7 9 7v8a2 2 0 0 1-2 2h-4a2 2 0 0 1-2-2v-4H9v4a2   
+                     2 0 0 1-2 2H5a2 2 0 0 1-2-2z"  
+                  stroke="currentColor" stroke-width="2" fill="none"  
+                  stroke-linecap="round" stroke-linejoin="round"/>  
+        </svg>  
+    </button>  
+</div>  
+  <menutech-themes></menutech-themes>  
+  <menutech-chatbot></menutech-chatbot>  
+
+    <header class="main-header">
+        <div class="container">
+            <img src="https://menutech.services/assets/img/logomt.png" alt="Logo MenuTech" class="logo">
+            <div class="language-switch">
+                <span class="lang-label">ES</span>
+                <label class="switch">
+                    <input type="checkbox" id="language-toggle" checked>
+                    <span class="slider round"></span>
+                </label>
+                <span class="lang-label">EN</span>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <section class="hero-section">
+            <div class="container">
+                <h1 data-key="heroTitle">Visualize Your Designs in 3D Instantly</h1>
+                <p data-key="heroSubtitle">Drag and drop a .zip file with your textures to customize our products.</p>
+                <div id="drop-zone">
+                    <p data-key="dropZoneText">Drag your .zip file here or click to select</p>
+                    <input type="file" id="file-input" accept=".zip" hidden>
+                </div>
+                <p id="file-name"></p>
+                <div id="scroll-indicator" class="scroll-indicator">
+                    <span data-key="scrollText">Scroll Down</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="24" height="24">
+                        <path d="M12 16.5l-6-6 1.41-1.41L12 13.67l4.59-4.58L18 10.5z"/>
+                    </svg>
+                </div>
+            </div>
+        </section>
+
+        <div id="loading-overlay" style="display: none;">
+            <div class="spinner"></div>
+            <p data-key="loadingText">Rendering your 3D products...</p>
+        </div>
+
+        <section id="showcase-section" class="showcase-section">
+            <div class="container">
+                <h2 style="color: #e65c00;" data-key="productsTitle">Our Products</h2>
+                <div class="chessboard-grid">
+                    <!-- Fila 1 -->
+                    <div class="text-cell">
+                        <div class="text-content">
+                            <h2 data-key="flyerTitle">Dynamic Flyers</h2>
+                            <p data-key="flyerDesc">Capture your customers' attention with flyers that come to life. Ideal for events and promotions.</p>
+                        </div>
+                    </div>
+                    <div class="model-cell">
+                        <model-viewer id="flyer-viewer" src="./assets/img/flyer.gltf" alt="Modelo 3D de un flyer" camera-controls disable-zoom></model-viewer>
+                        <button class="zoom-toggle" data-viewer-id="flyer-viewer" aria-label="Toggle Zoom"></button>
+                    </div>
+
+                    <!-- Fila 2 -->
+                    <div class="model-cell">
+                        <model-viewer id="poster-viewer" src="./assets/img/poster.gltf" alt="Modelo 3D de un póster" camera-controls disable-zoom></model-viewer>
+                        <button class="zoom-toggle" data-viewer-id="poster-viewer" aria-label="Toggle Zoom"></button>
+                    </div>
+                    <div class="text-cell">
+                        <div class="text-content">
+                            <h2 data-key="posterTitle">High-Impact Posters</h2>
+                            <p data-key="posterDesc">Transform any wall into an art gallery with our customizable posters.</p>
+                        </div>
+                    </div>
+
+                    <!-- Fila 3 -->
+                    <div class="text-cell">
+                        <div class="text-content">
+                            <h2 data-key="shirtTitle">Stylish Shirts</h2>
+                            <p data-key="shirtDesc">Wear your ideas. Customize every detail and create unique garments that represent your brand.</p>
+                        </div>
+                    </div>
+                    <div class="model-cell">
+                        <model-viewer id="camisa-viewer" src="./assets/img/shirt.gltf" alt="Modelo 3D de una camisa" camera-controls disable-zoom></model-viewer>
+                        <button class="zoom-toggle" data-viewer-id="camisa-viewer" aria-label="Toggle Zoom"></button>
+                    </div>
+
+                    <!-- Fila 4 -->
+                    <div class="model-cell">
+                        <model-viewer id="sticker-viewer" src="./assets/img/sticker.gltf" alt="Modelo 3D de un sticker" camera-controls disable-zoom></model-viewer>
+                        <button class="zoom-toggle" data-viewer-id="sticker-viewer" aria-label="Toggle Zoom"></button>
+                    </div>
+                    <div class="text-cell">
+                        <div class="text-content">
+                            <h2 data-key="stickerTitle">Creative Stickers</h2>
+                            <p data-key="stickerDesc">Add a personal touch to your belongings. Perfect for laptops, bottles, and more.</p>
+                        </div>
+                    </div>
+
+                    <!-- Fila 5 -->
+                    <div class="text-cell">
+                        <div class="text-content">
+                            <h2 data-key="qrTitle">QR Table Signage</h2>
+                            <p data-key="qrDesc">Modernize your business with interactive signage. Connect with your customers in an innovative way.</p>
+                        </div>
+                    </div>
+                    <div class="model-cell">
+                        <model-viewer id="tableqr-viewer" src="./assets/img/tableQR.gltf" alt="Modelo 3D de un código QR de mesa" camera-controls disable-zoom></model-viewer>
+                        <button class="zoom-toggle" data-viewer-id="tableqr-viewer" aria-label="Toggle Zoom"></button>
+                    </div>
+
+                    <!-- Fila 6 - XBanner -->
+                    <div class="model-cell">
+                        <model-viewer id="xbanner-viewer" src="./assets/img/xbanner.gltf" alt="Modelo 3D de un xbanner" camera-controls disable-zoom></model-viewer>
+                        <button class="zoom-toggle" data-viewer-id="xbanner-viewer" aria-label="Toggle Zoom"></button>
+                    </div>
+                    <div class="text-cell">
+                        <div class="text-content">
+                            <h2 data-key="xbannerTitle">X-Banners</h2>
+                            <p data-key="xbannerDesc">Ideal for events and promotions, our x-banners are easy to transport and assemble.</p>
+                        </div>
+                    </div>
+
+                    <!-- Fila 7 - Flag -->
+                    <div class="text-cell">
+                        <div class="text-content">
+                            <h2 data-key="flagTitle">Promotional Flags</h2>
+                            <p data-key="flagDesc">Make your brand stand out at any event with our customizable promotional flags.</p>
+                        </div>
+                    </div>
+                    <div class="model-cell">
+                        <model-viewer id="flag-viewer" src="./assets/img/flag.gltf" alt="Modelo 3D de una bandera" camera-controls disable-zoom></model-viewer>
+                        <button class="zoom-toggle" data-viewer-id="flag-viewer" aria-label="Toggle Zoom"></button>
+                    </div>
+
+                    <!-- Fila 8 - Banner -->
+                    <div class="model-cell">
+                        <model-viewer id="banner-viewer" src="./assets/img/banner.gltf" alt="Modelo 3D de un banner" camera-controls disable-zoom></model-viewer>
+                        <button class="zoom-toggle" data-viewer-id="banner-viewer" aria-label="Toggle Zoom"></button>
+                    </div>
+                    <div class="text-cell">
+                        <div class="text-content">
+                            <h2 data-key="bannerTitle">Banners</h2>
+                            <p data-key="bannerDesc">Ideal for events and promotions, our banners are easy to transport and assemble.</p>
+                        </div>
+                    </div>
+
+                    <!-- Fila 9 - Slideshow -->
+                    <div class="text-cell">
+                        <div class="text-content">
+                            <h2 data-key="slideshowTitle">Slideshow</h2>
+                            <p data-key="slideshowDesc">Display dishes or promotions in an attractive way.
+Designed to catch attention instantly.</p>
+                        </div>
+                    </div>
+                    <div class="model-cell">
+                        <canvas id="slideshow-canvas"></canvas>
+                        <button id="slideshow-zoom-toggle" class="zoom-toggle" aria-label="Toggle Zoom"></button>
+                        <div id="slideshow-error-overlay" class="error-overlay"></div>
+                        <video id="video-texture" loop muted autoplay playsinline crossOrigin="anonymous" style="display:none;" src="./assets/img/slideshow.mp4"></video>
+                    </div>
+
+                    <!-- Fila 10 - menutech-menu -->
+                    <div class="full-width-cell menu-container-cell">
+                        <menutech-menu id="restaurant-menu" class="menutech-menu-container" imagenes="./assets/img/m1.png,https://vikingantonio.github.io/cabanamenu/assets/img/2.jpg,https://vikingantonio.github.io/cabanamenu/assets/img/3.jpg,https://vikingantonio.github.io/cabanamenu/assets/img/4.jpg,https://vikingantonio.github.io/cabanamenu/assets/img/9.jpg,https://vikingantonio.github.io/cabanamenu/assets/img/10.jpg,https://vikingantonio.github.io/cabanamenu/assets/img/11.jpg,https://vikingantonio.github.io/cabanamenu/assets/img/12.jpg"></menutech-menu>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer id="main-footer" class="main-footer">
+        <div class="container">
+            <p data-key="footerText">&copy; 2026 MenuTech Services. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.5.0/model-viewer.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+    const dropZone = document.getElementById('drop-zone');
+    const fileInput = document.getElementById('file-input');
+    const fileNameDisplay = document.getElementById('file-name');
+    const loadingOverlay = document.getElementById('loading-overlay');
+    const showcaseSection = document.getElementById('showcase-section');
+    const footer = document.getElementById('main-footer');
+    const languageToggle = document.getElementById('language-toggle');
+    const scrollIndicator = document.getElementById('scroll-indicator');
+
+    const translations = {
+        en: {
+            title: "3D Product Customizer",
+            heroTitle: "Visualize Your Designs in 3D Instantly",
+            heroSubtitle: "Drag and drop a .zip file with your textures to customize our products.",
+            dropZoneText: "Drag your .zip file here or click to select",
+            loadingText: "Rendering your 3D products...",
+            productsTitle: "Our Products",
+            flyerTitle: "Flyers",
+            flyerDesc: "They allow you to communicate promotions, events, or new menu items in a direct and effective way.",
+            posterTitle: "Posters",
+            posterDesc: "They help highlight key offers inside the restaurant and influence customer purchasing decisions.",
+            shirtTitle: "T-Shirts",
+            shirtDesc: "They project a professional image and turn staff into a visible extension of the brand.",
+            stickerTitle: "Stickers",
+            stickerDesc: "They keep the brand present on packaging and takeout orders, reinforcing brand recall.",
+            qrTitle: "Table QR",
+            qrDesc: "They provide easy access to menus and promotions, improving customer experience and service efficiency.",
+            menuTitle: "Restaurant Menus",
+            xbannerTitle: "X-Banners",
+            xbannerDesc: "They are ideal for clearly communicating promotions or updates in strategic spaces.",
+            flagTitle: "Advertising Flags",
+            flagDesc: "They increase restaurant visibility and attract attention from a distance.",
+            bannerTitle: "Banners",
+            bannerDesc: "They showcase promotions or featured dishes and capture customers from outside the venue.",
+            slideshowTitle: "Interactive Slideshow",
+            slideshowDesc: "Engage your audience with a dynamic 3D slideshow. Perfect for showcasing products or presentations.",
+            footerText: "© 2026 Menutech. All rights reserved.",
+            scrollText: "Scroll Down"
+        },
+        es: {
+            title: "Personalizador de Productos 3D",
+            heroTitle: "Visualiza tus Diseños en 3D al Instante",
+            heroSubtitle: "Arrastra y suelta un archivo .zip con tus texturas para personalizar nuestros productos.",
+            dropZoneText: "Arrastra tu archivo .zip aquí o haz clic para seleccionar",
+            loadingText: "Renderizando tus productos 3D...",
+            productsTitle: "Nuestros Productos",
+            flyerTitle: "Flyers",
+            flyerDesc: "Permite comunicar promociones, eventos o nuevos platillos de forma directa y efectiva.",
+            posterTitle: "Pósters",
+            posterDesc: "Ayudan a destacar ofertas clave dentro del restaurante e influyen en la decisión de compra del cliente.",
+            shirtTitle: "Camisas",
+            shirtDesc: "Proyectan una imagen profesional y convierten al personal en una extensión visible de la marca.",
+            stickerTitle: "Stickers",
+            stickerDesc: "Mantienen la marca presente en empaques y pedidos para llevar, reforzando el recuerdo del restaurante.",
+            qrTitle: "QR de Mesa",
+            qrDesc: "Facilitan el acceso al menú y promociones, mejorando la experiencia del cliente y la eficiencia del servicio.",
+            menuTitle: "Menus de Restaurante",
+            xbannerTitle: "Banners en X",
+            xbannerDesc: "Son ideales para comunicar promociones o novedades de forma clara en espacios estratégicos.",
+            flagTitle: "Banderas Publicitaria",
+            flagDesc: "Aumentan la visibilidad del restaurante y atraen la atención desde la distancia.",
+            bannerTitle: "Banners",
+            bannerDesc: "Comunican promociones o platillos destacados y captan clientes desde el exterior del local.",
+            slideshowTitle: "Slideshow",
+            slideshowDesc: "Muestra platillos o promociones de forma atractiva. Pensado para llamar la atención al instante.",
+            footerText: "© 2026 Menutech. Todos los derechos reservados.",
+            zipError: "Por favor, selecciona un archivo .zip",
+            zipReadError: "Hubo un error al leer el archivo .zip. Asegúrate de que no esté corrupto y contenga las texturas correctas.",
+            scrollText: "Desliza hacia abajo"
+        }
+    };
+
+    const textureMap = {
+        'flyer.png': 'flyer-viewer',
+        'poster.png': 'poster-viewer',
+        'shirt.png': 'camisa-viewer',
+        'st.png': 'sticker-viewer',
+        'tableQR2.png': 'tableqr-viewer',
+        'xbanner.png': 'xbanner-viewer',
+        'flag.png': 'flag-viewer',
+        'banner.png': 'banner-viewer'
+    };
+
+    function setLanguage(lang) {
+        document.documentElement.lang = lang;
+        document.querySelectorAll('[data-key]').forEach(element => {
+            const key = element.getAttribute('data-key');
+            if (translations[lang] && translations[lang][key]) {
+                element.textContent = translations[lang][key];
+            }
+        });
+    }
+
+    languageToggle.addEventListener('change', (e) => {
+        setLanguage(e.target.checked ? 'en' : 'es');
+    });
+
+    setLanguage('en');
+
+    dropZone.addEventListener('click', () => fileInput.click());
+    fileInput.addEventListener('change', (e) => handleFileSelect(e.target.files));
+    dropZone.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        dropZone.classList.add('drag-over');
+    });
+    dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
+    dropZone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        dropZone.classList.remove('drag-over');
+        handleFileSelect(e.dataTransfer.files);
+    });
+
+    function handleFileSelect(files) {
+        if (files.length > 0) {
+            handleZipFile(files[0]);
+        }
+    }
+
+    function getCurrentLanguage() {
+        return languageToggle.checked ? 'en' : 'es';
+    }
+
+    function getTranslation(key) {
+        const lang = getCurrentLanguage();
+        return translations[lang][key] || key;
+    }
+
+    function handleZipFile(file) {
+        if (!file.name.endsWith('.zip')) {
+            alert(getTranslation('zipError'));
+            return;
+        }
+
+        fileNameDisplay.textContent = `${getTranslation('dropZoneText').split(' ')[0]}: ${file.name}`;
+        loadingOverlay.style.display = 'flex';
+
+        JSZip.loadAsync(file)
+            .then(zip => {
+                // Show the showcase immediately for a faster feel
+                setTimeout(() => {
+                    loadingOverlay.style.display = 'none';
+                    showcaseSection.style.display = 'block';
+                    footer.style.display = 'block';
+                    requestAnimationFrame(() => {
+                        showcaseSection.classList.add('visible');
+                        footer.classList.add('visible');
+                        scrollIndicator.classList.add('visible'); // Show scroll indicator
+                    });
+                }, 300); // A brief delay to make the loading feel intentional
+
+                // Apply textures asynchronously without blocking the UI
+                Object.keys(textureMap).forEach(textureName => {
+                    const fileInZip = zip.file(textureName);
+                    if (fileInZip) {
+                        fileInZip.async('blob').then(blob => {
+                            const imageUrl = URL.createObjectURL(blob);
+                            const viewerId = textureMap[textureName];
+                            const viewer = document.getElementById(viewerId);
+                            if (viewer) {
+                                // Pass the original textureName to find the right material
+                                applyTextureToModel(viewer, imageUrl, textureName);
+                            }
+                        });
+                    }
+                });
+
+                const staticUrls = [
+                  'https://vikingantonio.github.io/cabanamenu/assets/img/2.jpg',
+                  'https://vikingantonio.github.io/cabanamenu/assets/img/3.jpg',
+                  'https://vikingantonio.github.io/cabanamenu/assets/img/4.jpg',
+                  'https://vikingantonio.github.io/cabanamenu/assets/img/9.jpg',
+                  'https://vikingantonio.github.io/cabanamenu/assets/img/10.jpg',
+                  'https://vikingantonio.github.io/cabanamenu/assets/img/11.jpg',
+                  'https://vikingantonio.github.io/cabanamenu/assets/img/12.jpg'
+                ];
+
+                const m1File = zip.file('m1.png');
+                const m1Promise = m1File
+                    ? m1File.async('blob').then(blob => URL.createObjectURL(blob))
+                    : Promise.resolve(null);
+
+                m1Promise.then(m1Url => {
+                    const imageUrls = m1Url ? [m1Url, ...staticUrls] : staticUrls;
+
+                    const menuComponent = document.getElementById('restaurant-menu');
+                    if (menuComponent) {
+                        menuComponent.setAttribute('imagenes', imageUrls.join(','));
+                    }
+                });
+            })
+            .catch(err => {
+                console.error('Error processing .zip file:', err);
+                loadingOverlay.style.display = 'none';
+                alert(getTranslation('zipReadError'));
+                fileNameDisplay.textContent = '';
+            });
+    }
+
+    function applyTextureToModel(viewer, imageUrl, textureName) {
+        return new Promise(async (resolve) => {
+            const model = viewer.model;
+
+            const apply = async (modelToTexture) => {
+                try {
+                    const texture = await viewer.createTexture(imageUrl);
+                    let materialToUpdate;
+
+                    // Special handling for specific models
+                    if (viewer.id === 'sticker-viewer') {
+                        materialToUpdate = modelToTexture.materials.find(mat => mat.name === 'texturaCircle');
+                    } else if (viewer.id === 'xbanner-viewer') {
+                        materialToUpdate = modelToTexture.materials.find(mat => mat.name === 'Poster');
+                    } else if (viewer.id === 'flag-viewer') {
+                        materialToUpdate = modelToTexture.materials.find(mat => mat.name === 'flag');
+                    } else if (viewer.id === 'banner-viewer') {
+                        materialToUpdate = modelToTexture.materials.find(mat => mat.name === 'Ad_16_Promo');
+                    } else {
+                        // General, more robust logic: find the material by matching the original texture's URI.
+                        const originalTextureFileName = textureName; // The key from textureMap (e.g., 'xbanner.png')
+                        materialToUpdate = modelToTexture.materials.find(mat => {
+                            const pbr = mat.pbrMetallicRoughness;
+                            if (pbr && pbr.baseColorTexture && pbr.baseColorTexture.texture && pbr.baseColorTexture.texture.source) {
+                                const sourceUri = pbr.baseColorTexture.texture.source.uri || '';
+                                // Check if the URI in the GLTF contains the filename we are replacing.
+                                return sourceUri.includes(originalTextureFileName);
+                            }
+                            return false;
+                        });
+                    }
+
+                    // If the robust logic fails, fall back to the original generic logic.
+                    if (!materialToUpdate) {
+                        console.warn(`Could not find material for texture '${textureName}' in viewer '${viewer.id}' by URI. Falling back to the first available texture slot.`);
+                        materialToUpdate = modelToTexture.materials.find(mat => mat.pbrMetallicRoughness.baseColorTexture);
+                    }
+
+                    if (materialToUpdate) {
+                        materialToUpdate.pbrMetallicRoughness.baseColorTexture.setTexture(texture);
+                    } else {
+                        // If there's still no material, log an error.
+                        console.error(`Failed to find any material to apply texture '${textureName}' to in viewer '${viewer.id}'.`);
+                    }
+                } catch (error) {
+                    console.error(`Error applying texture to ${viewer.id}:`, error);
+                } finally {
+                    resolve();
+                }
+            };
+
+            if (model) {
+                apply(model);
+            } else {
+                viewer.addEventListener('load', () => apply(viewer.model), { once: true });
+            }
+        });
+    }
+
+    // --- Zoom Toggle Logic ---
+    const zoomToggles = document.querySelectorAll('.zoom-toggle');
+    zoomToggles.forEach(button => {
+        button.addEventListener('click', () => {
+            const viewerId = button.dataset.viewerId;
+            const viewer = document.getElementById(viewerId);
+            if (viewer) {
+                const zoomEnabled = !viewer.hasAttribute('disable-zoom');
+                if (zoomEnabled) {
+                    viewer.setAttribute('disable-zoom', '');
+                } else {
+                    viewer.removeAttribute('disable-zoom');
+                }
+                button.classList.toggle('active', !zoomEnabled);
+            }
+        });
+    });
+
+    // --- Scroll Indicator Logic ---
+    let hasScrolled = false;
+    window.addEventListener('scroll', () => {
+        if (!hasScrolled && window.scrollY > 50) {
+            hasScrolled = true;
+            scrollIndicator.classList.remove('visible');
+        }
+    }, { passive: true });
+
+    // --- Lazy Loading for Showcase Items ---
+    const observerOptions = {
+        root: null, // relative to the viewport
+        rootMargin: '0px',
+        threshold: 0.2 // 20% of the item must be visible
+    };
+
+    const observer = new IntersectionObserver((entries, observer) => {
+        entries.forEach((entry, index) => {
+            if (entry.isIntersecting) {
+                // Add a staggered delay for a nicer effect
+                setTimeout(() => {
+                    entry.target.classList.add('is-visible');
+                }, index * 100); // 100ms delay between items
+                observer.unobserve(entry.target); // Stop observing after it's visible
+            }
+        });
+    }, observerOptions);
+
+    const showcaseItems = document.querySelectorAll('.chessboard-grid > div');
+    showcaseItems.forEach(item => {
+        observer.observe(item);
+    });
+});
+
+    </script>
+      <script src="./assets/js/badge.js"></script>
+  <script src="https://menutech.xyz/menutechUI.min.js"></script>
+  <script src="./assets/js/renderer.js"></script>
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+                "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+            }
+        }
+    </script>
+    <script type="module" src="./assets/js/slideshow-viewer.js"></script>
+</body>
+</html>

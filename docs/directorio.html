@@ -1,0 +1,354 @@
+<!DOCTYPE html> 
+<html lang="es"> 
+<head> 
+    <meta charset="UTF-8"> 
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
+    <title>Directorio de Restaurantes</title> 
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script> 
+      <link rel="stylesheet" href="./assets/css/badge.css"> 
+    <style> 
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap'); 
+ 
+        :root { 
+            --bg-color: #1a1a1a; 
+            --card-bg: #2b2b2b; 
+            --text-color: #e0e0e0; 
+            --primary-color: #00aaff; 
+            --border-color: #444; 
+            --shadow-color: rgba(0, 0, 0, 0.2); 
+        } 
+ 
+         *{
+            color: white;
+        }
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background-color: var(--bg-color); 
+            color: var(--text-color); 
+            margin: 0; 
+            padding: 40px; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+        } 
+ 
+        .container { 
+            width: 100%; 
+            max-width: 1200px; 
+        } 
+ 
+        h1 { 
+            font-size: 2.5rem; 
+            text-align: center; 
+            margin-bottom: 40px; 
+            color: white; 
+        } 
+ 
+        .search-container { 
+            margin-bottom: 40px; 
+            width: 100%; 
+            max-width: 600px; 
+            margin-left: auto; 
+            margin-right: auto; 
+        } 
+ 
+        #search-input { 
+            width: 100%; 
+            padding: 15px 20px; 
+            font-size: 1rem; 
+            background-color: var(--card-bg); 
+            border: 1px solid var(--border-color); 
+            border-radius: 10px; 
+            color: var(--text-color); 
+            transition: all 0.3s ease; 
+            box-sizing: border-box; 
+        } 
+ 
+        #search-input:focus { 
+            outline: none; 
+            border-color: var(--primary-color); 
+            box-shadow: 0 0 15px rgba(0, 170, 255, 0.2); 
+        } 
+ 
+        .directory-grid { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); 
+            gap: 30px; 
+        } 
+ 
+        .restaurant-card { 
+            background-color: var(--card-bg); 
+            border-radius: 15px; 
+            overflow: hidden; 
+            border: 1px solid var(--border-color); 
+            box-shadow: 0 4px 15px var(--shadow-color); 
+            transition: transform 0.3s ease, box-shadow 0.3s ease; 
+            cursor: pointer; 
+            position: relative; 
+        } 
+ 
+        .restaurant-card:hover { 
+            transform: translateY(-8px); 
+            box-shadow: 0 10px 25px var(--shadow-color); 
+        } 
+ 
+        .logo-container { 
+            height: 200px; 
+            background-color: #333; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            overflow: hidden; 
+        } 
+ 
+        .logo { 
+            width: 100%; 
+            height: 100%; 
+            object-fit: cover; 
+        } 
+ 
+        .card-content { 
+            padding: 20px; 
+        } 
+ 
+        .card-content h3 { 
+            margin-top: 0; 
+            margin-bottom: 10px; 
+            font-size: 1.4rem; 
+            color: white; 
+        } 
+ 
+        .card-content p { 
+            margin: 5px 0; 
+            font-size: 0.95rem; 
+            line-height: 1.5; 
+        } 
+         
+        .card-content p.phone { 
+            min-height: 22.5px; /* Altura para una línea de texto */ 
+        } 
+         
+        .social-icons { 
+            position: absolute; 
+            top: 15px; 
+            right: 15px; 
+            display: flex; 
+            flex-direction: column; 
+            gap: 10px; 
+            opacity: 0; 
+            transform: translateX(20px); 
+            transition: all 0.3s ease; 
+        } 
+ 
+        .restaurant-card:hover .social-icons { 
+            opacity: 1; 
+            transform: translateX(0); 
+        } 
+ 
+        .social-icons a { 
+            color: white; 
+            background-color: rgba(0, 0, 0, 0.6); 
+            border-radius: 50%; 
+            width: 40px; 
+            height: 40px; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            text-decoration: none; 
+            transition: background-color 0.2s ease, transform 0.2s ease; 
+        } 
+ 
+        .social-icons a:hover { 
+            background-color: var(--primary-color); 
+            transform: scale(1.1); 
+        } 
+ 
+        .social-icons svg { 
+            width: 22px; 
+            height: 22px; 
+        } 
+ 
+        #message-area { 
+            text-align: center; 
+            font-size: 1.2rem; 
+            width: 100%; 
+            grid-column: 1 / -1; 
+            padding: 40px; 
+            display: none; /* Oculto por defecto */ 
+        } 
+    </style> 
+</head> 
+<body> 
+  <!-- ICONO Y BADGE (sin barra, con margen propio) --> 
+<img id="login-icon" class="login-icon" src="./assets/img/user.svg"> 
+ 
+  <!-- Placa del usuario --> 
+<div id="user-badge" class="user-badge hidden" style="position: fixed;"> 
+  <div id="badge-username"></div> 
+  <div id="badge-role"></div> 
+</div> 
+ 
+<!-- Menú ahora fuera del badge --> 
+<div id="badge-menu" class="hidden"> 
+  <button id="logout-btn" class="logout-btn">Cerrar sesión</button> 
+</div> 
+ 
+ 
+<!-- PANEL DE LOGIN --> 
+<div id="login-panel" class="login-panel hidden"> 
+ 
+  <h3>Iniciar sesión</h3> 
+ 
+  <input id="user" class="input" placeholder="Usuario"> 
+  <input id="pass" class="input" type="password" placeholder="Contraseña"> 
+ 
+  <button id="login-btn" class="login-btn">Entrar</button> 
+ 
+  <!-- Estado del login --> 
+  <div id="login-status" class="status"></div> 
+</div> 
+ 
+<!-- TU DRAWER --> 
+<menutech-drawer id="main-drawer" class="hidden"></menutech-drawer> 
+ 
+ 
+  <!-- NAVBAR NEOMÓRFICO INFERIOR --> 
+<div class="neo-nav-container"> 
+    <button id="neoNavBack" class="neo-nav-btn"> 
+        <svg viewBox="0 0 24 24" class="neo-nav-icon"> 
+            <path d="M15 18l-6-6 6-6" stroke="currentColor" stroke-width="2" 
+                  fill="none" stroke-linecap="round" stroke-linejoin="round"/> 
+        </svg> 
+    </button> 
+ 
+    <button id="neoNavHome" class="neo-nav-btn"> 
+        <svg viewBox="0 0 24 24" class="neo-nav-icon"> 
+            <path d="M3 11l9-7 9 7v8a2 2 0 0 1-2 2h-4a2 2 0 0 1-2-2v-4H9v4a2  
+                     2 0 0 1-2 2H5a2 2 0 0 1-2-2z" 
+                  stroke="currentColor" stroke-width="2" fill="none" 
+                  stroke-linecap="round" stroke-linejoin="round"/> 
+        </svg> 
+    </button> 
+</div> 
+  <menutech-themes></menutech-themes> 
+  <menutech-chatbot></menutech-chatbot> 
+ 
+    <div class="container"> 
+        <h1>Directorio de Restaurantes</h1> 
+        <div class="search-container"> 
+            <input type="text" id="search-input" placeholder="Buscar por nombre o dirección..."> 
+        </div> 
+        <div class="directory-grid" id="directory-grid"> 
+            <!-- Las tarjetas de restaurantes se insertarán aquí --> 
+        </div> 
+        <div id="message-area"></div> 
+    </div> 
+ 
+    <script> 
+        document.addEventListener('DOMContentLoaded', () => { 
+            const grid = document.getElementById('directory-grid'); 
+            const searchInput = document.getElementById('search-input'); 
+            const messageArea = document.getElementById('message-area'); 
+            let allRestaurants = []; 
+            let supabase = null; 
+ 
+            function showMessage(message) { 
+                grid.innerHTML = ''; 
+                messageArea.textContent = message; 
+                messageArea.style.display = 'block'; 
+            } 
+ 
+            function getIcon(name) { 
+                const icons = { 
+                    website: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9 9 0 0 1-9-9 9 9 0 0 1 9-9m9 9a9 9 0 0 1-9 9m-9-9h18m-9 9a9 9 0 0 0 9-9m-9 9V3m0 18a9 9 0 0 1-9-9m9 9a9 9 0 0 1-9-9" /></svg>`, 
+                    google: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48px" height="48px"><path fill="#4285F4" d="M45.12 24.5c0-1.56-.14-3.06-.4-4.5H24v8.51h11.84c-.51 2.75-2.06 5.08-4.39 6.64v5.52h7.11c4.16-3.83 6.56-9.47 6.56-16.17z"/><path fill="#34A853" d="M24 46c5.94 0 10.92-1.96 14.56-5.32l-7.11-5.52c-1.97 1.32-4.49 2.1-7.45 2.1-5.73 0-10.58-3.87-12.31-9.07H4.34v5.7C7.96 41.07 15.4 46 24 46z"/><path fill="#FBBC05" d="M11.69 28.18C11.25 26.86 11 25.45 11 24s.25-2.86.69-4.18v-5.7H4.34C2.85 17.09 2 20.45 2 24s.85 6.91 2.34 9.88l7.35-5.7z"/><path fill="#EA4335" d="M24 10.75c3.23 0 6.13 1.11 8.41 3.29l6.31-6.31C34.91 4.18 29.93 2 24 2 15.4 2 7.96 6.93 4.34 14.12l7.35 5.7c1.73-5.2 6.58-9.07 12.31-9.07z"/></svg>`, 
+                    facebook: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M22 12c0-5.523-4.477-10-10-10S2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.879V14.89h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.989C18.343 21.128 22 16.991 22 12z"/></svg>`, 
+                    instagram: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.85s-.012 3.584-.07 4.85c-.148 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07s-3.584-.012-4.85-.07c-3.252-.148-4.771-1.691-4.919-4.919-.058-1.265-.069-1.645-.069-4.85s.012-3.584.07-4.85c.148-3.225 1.664-4.771 4.919-4.919C8.416 2.175 8.796 2.163 12 2.163zm0 1.44c-3.116 0-3.475.01-4.698.067-2.69.123-3.876 1.31-4.004 4.004-.057 1.223-.067 1.582-.067 4.698s.01 3.475.067 4.698c.128 2.695 1.314 3.882 4.004 4.004 1.223.057 1.582.067 4.698.067s3.475-.01 4.698-.067c2.69-.123 3.876-1.31 4.004-4.004.057-1.223.067-1.582.067-4.698s-.01-3.475-.067-4.698c-.128-2.695-1.314-3.882-4.004-4.004-1.223-.057-1.582-.067-4.698-.067zM12 6.883a5.117 5.117 0 100 10.234 5.117 5.117 0 000-10.234zm0 8.793a3.676 3.676 0 110-7.352 3.676 3.676 0 010 7.352zM18.402 6.015a1.44 1.44 0 100-2.88 1.44 1.44 0 000 2.88z"/></svg>`, 
+                    kit: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M20.25 14.15v4.073a2.25 2.25 0 0 1-2.25 2.25h-10.5a2.25 2.25 0 0 1-2.25-2.25V6.323a2.25 2.25 0 0 1 2.25-2.25h2.519a2.25 2.25 0 0 1 1.767.784l.293.391m10.5 0a2.25 2.25 0 0 1-2.25 2.25h-9.833a2.25 2.25 0 0 1-2.121-3.132l1.32-3.3a2.25 2.25 0 0 1 2.122-1.428h5.928a2.25 2.25 0 0 1 2.121 3.132l-1.32 3.3" /></svg>` 
+                }; 
+                return icons[name] || ''; 
+            } 
+ 
+            function displayRestaurants(restaurants) { 
+                grid.innerHTML = ''; 
+                if (restaurants.length === 0) { 
+                    showMessage('No se encontraron resultados.'); 
+                    return; 
+                } 
+                messageArea.style.display = 'none'; 
+ 
+                restaurants.forEach(restaurant => { 
+                    const card = document.createElement('div'); 
+                    card.className = 'restaurant-card'; 
+ 
+                    let socialIcons = '';
+                    if (restaurant.website) {
+                        let websiteUrl = restaurant.website;
+                        if (!websiteUrl.startsWith('http://') && !websiteUrl.startsWith('https://')) {
+                            websiteUrl = 'https://' + websiteUrl;
+                        }
+                        socialIcons += `<a href="${websiteUrl}" target="_blank" title="Website">${getIcon('website')}</a>`;
+                    }
+                    if (restaurant.google_business) socialIcons += `<a href="${restaurant.google_business}" target="_blank" title="Google Business">${getIcon('google')}</a>`;
+                    if (restaurant.facebook) socialIcons += `<a href="${restaurant.facebook}" target="_blank" title="Facebook">${getIcon('facebook')}</a>`; 
+                    if (restaurant.instagram) socialIcons += `<a href="${restaurant.instagram}" target="_blank" title="Instagram">${getIcon('instagram')}</a>`; 
+                    if (restaurant.marketing_kit) socialIcons += `<a href="${restaurant.marketing_kit}" target="_blank" title="Marketing Kit">${getIcon('kit')}</a>`; 
+ 
+                    card.innerHTML = ` 
+                        <div class="logo-container"> 
+                            <img src="${restaurant.logo || 'https://via.placeholder.com/300'}" alt="Logo de ${restaurant.nombre}" class="logo"> 
+                        </div> 
+                        <div class="card-content"> 
+                            <h3>${restaurant.nombre || 'Sin nombre'}</h3> 
+                            <p>${restaurant.direccion || ''}</p> 
+                            <p class="phone">${restaurant.telefono || ''}</p> 
+                        </div> 
+                        <div class="social-icons">${socialIcons}</div> 
+                    `; 
+                    grid.appendChild(card); 
+                }); 
+            } 
+ 
+            searchInput.addEventListener('input', (e) => { 
+                const searchTerm = e.target.value.toLowerCase(); 
+                const filteredRestaurants = allRestaurants.filter(r =>  
+                    (r.nombre && r.nombre.toLowerCase().includes(searchTerm)) ||  
+                    (r.direccion && r.direccion.toLowerCase().includes(searchTerm)) 
+                ); 
+                displayRestaurants(filteredRestaurants); 
+            }); 
+ 
+            async function fetchRestaurants() { 
+                if (!supabase) return; 
+                const { data, error } = await supabase.from('restaurantes').select('*').order('nombre', { ascending: true }); 
+                if (error) { 
+                    console.error('Error fetching restaurants:', error); 
+                    showMessage('Error al cargar los restaurantes.'); 
+                    return; 
+                } 
+                allRestaurants = data; 
+                displayRestaurants(allRestaurants); 
+            } 
+ 
+            function initializeSupabase() { 
+                if (typeof window.supabase === 'undefined') { 
+                    console.error("Supabase library not loaded. Data operations unavailable."); 
+                    showMessage('Error de conexión. No se pueden cargar los datos.'); 
+                    return; 
+                } 
+                 
+                const SUPABASE_URL = 'https://ojpyfjgkffmzwvukjagf.supabase.co'; 
+                const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9qcHlmamdrZmZtend2dWtqYWdmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQxNDIwMzYsImV4cCI6MjA3OTcxODAzNn0.dlVYmoMumBse_O1PLBx0FeNITqY4YktefD6l_uonSgo'; 
+                supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY); 
+                 
+                fetchRestaurants(); 
+            } 
+ 
+            initializeSupabase(); 
+        }); 
+    </script> 
+      <script src="./assets/js/badge.js"></script> 
+  <script src="https://menutech.xyz/menutechUI.min.js"></script> 
+  <script src="./assets/js/renderer.js"></script> 
+</body> 
+</html> 

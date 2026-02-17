@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Vista de PDFs</title>
+  <link rel="stylesheet" href="./assets/css/badge.css">
+  <style>
+    body {
+      margin: auto;
+      height: 100%;
+      width: 100%;
+      font-family: "Segoe UI", Tahoma, sans-serif;
+      background: #1e1e1e;
+      color: #fff;
+      display: flex;
+      justify-content: center;
+      align-items: center; /* ✅ Centrado vertical */
+      height: 100vh; /* ✅ Ocupa toda la pantalla */
+      overflow: hidden; 
+      
+      padding: 40px 0;
+    }
+
+    .container {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 30px;
+      width: 90%;
+      max-width: 1200px;
+      padding: 0 20px;
+    }
+
+    .pdf-card {
+      background: #2a2a2a;
+      border-radius: 18px;
+      box-shadow: 0 0 12px rgba(0, 0, 0, 0.4);
+      overflow: hidden;
+      position: relative;
+      transition: transform 0.25s ease, box-shadow 0.25s ease;
+    }
+
+    .pdf-card:hover {
+      transform: translateY(-6px);
+      box-shadow: 0 0 18px rgba(0, 188, 212, 0.4);
+    }
+
+    /* Vista previa del PDF */
+    .pdf-preview {
+      width: 100%;
+      aspect-ratio: 3 / 4;
+      border: none;
+      background: #111;
+      display: block;
+    }
+
+    /* Capa invisible para clic */
+    .click-layer {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: calc(100% - 55px);
+      z-index: 2;
+      cursor: pointer;
+    }
+
+    .pdf-info {
+      padding: 14px 10px;
+      text-align: center;
+      background: #242424;
+      color: #00bcd4;
+      font-weight: 500;
+      font-size: 1rem;
+      letter-spacing: 0.3px;
+      z-index: 1;
+      position: relative;
+      user-select: none;
+    }
+
+    /* Hover sutil en el título */
+    .pdf-card:hover .pdf-info {
+      color: #4dd0e1;
+    }
+
+    @media (max-width: 800px) {
+      .container {
+        gap: 20px;
+      }
+      .pdf-info {
+        font-size: 0.95rem;
+      }
+    }
+
+    @media (max-width: 500px) {
+      .pdf-preview {
+        aspect-ratio: 2 / 3;
+      }
+    }
+
+
+  </style>
+  
+</head>
+<body>
+  <!-- ICONO Y BADGE (sin barra, con margen propio) -->
+<img id="login-icon" class="login-icon" src="./assets/img/user.svg">
+
+  <!-- Placa del usuario -->
+<div id="user-badge" class="user-badge hidden" style="position: fixed;">
+  <div id="badge-username"></div>
+  <div id="badge-role"></div>
+</div>
+
+<!-- Menú ahora fuera del badge -->
+<div id="badge-menu" class="hidden">
+  <button id="logout-btn" class="logout-btn">Cerrar sesión</button>
+</div>
+
+
+<!-- PANEL DE LOGIN -->
+<div id="login-panel" class="login-panel hidden">
+
+  <h3>Iniciar sesión</h3>
+
+  <input id="user" class="input" placeholder="Usuario">
+  <input id="pass" class="input" type="password" placeholder="Contraseña">
+
+  <button id="login-btn" class="login-btn">Entrar</button>
+
+  <!-- Estado del login -->
+  <div id="login-status" class="status"></div>
+</div>
+
+<!-- TU DRAWER -->
+<menutech-drawer id="main-drawer" class="hidden"></menutech-drawer>
+
+
+  <!-- NAVBAR NEOMÓRFICO INFERIOR -->
+<div class="neo-nav-container">
+    <button id="neoNavBack" class="neo-nav-btn">
+        <svg viewBox="0 0 24 24" class="neo-nav-icon">
+            <path d="M15 18l-6-6 6-6" stroke="currentColor" stroke-width="2"
+                  fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+    </button>
+
+    <button id="neoNavHome" class="neo-nav-btn">
+        <svg viewBox="0 0 24 24" class="neo-nav-icon">
+            <path d="M3 11l9-7 9 7v8a2 2 0 0 1-2 2h-4a2 2 0 0 1-2-2v-4H9v4a2 
+                     2 0 0 1-2 2H5a2 2 0 0 1-2-2z"
+                  stroke="currentColor" stroke-width="2" fill="none"
+                  stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+    </button>
+</div>
+  <menutech-themes></menutech-themes>
+  <menutech-chatbot></menutech-chatbot>
+
+  <div class="container">
+    <div class="pdf-card" onclick="window.open('https://menutech.biz/forms/Menutech.pdf', '_blank')">
+      <div class="click-layer"></div>
+      <iframe class="pdf-preview" src="https://menutech.biz/forms/Menutech.pdf"></iframe>
+      <div class="pdf-info">Tragalero Form</div>
+    </div>
+
+    <div class="pdf-card" onclick="window.open('https://menutech.biz/forms/Tragalero.pdf', '_blank')">
+      <div class="click-layer"></div>
+      <iframe class="pdf-preview" src="https://menutech.biz/forms/Tragalero.pdf"></iframe>
+      <div class="pdf-info">Wisbe Form</div>
+    </div>
+
+    <div class="pdf-card" onclick="window.open('https://menutech.biz/forms/Wisbe.pdf', '_blank')">
+      <div class="click-layer"></div>
+      <iframe class="pdf-preview" src="https://menutech.biz/forms/Wisbe.pdf"></iframe>
+      <div class="pdf-info">Menutech Form</div>
+    </div>
+  </div>
+
+<script>
+  // Botón Atrás
+  const neoNavBack = document.getElementById("neoNavBack");
+  if (neoNavBack) {
+      neoNavBack.addEventListener("click", () => {
+          if (window.history.length > 1) window.history.back();
+      });
+  }
+
+  // Botón Inicio
+  const neoNavHome = document.getElementById("neoNavHome");
+  if (neoNavHome) {
+      neoNavHome.addEventListener("click", () => {
+          window.location.href = "index.html"; // Cambia por tu ruta principal
+      });
+  }
+</script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/tiny-animate/1.1.0/tinyanimate.min.js"></script>
+  <script src="./assets/js/badge.js"></script>
+  <script src="https://menutech.xyz/menutechUI.min.js"></script>
+  <script src="./assets/js/renderer.js"></script>
+</body>
+</html>

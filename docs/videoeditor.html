@@ -1,0 +1,2089 @@
+<!doctype html>      
+<html lang="es">      
+<head>      
+  <meta charset="utf-8">      
+  <meta name="viewport" content="width=device-width,initial-scale=1">      
+  <title>Menutech - Generador de Video</title>    
+    <link rel="stylesheet" href="./assets/css/badge.css">  
+  <style>      
+    * { box-sizing: border-box; }      
+    body {      
+      margin:0; background:linear-gradient(180deg,#071225,#0b1628);      
+      font-family:'Inter',sans-serif; color:#e6eef6;      
+    }      
+    h1 { text-align:center; margin:20px 0; font-size:22px; }      
+    .grid {      
+      display:grid; grid-template-columns:repeat(auto-fit,minmax(300px,1fr));      
+      gap:20px; padding:20px; max-width:1200px; margin:0 auto;      
+    }      
+    .section {      
+      background:rgba(255,255,255,0.04);      
+      border-radius:16px; padding:16px;      
+      border:1px solid rgba(255,255,255,0.05);      
+      box-shadow:0 4px 14px rgba(0,0,0,0.4);      
+      display:flex; flex-direction:column; gap:12px;      
+      transition:all .3s ease;      
+    }      
+    .section:hover { transform:translateY(-2px); box-shadow:0 8px 20px rgba(16,185,129,.1); }      
+    .section h2 { font-size:16px; margin:0; color:#b7fff0; letter-spacing:.5px; }      
+    .dropzone {      
+      position:relative; border:2px dashed rgba(255,255,255,0.08);      
+      border-radius:14px; height:220px;      
+      display:flex; align-items:center; justify-content:center;      
+      background:rgba(255,255,255,0.02);      
+      cursor:pointer; overflow:hidden; flex-wrap:wrap; padding:8px;      
+      transition:all .3s ease;      
+    }      
+    .dropzone.dragover { border-color:#10b981; background:rgba(16,185,129,0.06); }      
+    .dropzone .plus { font-size:60px; color:rgba(255,255,255,0.3); transition:all .3s ease; user-select:none; }      
+    .dropzone:hover .plus { transform:rotate(90deg); color:#10b981; }      
+    .preview { display:flex; flex-wrap:wrap; gap:6px; width:100%; justify-content:center; }      
+    .preview img {      
+      width:90px; height:90px; object-fit:cover; border-radius:8px;      
+      border:1px solid rgba(255,255,255,0.1); transition:transform .2s ease;      
+    }      
+    .preview img:hover { transform:scale(1.08); }      
+      
+    #image-settings-panel {      
+      position: fixed;      
+      width: 400px;      
+      height: 400px;      
+      max-width: 90vw;      
+      max-height: 90vh;      
+      background: rgba(255,255,255,0.04);      
+      border-radius: 16px;      
+      z-index: 100;      
+      display: flex;      
+      flex-direction: column;      
+      border: 1px solid rgba(255,255,255,0.05);      
+      box-shadow: 0 4px 14px rgba(0,0,0,0.4);      
+    }      
+      
+    #settings-panel-header {      
+      cursor: move;      
+      background: rgba(255,255,255,0.08);      
+      padding: 12px 16px;      
+      border-bottom: 1px solid rgba(255,255,255,0.1);      
+      display: flex;      
+      justify-content: space-between;      
+      align-items: center;      
+    }      
+      
+    #settings-panel-header h2 {      
+      margin: 0;      
+      font-size: 16px;      
+    }      
+      
+    #toggle-panel-btn {      
+      background: none;      
+      border: 1px solid rgba(255,255,255,0.2);      
+      color: #e6eef6;      
+      width: 24px;      
+      height: 24px;      
+      border-radius: 50%;      
+      cursor: pointer;      
+      font-size: 18px;      
+      line-height: 20px;      
+      padding: 0;      
+      transition: all 0.2s ease;      
+    }      
+      
+    #toggle-panel-btn:hover {      
+      background: rgba(255,255,255,0.1);      
+      transform: scale(1.1);      
+    }      
+      
+    #image-settings-panel.collapsed {      
+      height: auto !important;      
+    }      
+      
+    #image-settings-panel.collapsed #settings-list {      
+      display: none;      
+    }      
+      
+    #settings-list {      
+      display: flex;      
+      flex-direction: column;      
+      gap: 10px;      
+      overflow-y: auto;      
+      flex-grow: 1;      
+      padding: 10px;      
+    }      
+      
+    .settings-item {      
+      display: flex;      
+      align-items: center;      
+      gap: 15px;      
+      background: rgba(255,255,255,0.03);      
+      padding: 8px;      
+      border-radius: 8px;      
+      border: 1px solid rgba(255,255,255,0.05);      
+    }      
+      
+    .settings-item img {      
+      width: 50px;      
+      height: 50px;      
+      object-fit: cover;      
+      border-radius: 6px;      
+    }      
+      
+    .settings-item .file-info {      
+      flex-grow: 1;      
+      font-size: 14px;      
+      color: #cdd5e0;      
+    }      
+      
+    .settings-item input {      
+      width: 70px;      
+      background: #0f213e;      
+      color: #b7fff0;      
+      border: 1px solid rgba(255,255,255,0.15);      
+      border-radius: 5px;      
+      padding: 4px 8px;      
+      text-align: center;      
+    }      
+      
+    .settings-item .delete-btn {      
+      background: #e53e3e;      
+      color: white;      
+      border: none;      
+      border-radius: 50%;      
+      width: 24px;      
+      height: 24px;      
+      font-size: 14px;      
+      cursor: pointer;      
+      display: flex;      
+      align-items: center;      
+      justify-content: center;      
+      transition: background .2s ease;      
+    }      
+    .settings-item .delete-btn:hover {      
+      background: #c53030;      
+    }      
+      
+    #timeline-container {      
+      max-width: 1200px;      
+      margin: 20px auto;      
+      padding: 16px;      
+      text-align: center;      
+      font-size: 16px;      
+      color: #b7fff0;      
+    }      
+      
+    #timeline-bar-container {      
+      width: 100%;      
+      height: 10px;      
+      background-color: rgba(255,255,255,0.1);      
+      border-radius: 5px;      
+      margin-top: 10px;      
+      overflow: hidden;      
+    }      
+      
+    #timeline-bar {      
+      width: 0%;      
+      height: 100%;      
+      background-color: #10b981;      
+      border-radius: 5px;      
+      transition: width 0.5s ease;      
+    }      
+      
+    .controls { text-align:center; margin:20px; }      
+    .controls select, .controls button {      
+      background:#0f213e; color:#b7fff0; border:1px solid rgba(255,255,255,0.15);      
+      border-radius:8px; padding:10px 18px; font-size:14px;      
+      cursor:pointer; margin:5px; transition:all .2s ease;      
+      display: inline-flex; align-items: center; justify-content: center; gap: 8px;      
+    }      
+    .controls button:hover { background:#10b981; color:#fff; transform:scale(1.03); }      
+    .controls button:disabled { background: #0a182c; color: #69788d; cursor: wait; transform: none; }      
+      
+    #downloadBtn.is-generating {      
+        animation: pulse 2s infinite;      
+    }      
+      
+    @keyframes pulse {      
+      0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }      
+      70% { box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); }      
+      100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }      
+    }      
+      
+    #status { text-align:center; color:#aaa; margin:20px 0; min-height:24px; }      
+    .spinner {      
+      border:4px solid rgba(255,255,255,0.1);      
+      border-left:4px solid #10b981;      
+      border-radius:50%;      
+      width:24px; height:24px;      
+      display:inline-block;      
+      animation:spin 1s linear infinite;      
+      vertical-align:middle;      
+      margin-right:8px;      
+    }      
+    @keyframes spin { 100% { transform:rotate(360deg);} }      
+      
+    #video-preview-panel {      
+      position: fixed;      
+      right: 20px;      
+      top: 80px;      
+      width: 450px;      
+      height: 350px;      
+      background: rgba(255, 255, 255, 0.04);      
+      border-radius: 16px;      
+      z-index: 101;      
+      display: flex;      
+      flex-direction: column;      
+      border: 1px solid rgba(255, 255, 255, 0.05);      
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);      
+      resize: both;      
+      overflow: hidden;      
+      min-width: 300px;      
+      min-height: 200px;      
+    }      
+      
+    #video-preview-header {      
+      cursor: move;      
+      background: rgba(255, 255, 255, 0.08);      
+      padding: 12px 16px;      
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);      
+      display: flex;      
+      justify-content: space-between;      
+      align-items: center;      
+      user-select: none;      
+    }      
+      
+    #video-preview-header h2 {      
+      margin: 0;      
+      font-size: 16px;      
+    }      
+      
+    #toggle-preview-btn {      
+      background: none;      
+      border: 1px solid rgba(255, 255, 255, 0.2);      
+      color: #e6eef6;      
+      width: 24px;      
+      height: 24px;      
+      border-radius: 50%;      
+      cursor: pointer;      
+      font-size: 18px;      
+      line-height: 20px;      
+      padding: 0;      
+      transition: all 0.2s ease;      
+    }      
+      
+    #toggle-preview-btn:hover {      
+      background: rgba(255, 255, 255, 0.1);      
+      transform: scale(1.1);      
+    }      
+      
+    #video-preview-panel.collapsed {      
+      height: auto !important;      
+      resize: none;      
+    }      
+      
+    #video-preview-panel.collapsed #video-container {      
+      display: none;      
+    }      
+      
+    #video-container {      
+      flex-grow: 1;      
+      padding: 10px;      
+      background: #000;      
+      display: flex;      
+      align-items: center;      
+      justify-content: center;      
+      overflow: hidden;      
+    }      
+      
+    #slideshow-preview {      
+      width: 100%;      
+      height: 100%;      
+      position: relative;      
+      overflow: hidden;      
+      color: #8899aa;      
+      font-size: 16px;      
+    }      
+      
+    #slideshow-preview.horizontal {      
+      aspect-ratio: 16 / 9;      
+    }      
+      
+    #slideshow-preview.vertical {      
+      aspect-ratio: 9 / 16;      
+    }      
+      
+    #slideshow-preview.square {      
+      aspect-ratio: 1 / 1;      
+    }      
+      
+    #slideshow-placeholder {      
+      width: 100%;      
+      height: 100%;      
+      display: flex;      
+      align-items: center;      
+      justify-content: center;      
+      text-align: center;      
+      padding: 20px;      
+    }      
+      
+    #slideshow-preview img {      
+      position: absolute;      
+      top: 0;      
+      left: 0;      
+      width: 100%;      
+      height: 100%;      
+      object-fit: cover;      
+      opacity: 0;      
+      transition: opacity 1.5s ease-in-out;      
+    }      
+      
+    #slideshow-preview img.visible {      
+      opacity: 1;      
+    }      
+      
+    #slideshow-controls {      
+      display: flex;      
+      justify-content: center;      
+      align-items: center;      
+      padding: 8px 0;      
+      background: rgba(0, 0, 0, 0.2);      
+    }      
+      
+    #slideshow-controls button {      
+      background: none;      
+      border: 1px solid rgba(255, 255, 255, 0.2);      
+      color: #e6eef6;      
+      width: 36px;      
+      height: 30px;      
+      border-radius: 6px;      
+      cursor: pointer;      
+      font-size: 18px;      
+      line-height: 28px;      
+      padding: 0;      
+      margin: 0 8px;      
+      transition: all 0.2s ease;      
+    }      
+      
+    #slideshow-controls button:hover {      
+      background: rgba(255, 255, 255, 0.1);      
+      transform: scale(1.1);      
+    }      
+      
+    @keyframes kenburns-pan-left {     
+        from {     
+            transform: scale(1.0) translateX(5%);     
+        }     
+        to {     
+            transform: scale(1.2) translateX(-5%);     
+        }     
+    }     
+      
+    @keyframes wipe-in-left {      
+        from { clip-path: inset(0 0 0 100%); }      
+        to   { clip-path: inset(0 0 0 0); }      
+    }      
+          
+    #slideshow-preview img.is-wiping {      
+        opacity: 1;      
+        z-index: 2;      
+        animation-name: wipe-in-left;      
+        animation-duration: 1.5s;      
+        animation-timing-function: ease-in-out;      
+    }      
+      
+    #video-settings-panel {      
+        position: fixed;      
+        left: 20px;      
+        top: 80px;      
+        width: 320px;      
+        background: rgba(255, 255, 255, 0.04);      
+        border-radius: 16px;      
+        z-index: 101;      
+        display: flex;      
+        flex-direction: column;      
+        border: 1px solid rgba(255, 255, 255, 0.05);      
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);      
+    }      
+    #video-settings-header {      
+        cursor: move;      
+        background: rgba(255, 255, 255, 0.08);      
+        padding: 12px 16px;      
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);      
+        display: flex;      
+        justify-content: space-between;      
+        align-items: center;      
+        user-select: none;      
+    }      
+    #video-settings-header h2 { margin: 0; font-size: 16px; }      
+    #toggle-video-settings-btn {      
+        background: none; border: 1px solid rgba(255, 255, 255, 0.2); color: #e6eef6;      
+        width: 24px; height: 24px; border-radius: 50%; cursor: pointer;      
+        font-size: 18px; line-height: 20px; padding: 0; transition: all 0.2s ease;      
+    }      
+    #toggle-video-settings-btn:hover { background: rgba(255, 255, 255, 0.1); transform: scale(1.1); }      
+    #video-settings-panel.collapsed { height: auto !important; }      
+    #video-settings-panel.collapsed .video-settings-content { display: none; }      
+    .video-settings-content { padding: 16px; display: flex; flex-direction: column; gap: 12px; }      
+    .setting-row { display: flex; justify-content: space-between; align-items: center; }      
+    .setting-row label { font-size: 14px; color: #cdd5e0; }      
+    .setting-row select, .setting-row input[type="text"] {      
+        background: #0f213e; color: #b7fff0; border: 1px solid rgba(255,255,255,0.15);      
+        border-radius: 8px; padding: 8px 10px; font-size: 14px;      
+        flex-grow: 1; margin-left: 10px;      
+    }      
+    
+    #elevenlabs-panel {    
+        position: fixed;    
+        left: 20px;    
+        top: 300px;    
+        width: 320px;    
+        background: rgba(255, 255, 255, 0.04);    
+        border-radius: 16px;    
+        z-index: 101;    
+        display: flex;    
+        flex-direction: column;    
+        border: 1px solid rgba(255, 255, 255, 0.05);    
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);    
+    }    
+    
+    #elevenlabs-header {    
+        cursor: move;    
+        background: rgba(255, 255, 255, 0.08);    
+        padding: 12px 16px;    
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);    
+        display: flex;    
+        justify-content: space-between;    
+        align-items: center;    
+        user-select: none;    
+    }    
+    
+    #elevenlabs-header h2 { margin: 0; font-size: 16px; }    
+    
+    #toggle-elevenlabs-btn {    
+        background: none;    
+        border: 1px solid rgba(255, 255, 255, 0.2);    
+        color: #e6eef6;    
+        width: 24px;    
+        height: 24px;    
+        border-radius: 50%;    
+        cursor: pointer;    
+        font-size: 18px;    
+        line-height: 20px;    
+        padding: 0;    
+        transition: all 0.2s ease;    
+    }    
+    
+    .elevenlabs-content {    
+        padding: 16px;    
+        display: flex;    
+        flex-direction: column;    
+        gap: 12px;    
+    }    
+    
+    .elevenlabs-content .setting-row {    
+        flex-direction: column;    
+        align-items: stretch;    
+        justify-content: flex-start;    
+        gap: 6px;    
+    }    
+    
+    .elevenlabs-content .setting-row label {    
+        align-self: flex-start;    
+    }    
+    
+    .elevenlabs-content .setting-row input[type="text"],    
+    .elevenlabs-content .setting-row select,    
+    .elevenlabs-content .setting-row .language-switch {    
+        margin-left: 0;    
+        width: 100%;    
+    }    
+    
+    .dish-input-wrapper {    
+        display: flex;    
+        align-items: center;    
+        width: 100%;    
+        gap: 8px;    
+    }    
+    
+    .dish-input-wrapper .dish-input {    
+        flex-grow: 1;    
+    }    
+    
+    .delete-dish-btn {    
+        background: #e53e3e;    
+        color: white;    
+        border: none;    
+        border-radius: 50%;    
+        width: 24px;    
+        height: 24px;    
+        font-size: 14px;    
+        cursor: pointer;    
+        display: flex;    
+        align-items: center;    
+        justify-content: center;    
+    }    
+      
+    .language-switch {    
+        display: flex;    
+        align-items: center;    
+        gap: 10px;    
+        /* margin-left: auto; */ /* Let the container handle alignment */    
+    }    
+    
+    .add-dish-wrapper {    
+        display: flex;    
+        justify-content: flex-end;    
+    }    
+    #add-dish-btn {    
+        background-color: #f97316; /* Orange */    
+        color: white;    
+        border: none;    
+        padding: 8px 16px;    
+        transition: all 0.2s ease;    
+    }    
+    
+    #add-dish-btn:hover {    
+        background-color: #fb923c; /* Lighter Orange */    
+        transform: scale(1.05);    
+    }    
+    
+    .switch {    
+        position: relative;    
+        display: inline-block;    
+        width: 50px;    
+        height: 28px;    
+    }    
+    
+    .switch input {     
+        opacity: 0;    
+        width: 0;    
+        height: 0;    
+    }    
+    
+    .slider {    
+        position: absolute;    
+        cursor: pointer;    
+        top: 0;    
+        left: 0;    
+        right: 0;    
+        bottom: 0;    
+        background-color: #0f213e;    
+        transition: .4s;    
+        border: 1px solid rgba(255,255,255,0.15);    
+    }    
+    
+    .slider:before {    
+        position: absolute;    
+        content: "";    
+        height: 20px;    
+        width: 20px;    
+        left: 3px;    
+        bottom: 3px;    
+        background-color: #b7fff0;    
+        transition: .4s;    
+    }    
+    
+    input:checked + .slider {    
+        background-color: #10b981;    
+    }    
+    
+    input:focus + .slider {    
+        box-shadow: 0 0 1px #10b981;    
+    }    
+    
+    input:checked + .slider:before {    
+        transform: translateX(22px);    
+    }    
+    
+    .slider.round {    
+        border-radius: 34px;    
+    }    
+    
+    .slider.round:before {    
+        border-radius: 50%;    
+    }    
+    
+    #language-label {    
+        color: #cdd5e0;    
+        font-size: 14px;    
+    }    
+    
+    /* Custom Popup Styles */      
+    .popup-overlay {      
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%;      
+        background: rgba(0, 0, 0, 0.7);      
+        display: none; align-items: center; justify-content: center;      
+        z-index: 200; opacity: 0; transition: opacity 0.3s ease;      
+    }      
+    .popup-overlay.visible {      
+        display: flex; opacity: 1;      
+    }      
+    .popup-content {      
+        background: #0b1628;      
+        border-radius: 16px;      
+        border: 1px solid rgba(255, 255, 255, 0.1);      
+        padding: 24px;      
+        width: 90%; max-width: 400px;      
+        text-align: center;      
+        transform: scale(0.9);      
+        transition: transform 0.3s ease;      
+    }      
+    .popup-overlay.visible .popup-content {      
+        transform: scale(1);      
+    }      
+    .popup-content h3 {      
+        margin: 0 0 12px 0; color: #b7fff0;      
+    }      
+    .popup-content p {      
+        margin: 0 0 20px 0; color: #cdd5e0; line-height: 1.5;      
+    }      
+    .popup-close-btn {      
+        background: #10b981; color: #fff;      
+        border: none; border-radius: 8px;      
+        padding: 10px 20px; cursor: pointer;      
+        transition: background .2s ease;      
+    }      
+    .popup-close-btn:hover { background: #0f9b6c; } 
+ 
+    /* Subpanel Styles */ 
+    .subpanel { 
+        background: rgba(0,0,0,0.2); 
+        border-radius: 8px; 
+        padding: 12px; 
+        margin-top: 8px; 
+        border: 1px solid rgba(255,255,255,0.1); 
+    } 
+    .subpanel h4 { 
+        margin: 0 0 10px 0; 
+        font-size: 14px; 
+        color: #b7fff0; 
+    } 
+    .subpanel ul { 
+        list-style: none; 
+        padding: 0; 
+        margin: 0; 
+        max-height: 150px; 
+        overflow-y: auto; 
+    } 
+    .subpanel li { 
+        padding: 8px 12px; 
+        cursor: pointer; 
+        border-radius: 6px; 
+        transition: background .2s ease; 
+        font-size: 14px; 
+    } 
+    .subpanel li:hover, .subpanel li.selected { 
+        background: rgba(16,185,129,0.2); 
+    } 
+    .subpanel button { 
+        width: 100%; 
+        margin-top: 10px; 
+        background: #0f213e; color:#b7fff0; border:1px solid rgba(255,255,255,0.15);      
+        border-radius:8px; padding: 8px 12px; font-size:12px;      
+        cursor:pointer; 
+    } 
+    #voice-list li { 
+        padding: 8px 12px; 
+        cursor: pointer; 
+        border-radius: 6px; 
+        transition: background .2s ease; 
+        font-size: 14px; 
+        background: rgba(255,255,255,0.05); 
+        border: 1px solid rgba(255,255,255,0.1); 
+    } 
+    #voice-list li:hover, #voice-list li.selected { 
+        background: rgba(16,185,129,0.2); 
+    } 
+ 
+    #voice-selection-panel, #manual-script-panel, #bg-music-selection-panel { 
+        position: fixed; 
+        width: 320px; 
+        background: rgba(255, 255, 255, 0.04); 
+        border-radius: 16px; 
+        z-index: 101; 
+        display: flex; 
+        flex-direction: column; 
+        border: 1px solid rgba(255, 255, 255, 0.05); 
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4); 
+    } 
+    #voice-selection-header, #manual-script-header, #bg-music-selection-header { 
+        cursor: move; 
+        background: rgba(255, 255, 255, 0.08); 
+        padding: 12px 16px; 
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1); 
+        display: flex; 
+        justify-content: space-between; 
+        align-items: center; 
+        user-select: none; 
+    } 
+    #voice-selection-header h2, #manual-script-header h2, #bg-music-selection-header h2 { 
+        margin: 0; 
+        font-size: 16px; 
+    } 
+  </style>      
+</head>      
+<body>      
+        <!-- ICONO Y BADGE (sin barra, con margen propio) -->
+<img id="login-icon" class="login-icon" src="./assets/img/user.svg">
+
+  <!-- Placa del usuario -->
+<div id="user-badge" class="user-badge hidden" style="position: fixed;">
+  <div id="badge-username"></div>
+  <div id="badge-role"></div>
+</div>
+
+<!-- Menú ahora fuera del badge -->
+<div id="badge-menu" class="hidden">
+  <button id="logout-btn" class="logout-btn">Cerrar sesión</button>
+</div>
+
+
+<!-- PANEL DE LOGIN -->
+<div id="login-panel" class="login-panel hidden">
+
+  <h3>Iniciar sesión</h3>
+
+  <input id="user" class="input" placeholder="Usuario">
+  <input id="pass" class="input" type="password" placeholder="Contraseña">
+
+  <button id="login-btn" class="login-btn">Entrar</button>
+
+  <!-- Estado del login -->
+  <div id="login-status" class="status"></div>
+</div>
+
+<!-- TU DRAWER -->
+<menutech-drawer id="main-drawer" class="hidden"></menutech-drawer>
+
+
+  <!-- NAVBAR NEOMÓRFICO INFERIOR -->
+<div class="neo-nav-container">
+    <button id="neoNavBack" class="neo-nav-btn">
+        <svg viewBox="0 0 24 24" class="neo-nav-icon">
+            <path d="M15 18l-6-6 6-6" stroke="currentColor" stroke-width="2"
+                  fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+    </button>
+
+    <button id="neoNavHome" class="neo-nav-btn">
+        <svg viewBox="0 0 24 24" class="neo-nav-icon">
+            <path d="M3 11l9-7 9 7v8a2 2 0 0 1-2 2h-4a2 2 0 0 1-2-2v-4H9v4a2 
+                     2 0 0 1-2 2H5a2 2 0 0 1-2-2z"
+                  stroke="currentColor" stroke-width="2" fill="none"
+                  stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+    </button>
+</div>
+  <menutech-themes></menutech-themes>
+  <menutech-chatbot></menutech-chatbot>
+<div id="custom-popup" class="popup-overlay">      
+    <div class="popup-content">      
+        <h3>Aviso</h3>      
+        <p id="popup-message"></p>      
+        <button id="popup-close" class="popup-close-btn">Entendido</button>      
+    </div>      
+</div>      
+      
+<div style="text-align:center; margin:20px 0;">      
+    <img src="https://menutech.services/assets/img/logomt.png" alt="Menutech Logo" style="max-height: 80px;">      
+</div>      
+      
+<div class="grid">      
+  <div class="section">      
+    <h2>Interior</h2>      
+    <div class="dropzone" id="drop-interior">      
+      <span class="plus">+</span>      
+      <input type="file" accept="image/*" multiple hidden>      
+      <div class="preview"></div>      
+    </div>      
+  </div>      
+      
+  <div class="section">      
+    <h2>Platillos</h2>      
+    <div class="dropzone" id="drop-platillos">      
+      <span class="plus">+</span>      
+      <input type="file" accept="image/*" multiple hidden>      
+      <div class="preview"></div>      
+    </div>      
+  </div>      
+      
+  <div class="section">      
+    <h2>Exterior</h2>      
+    <div class="dropzone" id="drop-exterior">      
+      <span class="plus">+</span>      
+      <input type="file" accept="image/*" multiple hidden>      
+      <div class="preview"></div>      
+    </div>      
+  </div>      
+</div>      
+      
+<div id="image-settings-panel">      
+  <div id="settings-panel-header">      
+    <h2>Configuración de Tiempos</h2>      
+    <button id="toggle-panel-btn">-</button>      
+  </div>      
+  <div id="settings-list">      
+    <!-- Los controles de imagen se añadirán aquí -->      
+  </div>      
+</div>      
+      
+<div id="video-settings-panel">      
+  <div id="video-settings-header">      
+    <h2>Configuración de Video</h2>      
+    <button id="toggle-video-settings-btn">-</button>      
+  </div>      
+  <div class="video-settings-content">      
+      <div class="setting-row">      
+        <label>Orientación:</label>      
+        <select id="orientation">      
+          <option value="horizontal">Horizontal (1920x1080)</option>      
+          <option value="vertical">Vertical (1080x1920)</option>      
+          <option value="square">Square (1200x1200)</option>      
+        </select>      
+      </div>      
+      <div class="setting-row">      
+        <label>Transición:</label>      
+        <select id="transition-type">      
+          <option value="fade">Fade</option>      
+          <option value="wipe-left">Wipe Left</option>      
+        </select>      
+      </div>      
+  </div>      
+</div>      
+<div id="elevenlabs-panel">    
+  <div id="elevenlabs-header">    
+    <h2>Configuración de Audio</h2>    
+    <button id="toggle-elevenlabs-btn">-</button>    
+  </div>    
+  <div class="elevenlabs-content">    
+    <div class="setting-row" id="voice-selection-row" style="cursor: pointer; flex-direction: row; justify-content: space-between; align-items: center;"> 
+      <label>Voz seleccionada:</label> 
+      <span id="selected-voice-name"></span> 
+    </div> 
+ 
+    <div class="setting-row" id="bg-music-selection-row" style="cursor: pointer; flex-direction: row; justify-content: space-between; align-items: center;"> 
+      <label>Pista de fondo:</label> 
+      <span id="selected-bg-music-name">Ninguna</span> 
+    </div> 
+ 
+    <div class="setting-row">    
+      <label>Language:</label>    
+      <div class="language-switch">    
+        <label class="switch">    
+          <input type="checkbox" id="language-toggle">    
+          <span class="slider round"></span>    
+        </label>    
+        <span id="language-label">English</span>    
+      </div>    
+    </div>    
+    <div class="setting-row">    
+      <label>Restaurant Name:</label>    
+      <input type="text" id="restaurant-name-input" placeholder="e.g., The Golden Spoon">    
+    </div>    
+    <div id="dish-inputs">    
+      <div class="setting-row">    
+        <label>Dish 1:</label>    
+        <div class="dish-input-wrapper">    
+          <input type="text" class="dish-input" placeholder="e.g., Delicious Dish">    
+          <button class="delete-dish-btn">&times;</button>    
+        </div>    
+      </div>    
+    </div>    
+    <div class="add-dish-wrapper">    
+        <button id="add-dish-btn" class="controls button">+ Add Dish</button>    
+    </div>    
+    <div class="setting-row">    
+      <label>Promotion:</label>    
+      <input type="text" id="promotion-input" placeholder="e.g., 2x1 on all tacos">    
+    </div>    
+    <div class="setting-row">    
+      <label>Address:</label>    
+      <input type="text" id="address-input" placeholder="e.g., 123 Main St">    
+    </div> 
+    <div class="setting-row" style="flex-direction: row; justify-content: space-between; align-items: center;"> 
+      <label>Editar script manualmente:</label> 
+      <label class="switch"> 
+        <input type="checkbox" id="manual-script-toggle"> 
+        <span class="slider round"></span> 
+      </label> 
+    </div> 
+  </div>    
+</div>    
+ 
+<div id="voice-selection-panel" style="display: none; top: 350px; left: 40px;"> 
+  <div id="voice-selection-header" class="video-settings-header"> 
+    <h2>Seleccionar Voz</h2> 
+    <button id="close-voice-panel-btn" class="toggle-video-settings-btn">&times;</button> 
+  </div> 
+  <div class="video-settings-content"> 
+    <ul id="voice-list" style="list-style: none; padding: 0; margin: 0; max-height: 200px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px;"></ul> 
+  </div> 
+</div> 
+ 
+<div id="bg-music-selection-panel" style="display: none; top: 380px; left: 80px;"> 
+  <div id="bg-music-selection-header" class="video-settings-header"> 
+    <h2>Seleccionar Pista de Fondo</h2> 
+    <button id="close-bg-music-panel-btn" class="toggle-video-settings-btn">&times;</button> 
+  </div> 
+  <div class="video-settings-content"> 
+    <ul id="bg-music-list" style="list-style: none; padding: 0; margin: 0; max-height: 150px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px;"></ul> 
+    <div style="margin-top: 12px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 12px; display: flex; flex-direction: column; gap: 10px;">
+        <div class="setting-row">
+            <label style="font-size: 13px;">Volumen:</label>
+            <input type="range" id="bg-music-volume" min="0" max="1" step="0.1" value="0.2" style="width: 100px;">
+        </div>
+        <div class="setting-row">
+            <label style="font-size: 13px;">Inicio (seg):</label>
+            <input type="number" id="bg-music-offset" min="0" step="1" value="0" style="width: 60px; padding: 4px;">
+        </div>
+    </div>
+  </div> 
+</div> 
+ 
+<div id="manual-script-panel" style="display: none; top: 400px; left: 70px;"> 
+    <div id="manual-script-header" class="video-settings-header"> 
+        <h2>Editar Script Manualmente</h2> 
+        <button id="close-manual-script-panel-btn" class="toggle-video-settings-btn">&times;</button> 
+    </div> 
+    <div class="video-settings-content"> 
+        <textarea id="manual-script-textarea" style="width: 100%; height: 150px; background: #0f213e; color: #b7fff0; border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; padding: 8px; font-size: 14px; resize: vertical;"></textarea> 
+    </div> 
+</div> 
+      
+<div id="video-preview-panel">      
+  <div id="video-preview-header">      
+    <h2>Vista Previa del Video</h2>      
+    <button id="toggle-preview-btn">-</button>      
+  </div>      
+  <div id="video-container">      
+    <div id="slideshow-preview">      
+      <div id="slideshow-placeholder">Agrega imágenes para ver la vista previa</div>      
+    </div>      
+  </div>      
+  <div id="slideshow-controls">      
+    <button id="prev-btn">❮</button>      
+    <button id="play-pause-btn">❚❚</button>      
+    <button id="next-btn">❯</button>      
+  </div>      
+</div>      
+      
+<div class="controls">      
+    <button id="downloadBtn">      
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">      
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>      
+            <polyline points="7 10 12 15 17 10"></polyline>      
+            <line x1="12" y1="15" x2="12" y2="3"></line>      
+        </svg>      
+        Descargar Video      
+    </button>      
+</div>      
+      
+<div id="timeline-container">      
+  <div id="total-time">Duración total del video: 0 segundos</div>      
+  <div id="timeline-bar-container">      
+      <div id="timeline-bar"></div>      
+  </div>      
+</div>      
+      
+<div id="status">Arrastra o haz clic en los cuadros para cargar imágenes</div>      
+      
+<canvas id="offscreen-canvas" style="display:none;"></canvas>      
+      
+<script>      
+class VisualAnalyzer {
+    analyze(img, index) {
+        const aspectRatio = img.width / img.height;
+
+        // Default preset: Gentle zoom-in towards the center
+        let config = {
+            preset: 'zoom-in-center',
+            startScale: 1.0,
+            endScale: 1.15,
+            startOriginX: 0.5, endOriginX: 0.5,
+            startOriginY: 0.5, endOriginY: 0.5,
+        };
+
+        // Preset for panoramic images
+        if (aspectRatio > 1.3) { // Wider than 4:3
+            config.preset = 'pan-horizontal';
+            config.startScale = 1.2;
+            config.endScale = 1.5;
+            // Alternate direction based on whether the image is odd or even in the sequence
+            if (index % 2 === 0) {
+                // Pan Right to Left
+                config.startOriginX = 0.7;
+                config.endOriginX = 0.3;
+            } else {
+                // Pan Left to Right
+                config.startOriginX = 0.3;
+                config.endOriginX = 0.7;
+            }
+        // Preset for vertical images
+        } else if (aspectRatio < 0.8) { // Taller than standard
+            config.preset = 'pan-vertical';
+            config.startScale = 1.2;
+            config.endScale = 1.5;
+            // Alternate direction
+            if (index % 2 === 0) {
+                // Pan Top to Bottom
+                config.startOriginY = 0.3;
+                config.endOriginY = 0.7;
+            } else {
+                // Pan Bottom to Top
+                config.startOriginY = 0.7;
+                config.endOriginY = 0.3;
+            }
+        }
+        
+        return config;
+    }
+}
+
+class SlideshowEngine {  
+    constructor(canvas) {  
+        this.canvas = canvas;  
+        this.ctx = this.canvas.getContext('2d');  
+        this.visualAnalyzer = new VisualAnalyzer();  
+  
+        this.imageItems = [];  
+        this.images = [];  
+        this.kenBurnsConfigs = [];  
+  
+        this.transitionDuration = 1.5;  
+        this.imageStartTimes = [];  
+  
+        this.totalTime = 0;  
+        this.onTimeUpdate = null;  
+    }  
+  
+    async setImages(imageItems) {  
+        this.imageItems = imageItems;  
+  
+        this.images = await Promise.all(this.imageItems.map(item => {  
+            return new Promise((resolve, reject) => {  
+                const img = new Image();  
+                img.onload = () => resolve(img);  
+                img.onerror = reject;  
+                img.src = item.src;  
+            });  
+        }));  
+  
+        this.generateKenBurnsConfigs();  
+  
+        let currentTime = 0;  
+        this.imageStartTimes = [];  
+        this.imageItems.forEach((item, index) => {  
+            this.imageStartTimes.push(currentTime);  
+            if (index < this.imageItems.length - 1) {  
+                currentTime += item.duration - this.transitionDuration;  
+            } else {  
+                currentTime += item.duration;  
+            }  
+        });  
+        this.totalTime = currentTime;  
+        this.drawFrame(0);  
+    }  
+  
+    generateKenBurnsConfigs() {  
+        this.kenBurnsConfigs = this.images.map((img, index) => this.visualAnalyzer.analyze(img, index));  
+    }  
+      
+    drawFrame(time) {      
+        this.ctx.fillStyle = '#000';      
+        this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);      
+      
+        let currentImageIndex = -1;      
+        let nextImageIndex = -1;      
+        let transitionProgress = 0;      
+      
+        // Find which image(s) to draw      
+        for (let i = 0; i < this.imageItems.length; i++) {      
+            const itemStartTime = this.imageStartTimes[i];      
+            const itemEndTime = itemStartTime + this.imageItems[i].duration;      
+      
+            if (time >= itemStartTime && time < itemEndTime) {      
+                currentImageIndex = i;      
+                const transitionStartTime = itemEndTime - this.transitionDuration;      
+                if (i + 1 < this.imageItems.length && time >= transitionStartTime) {      
+                    nextImageIndex = i + 1;      
+                    transitionProgress = (time - transitionStartTime) / this.transitionDuration;      
+                }      
+                break;      
+            }      
+        }      
+              
+        if (currentImageIndex === -1 && this.imageItems.length > 0) {      
+            if (time >= this.totalTime) {      
+                currentImageIndex = this.imageItems.length - 1;      
+            }      
+        }      
+      
+        const transitionType = document.getElementById('transition-type').value;      
+      
+        if (currentImageIndex !== -1) {      
+            const localTime = time - this.imageStartTimes[currentImageIndex];      
+            let opacity = 1.0;      
+            if (nextImageIndex !== -1 && transitionType === 'fade') {      
+                opacity = 1.0 - transitionProgress;      
+            }      
+            this.renderImage(currentImageIndex, localTime, opacity);      
+        }      
+      
+        if (nextImageIndex !== -1) {      
+            const localTime = time - this.imageStartTimes[nextImageIndex];      
+            let opacity = 1.0;      
+            let clip = null;      
+      
+            if (transitionType === 'fade') {      
+                opacity = transitionProgress;      
+            } else if (transitionType === 'wipe-left') {      
+                clip = { x: 0, y: 0, w: this.canvas.width * transitionProgress, h: this.canvas.height };      
+            }      
+            this.renderImage(nextImageIndex, localTime, opacity, clip);      
+        }      
+    }      
+      
+    renderImage(index, localTime, opacity, clip = null) {  
+        if (opacity <= 0.01 && !clip) return;  
+        const img = this.images[index];  
+        const item = this.imageItems[index];  
+        const config = this.kenBurnsConfigs[index];  
+  
+        // Easing function for a smoother, more cinematic effect.  
+        const ease = (t) => t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;  
+        const progress = ease(Math.min(1.0, localTime / item.duration));  
+  
+        const currentScale = config.startScale + (config.endScale - config.startScale) * progress;  
+        const currentOriginX = config.startOriginX + (config.endOriginX - config.startOriginX) * progress;  
+        const currentOriginY = config.startOriginY + (config.endOriginY - config.startOriginY) * progress;  
+  
+        const imgRatio = img.width / img.height;  
+        const canvasRatio = this.canvas.width / this.canvas.height;  
+  
+        let drawW, drawH;  
+        // This is the "cover" logic: ensures the image covers the entire canvas, cropping excess.  
+        if (imgRatio > canvasRatio) {  
+            // Image is wider than the canvas aspect ratio, so fit height and crop width.  
+            drawH = this.canvas.height;  
+            drawW = drawH * imgRatio;  
+        } else {  
+            // Image is taller than or same aspect ratio as the canvas, so fit width and crop height.  
+            drawW = this.canvas.width;  
+            drawH = drawW / imgRatio;  
+        }  
+  
+        const scaledW = drawW * currentScale;  
+        const scaledH = drawH * currentScale;  
+  
+        const maxOffsetX = scaledW - this.canvas.width;  
+        const maxOffsetY = scaledH - this.canvas.height;  
+  
+        // Center the image  
+        const centerX = (this.canvas.width - scaledW) / 2;  
+        const centerY = (this.canvas.height - scaledH) / 2;  
+  
+        const panX = centerX - (currentOriginX - 0.5) * maxOffsetX;  
+        const panY = centerY - (currentOriginY - 0.5) * maxOffsetY;  
+  
+        this.ctx.save();  
+        this.ctx.globalAlpha = Math.min(1.0, opacity);  
+  
+        if (clip) {  
+            this.ctx.beginPath();  
+            this.ctx.rect(clip.x, clip.y, clip.w, clip.h);  
+            this.ctx.clip();  
+        }  
+  
+        // Apply subtle visual filter for better quality  
+        this.ctx.filter = 'contrast(1.1) saturate(1.1) brightness(1.05)';  
+  
+        this.ctx.translate(panX, panY);  
+        this.ctx.drawImage(img, 0, 0, scaledW, scaledH);  
+        this.ctx.restore();  
+    }     
+}      
+      
+class Recorder {  
+    constructor(canvas, engine) {  
+        this.canvas = canvas;  
+        this.engine = engine;  
+        this.mediaRecorder = null;  
+        this.chunks = [];  
+        this.onFinished = null;  
+  
+        this.fps = 30;  
+        this.frameInterval = 1000 / this.fps;  
+        this.currentFrame = 0;  
+        this.totalFrames = 0;  
+        this.renderTimeoutId = null;  
+    }  
+  
+    async start(audioBlob, bgMusicUrl, onFinished) {  
+        this.onFinished = onFinished;  
+        const videoStream = this.canvas.captureStream(this.fps);  
+        let combinedStream;  
+  
+        if (audioBlob || bgMusicUrl) {  
+            const audioContext = new AudioContext();  
+            const dest = audioContext.createMediaStreamDestination();  
+  
+            if (audioBlob) {  
+                try {  
+                    const audioSource = audioContext.createBufferSource();  
+                    const arrayBuffer = await audioBlob.arrayBuffer();  
+                    audioSource.buffer = await audioContext.decodeAudioData(arrayBuffer);  
+                    audioSource.connect(dest);  
+                    audioSource.start();  
+                } catch (e) {  
+                    console.error("Error setting up voice audio", e);  
+                }  
+            }  
+  
+            if (bgMusicUrl) {  
+                try {  
+                    const response = await fetch(bgMusicUrl);  
+                    const bgMusicBlob = await response.blob();  
+                    const bgMusicBuffer = await audioContext.decodeAudioData(await bgMusicBlob.arrayBuffer());  
+  
+                    const bgSource = audioContext.createBufferSource();  
+                    bgSource.buffer = bgMusicBuffer;  
+                    bgSource.loop = true;   
+                      
+                    const gainNode = audioContext.createGain();
+                    const volumeInput = document.getElementById('bg-music-volume');
+                    gainNode.gain.value = volumeInput ? parseFloat(volumeInput.value) : 0.2;
+                       
+                    bgSource.connect(gainNode);   
+                    gainNode.connect(dest);   
+
+                    const offsetInput = document.getElementById('bg-music-offset');
+                    const startOffset = offsetInput ? parseFloat(offsetInput.value) : 0;
+
+                    bgSource.start(0, startOffset);
+                } catch (e) {  
+                    console.error("Error setting up background music", e);  
+                }  
+            }  
+  
+            const audioTrack = dest.stream.getAudioTracks()[0];  
+            combinedStream = new MediaStream([...videoStream.getVideoTracks(), audioTrack]);  
+        } else {  
+            combinedStream = videoStream;  
+        }  
+  
+        let mimeType = 'video/mp4; codecs="avc1.42E01E, mp4a.40.2"';  
+        if (!MediaRecorder.isTypeSupported(mimeType)) {  
+            mimeType = 'video/webm';  
+        }  
+  
+        const options = { mimeType, videoBitsPerSecond: 5000000 };  
+        this.mediaRecorder = new MediaRecorder(combinedStream, options);  
+        this.chunks = [];  
+  
+        this.mediaRecorder.ondataavailable = (e) => {  
+            if (e.data.size > 0) this.chunks.push(e.data);  
+        };  
+  
+        this.mediaRecorder.onstop = () => {  
+            const blob = new Blob(this.chunks, { type: mimeType });  
+            this.onFinished(blob, mimeType.split(';')[0].split('/')[1]);  
+        };  
+  
+        this.totalFrames = Math.ceil(this.engine.totalTime * this.fps);  
+        this.mediaRecorder.start();  
+        this.renderFrame();  
+    }  
+  
+    renderFrame() {  
+        const time = this.currentFrame / this.fps;  
+  
+        if (time >= this.engine.totalTime) {  
+            if (this.mediaRecorder.state === 'recording') {  
+                this.mediaRecorder.stop();  
+            }  
+            return;  
+        }  
+  
+        this.engine.drawFrame(time);  
+        if (this.engine.onTimeUpdate) {  
+            this.engine.onTimeUpdate(time, this.engine.totalTime);  
+        }  
+  
+        this.currentFrame++;  
+        this.renderTimeoutId = setTimeout(() => this.renderFrame(), this.frameInterval);  
+    }  
+}      
+      
+const zones = document.querySelectorAll(".dropzone");      
+window.allImages = [];      
+const downloadBtn = document.getElementById("downloadBtn");      
+const orientationSelect = document.getElementById("orientation");      
+const statusEl = document.getElementById("status");      
+const totalTimeEl = document.getElementById("total-time");      
+const settingsListEl = document.getElementById("settings-list");      
+const timelineBarEl = document.getElementById("timeline-bar");      
+const slideshowPreviewEl = document.getElementById("slideshow-preview");      
+const slideshowControlsEl = document.getElementById("slideshow-controls");      
+const playPauseBtn = document.getElementById("play-pause-btn");      
+const prevBtn = document.getElementById("prev-btn");      
+const nextBtn = document.getElementById("next-btn");      
+      
+let slideshowTimeoutId = null;      
+let slideshowCurrentIndex = 0;      
+let isSlideshowPaused = false;      
+let selectedVoiceId;
+      
+function advanceSlideshow(nextIndex) {      
+    if (slideshowTimeoutId) clearTimeout(slideshowTimeoutId);      
+      
+    const images = slideshowPreviewEl.querySelectorAll('img');      
+    if (images.length === 0) return;      
+      
+    const transitionType = document.getElementById('transition-type').value;      
+    const transitionDuration = 1500;      
+      
+    let newIndex;      
+    if (typeof nextIndex === 'number') {      
+        newIndex = nextIndex;      
+    } else {      
+        newIndex = (slideshowCurrentIndex + 1) % images.length;      
+    }      
+      
+    const oldIndex = slideshowCurrentIndex;      
+    slideshowCurrentIndex = newIndex;      
+      
+    const currentImg = images[oldIndex];      
+    const nextImg = images[newIndex];      
+      
+    if (oldIndex === newIndex && nextIndex === 0) {      
+        nextImg.className = 'visible';      
+    } else if (currentImg && nextImg) {      
+        if (transitionType === 'fade') {      
+            currentImg.className = '';      
+            nextImg.className = 'visible';      
+        } else if (transitionType === 'wipe-left') {      
+            currentImg.className = 'visible';      
+            currentImg.style.zIndex = 1;      
+            nextImg.style.zIndex = 2;      
+            nextImg.className = 'is-wiping';      
+      
+            setTimeout(() => {      
+                currentImg.className = '';      
+                nextImg.className = 'visible';      
+            }, transitionDuration);      
+        }      
+    }      
+      
+    const imageItem = window.allImages[newIndex];      
+    const duration = imageItem ? imageItem.duration : 3;      
+    if (nextImg) {      
+        nextImg.style.animation = `kenburns-pan-left ${duration}s linear forwards`;      
+    }      
+      
+    if (!isSlideshowPaused) {      
+        const displayDuration = (imageItem ? imageItem.duration : 3) * 1000;      
+        slideshowTimeoutId = setTimeout(advanceSlideshow, displayDuration);      
+    }      
+}      
+      
+function updateSlideshowPreview() {      
+    if (slideshowTimeoutId) clearTimeout(slideshowTimeoutId);      
+    slideshowPreviewEl.innerHTML = '';      
+      
+    if (window.allImages.length === 0) {      
+        slideshowControlsEl.style.display = 'none';      
+        const placeholder = document.createElement('div');      
+        placeholder.id = 'slideshow-placeholder';      
+        placeholder.textContent = 'Agrega imágenes para ver la vista previa';      
+        slideshowPreviewEl.appendChild(placeholder);      
+        return;      
+    }      
+      
+    slideshowControlsEl.style.display = 'flex';      
+    window.allImages.forEach(imageItem => {      
+        const img = document.createElement('img');      
+        img.src = imageItem.src;      
+        img.dataset.imageId = imageItem.id;      
+        slideshowPreviewEl.appendChild(img);      
+    });      
+      
+    slideshowCurrentIndex = 0;      
+    isSlideshowPaused = false;      
+    playPauseBtn.textContent = '❚❚';      
+    advanceSlideshow(0);      
+}      
+      
+// Audio Preview State
+let previewAudioCtx = null;
+let previewBgSource = null;
+let previewVoiceSource = null;
+
+async function togglePreviewAudio(shouldPlay) {
+    if (shouldPlay) {
+        if (!previewAudioCtx) {
+            previewAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+
+        if (previewAudioCtx.state === 'suspended') {
+            await previewAudioCtx.resume();
+        }
+        
+        // Stop any existing sources to restart with current settings
+        if (previewBgSource) { try { previewBgSource.stop(); } catch(e){} previewBgSource = null; }
+        if (previewVoiceSource) { try { previewVoiceSource.stop(); } catch(e){} previewVoiceSource = null; }
+
+        const bgTrack = window.backgroundTracks ? window.backgroundTracks.find(t => t.id === window.selectedBgMusicId) : null;
+        const bgMusicUrl = bgTrack ? bgTrack.url : null;
+        
+        if (bgMusicUrl) {
+            try {
+                const response = await fetch(bgMusicUrl);
+                const arrayBuffer = await response.arrayBuffer();
+                const audioBuffer = await previewAudioCtx.decodeAudioData(arrayBuffer);
+                
+                previewBgSource = previewAudioCtx.createBufferSource();
+                previewBgSource.buffer = audioBuffer;
+                previewBgSource.loop = true;
+                
+                const gainNode = previewAudioCtx.createGain();
+                const volumeInput = document.getElementById('bg-music-volume');
+                gainNode.gain.value = volumeInput ? parseFloat(volumeInput.value) : 0.2;
+                
+                previewBgSource.connect(gainNode);
+                gainNode.connect(previewAudioCtx.destination);
+                
+                const offsetInput = document.getElementById('bg-music-offset');
+                const startOffset = offsetInput ? parseFloat(offsetInput.value) : 0;
+                
+                previewBgSource.start(0, startOffset);
+            } catch (e) {
+                console.error("Preview BG Music Error", e);
+            }
+        }
+
+        if (window.generatedAudioBlob) {
+             try {
+                const arrayBuffer = await window.generatedAudioBlob.arrayBuffer();
+                const audioBuffer = await previewAudioCtx.decodeAudioData(arrayBuffer);
+                
+                previewVoiceSource = previewAudioCtx.createBufferSource();
+                previewVoiceSource.buffer = audioBuffer;
+                previewVoiceSource.connect(previewAudioCtx.destination);
+                previewVoiceSource.start(0);
+             } catch (e) {
+                console.error("Preview Voice Error", e);
+             }
+        }
+
+    } else {
+        if (previewAudioCtx) {
+            await previewAudioCtx.suspend();
+            if (previewBgSource) { try{ previewBgSource.stop(); }catch(e){} previewBgSource = null; }
+            if (previewVoiceSource) { try{ previewVoiceSource.stop(); }catch(e){} previewVoiceSource = null; }
+        }
+    }
+}
+
+playPauseBtn.addEventListener('click', () => {      
+    isSlideshowPaused = !isSlideshowPaused;      
+    playPauseBtn.textContent = isSlideshowPaused ? '►' : '❚❚';      
+    
+    togglePreviewAudio(!isSlideshowPaused);
+
+    if (!isSlideshowPaused) {      
+        advanceSlideshow(slideshowCurrentIndex);      
+    } else {      
+        if (slideshowTimeoutId) clearTimeout(slideshowTimeoutId);      
+    }      
+});      
+      
+nextBtn.addEventListener('click', () => {      
+    if (!isSlideshowPaused) {      
+        isSlideshowPaused = true;      
+        playPauseBtn.textContent = '►';      
+    }      
+    advanceSlideshow();      
+});      
+      
+prevBtn.addEventListener('click', () => {      
+    if (!isSlideshowPaused) {      
+        isSlideshowPaused = true;      
+        playPauseBtn.textContent = '►';      
+    }      
+    advanceSlideshow(slideshowCurrentIndex - 1);      
+});      
+      
+function updatePreviewOrientation() {      
+    const orientation = orientationSelect.value;      
+    slideshowPreviewEl.classList.remove('horizontal', 'vertical', 'square');      
+    slideshowPreviewEl.classList.add(orientation);      
+}      
+      
+orientationSelect.addEventListener('change', updatePreviewOrientation);      
+      
+window.updateTotalTime = function() {      
+  const totalDuration = window.allImages.reduce((sum, img) => sum + img.duration, 0);      
+  totalTimeEl.textContent = `Duración total del video: ${totalDuration} segundos`;      
+  updateSlideshowPreview();      
+      
+  const maxDuration = 60;      
+  const progressPercentage = Math.min((totalDuration / maxDuration) * 100, 100);      
+  timelineBarEl.style.width = `${progressPercentage}%`;      
+}      
+      
+zones.forEach(zone => {      
+  const fileInput = zone.querySelector("input[type=file]");      
+  const preview = zone.querySelector(".preview");      
+  const plus = zone.querySelector(".plus");      
+      
+  zone.addEventListener("click", e => {      
+    if (e.target === plus || e.target === zone) fileInput.click();      
+  });      
+  fileInput.addEventListener("change", e => handleFiles(e.target.files, preview));      
+      
+  zone.addEventListener("dragover", e => { e.preventDefault(); zone.classList.add("dragover"); });      
+  zone.addEventListener("dragleave", e => { e.preventDefault(); zone.classList.remove("dragover"); });      
+  zone.addEventListener("drop", e => {      
+    e.preventDefault(); zone.classList.remove("dragover");      
+    handleFiles(e.dataTransfer.files, preview);      
+  });      
+});      
+      
+function handleFiles(files, previewEl) {      
+  Array.from(files).forEach(file => {      
+    if (!file.type.startsWith("image/")) return;      
+    const reader = new FileReader();      
+    reader.onload = e => {      
+      const imageSrc = e.target.result;      
+      const imageId = `img-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;      
+      const imageItem = {      
+        id: imageId,      
+        src: imageSrc,      
+        duration: 3,      
+        fileName: file.name      
+      };      
+      window.allImages.push(imageItem);      
+      
+      const previewImg = document.createElement("img");      
+      previewImg.src = imageSrc;      
+      previewImg.dataset.imageId = imageId;      
+      previewEl.appendChild(previewImg);      
+      
+      addSettingsItem(imageItem);      
+      
+      window.updateTotalTime();      
+    };      
+    reader.readAsDataURL(file);      
+  });      
+}      
+      
+function addSettingsItem(imageItem) {      
+    const itemContainer = document.createElement("div");      
+    itemContainer.className = "settings-item";      
+    itemContainer.dataset.imageId = imageItem.id;      
+      
+    const img = document.createElement("img");      
+    img.src = imageItem.src;      
+      
+    const fileInfo = document.createElement("div");      
+    fileInfo.className = "file-info";      
+    fileInfo.textContent = imageItem.fileName;      
+      
+    const durationInput = document.createElement("input");      
+    durationInput.type = "number";      
+    durationInput.value = imageItem.duration;      
+    durationInput.min = 1;      
+    durationInput.addEventListener("change", () => {      
+        imageItem.duration = parseInt(durationInput.value, 10);      
+        window.updateTotalTime();      
+    });      
+      
+    const deleteBtn = document.createElement("button");      
+    deleteBtn.className = "delete-btn";      
+    deleteBtn.innerHTML = "&times;";      
+    deleteBtn.addEventListener("click", () => {      
+        const index = window.allImages.findIndex(item => item.id === imageItem.id);      
+        if (index > -1) {      
+            window.allImages.splice(index, 1);      
+        }      
+      
+        itemContainer.remove();      
+      
+        document.querySelectorAll(`.preview img[data-image-id="${imageItem.id}"]`).forEach(el => el.remove());      
+      
+        window.updateTotalTime();      
+    });      
+      
+    itemContainer.appendChild(img);      
+    itemContainer.appendChild(fileInfo);      
+    itemContainer.appendChild(durationInput);      
+    itemContainer.appendChild(document.createTextNode("s"));      
+    itemContainer.appendChild(deleteBtn);      
+    settingsListEl.appendChild(itemContainer);      
+}      
+      
+window.updateTotalTime();      
+      
+function showPopup(message) {      
+    const popup = document.getElementById('custom-popup');      
+    const messageEl = document.getElementById('popup-message');      
+    messageEl.textContent = message;      
+    popup.classList.add('visible');      
+}      
+      
+document.getElementById('popup-close').addEventListener('click', () => {      
+    document.getElementById('custom-popup').classList.remove('visible');      
+});      
+document.getElementById('custom-popup').addEventListener('click', (e) => {      
+    if (e.target.id === 'custom-popup') {      
+        document.getElementById('custom-popup').classList.remove('visible');      
+    }      
+});      
+      
+async function generateElevenLabsAudio() {    
+    const apiKey = "sk_a1f64ef4b8e8e85b5055d361e2988fadaff88b7dc125ef7c";    
+    const voiceId = selectedVoiceId; 
+    const url = `https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`;    
+    
+    const isSpanish = document.getElementById('language-toggle').checked;    
+    const restaurantName = document.getElementById('restaurant-name-input').value;    
+    const dishInputs = Array.from(document.querySelectorAll('.dish-input'));    
+    const dishes = dishInputs.map(input => input.value).filter(Boolean);    
+    const promotion = document.getElementById('promotion-input').value;    
+    const address = document.getElementById('address-input').value;    
+    
+    let text; 
+    const isManualScriptActive = document.getElementById('manual-script-toggle').checked; 
+     
+    if (isManualScriptActive) { 
+      text = document.getElementById('manual-script-textarea').value; 
+      if (!text.trim()) { 
+        showPopup("El script manual no puede estar vacío."); 
+        return null; 
+      } 
+    } else { 
+      if (isSpanish) {    
+          const dishText = dishes.length > 0 ? `Ven a probar ${dishes.join(', ')}.` : '';    
+          text = `En ${restaurantName || '[NOMBRE DEL RESTAURANTE]'} te espera buena comida y mejor atención. ${dishText} Además, aprovecha nuestra promoción: ${promotion || '[DESCRIPCIÓN DE LA PROMOCIÓN]'}. Visítanos en ${address || '[DIRECCIÓN COMPLETA DEL RESTAURANTE]'}. Te esperamos.`;    
+      } else {    
+          const dishText = dishes.length > 0 ? `Come try ${dishes.join(', ')}.` : '';    
+          text = `At ${restaurantName || '[RESTAURANT NAME]'} you’ll find great food and great service. ${dishText} Plus, take advantage of our promotion: ${promotion || '[PROMOTION DETAILS]'}. Visit us at ${address || '[RESTAURANT ADDRESS]'}. We’ll be waiting for you.`;    
+      }    
+    
+      if (!restaurantName || dishes.length === 0 || !promotion || !address) {    
+          showPopup("Please fill in all the fields in the ElevenLabs panel to generate audio.");    
+          return null;    
+      } 
+    } 
+    
+    statusEl.textContent = "Generating audio...";    
+    
+    try {    
+        const response = await fetch(url, {    
+            method: 'POST',    
+            headers: {    
+                'Accept': 'audio/mpeg',    
+                'Content-Type': 'application/json',    
+                'xi-api-key': apiKey,    
+            },    
+            body: JSON.stringify({    
+                text: text,    
+                model_id: 'eleven_multilingual_v2',    
+                voice_settings: {    
+                    stability: 0.5,    
+                    similarity_boost: 0.75,    
+                },    
+            }),    
+        });    
+    
+        if (!response.ok) {    
+            const errorData = await response.json();    
+            throw new Error(`ElevenLabs API error: ${response.statusText} - ${errorData.detail.message}`);    
+        }    
+    
+        const audioBlob = await response.blob();    
+        statusEl.textContent = "Audio generated successfully.";
+        window.generatedAudioBlob = audioBlob;    
+        return audioBlob;    
+    
+    } catch (error) {    
+        console.error("Error generating audio from ElevenLabs:", error);    
+        statusEl.textContent = `❌ Error generating audio: ${error.message}`;    
+        return null;    
+    }    
+}    
+      
+downloadBtn.addEventListener("click", async () => {      
+    if (window.allImages.length === 0) {      
+        showPopup("Por favor, sube al menos una imagen.");      
+        return;      
+    }      
+    
+    const audioBlob = await generateElevenLabsAudio();    
+    if (!audioBlob) {    
+        downloadBtn.disabled = false;    
+        downloadBtn.classList.remove('is-generating');    
+        return;    
+    }    
+      
+    const spinner = document.createElement("span");      
+    spinner.className = "spinner";      
+    statusEl.innerHTML = "";      
+    statusEl.appendChild(spinner);      
+    statusEl.append(" Preparando grabación... por favor espera");      
+      
+    downloadBtn.disabled = true;      
+    downloadBtn.classList.add('is-generating');      
+      
+    try {      
+        const canvas = document.getElementById('offscreen-canvas');      
+        const orientation = orientationSelect.value;      
+        if (orientation === 'horizontal') {      
+            canvas.width = 1920;      
+            canvas.height = 1080;      
+        } else if (orientation === 'vertical') {      
+            canvas.width = 1080;      
+            canvas.height = 1920;      
+        } else { // Square      
+            canvas.width = 1200;      
+            canvas.height = 1200;      
+        }      
+      
+        const engine = new SlideshowEngine(canvas);      
+        await engine.setImages(window.allImages);      
+      
+        const recorder = new Recorder(canvas, engine);      
+      
+        engine.onTimeUpdate = (elapsed, total) => {  
+            const progress = total > 0 ? (elapsed / total) * 100 : 0;  
+            statusEl.textContent = `Grabando video... ${Math.round(progress)}%`;  
+        };  
+  
+        const bgTrack = window.backgroundTracks ? window.backgroundTracks.find(t => t.id === window.selectedBgMusicId) : null;  
+        const bgMusicUrl = bgTrack ? bgTrack.url : null;  
+  
+        recorder.start(audioBlob, bgMusicUrl, (blob, ext) => {  
+            const url = URL.createObjectURL(blob);  
+            const downloadLink = document.createElement("a");  
+            downloadLink.href = url;  
+            downloadLink.download = `Menutech Video.${ext}`;  
+            document.body.appendChild(downloadLink);  
+            downloadLink.click();  
+            document.body.removeChild(downloadLink);  
+            URL.revokeObjectURL(url);  
+  
+            statusEl.textContent = "Video generado y descargado";  
+            downloadBtn.disabled = false;  
+            downloadBtn.classList.remove('is-generating');  
+        });      
+      
+    } catch (err) {      
+        console.error(err);      
+        statusEl.textContent = "❌ Error generando el video (ver consola)";      
+        downloadBtn.disabled = false;      
+        downloadBtn.classList.remove('is-generating');      
+    }      
+});      
+      
+const panel = document.getElementById("image-settings-panel");      
+      
+function centerPanel() {      
+    panel.style.visibility = 'hidden';      
+    panel.style.display = 'flex';      
+      
+    const panelWidth = panel.offsetWidth;      
+    const panelHeight = panel.offsetHeight;      
+      
+    panel.style.left = `${(window.innerWidth / 2) - (panelWidth / 2)}px`;      
+    panel.style.top = `${(window.innerHeight / 2) - (panelHeight / 2)}px`;      
+      
+    panel.style.visibility = 'visible';      
+}      
+      
+window.addEventListener('load', () => {      
+    centerPanel();      
+    dragElement(document.getElementById("image-settings-panel"));      
+    setupPanelToggle('toggle-panel-btn', 'image-settings-panel', '+', '-');      
+      
+    const previewPanel = document.getElementById('video-preview-panel');      
+    dragElement(previewPanel);      
+    setupPanelToggle('toggle-preview-btn', 'video-preview-panel', '+', '-');      
+      
+    const videoSettingsPanel = document.getElementById('video-settings-panel');      
+    dragElement(videoSettingsPanel);      
+    setupPanelToggle('toggle-video-settings-btn', 'video-settings-panel', '+', '-');      
+    
+    const elevenlabsPanel = document.getElementById('elevenlabs-panel');    
+    dragElement(elevenlabsPanel);    
+    setupPanelToggle('toggle-elevenlabs-btn', 'elevenlabs-panel', '+', '-');    
+      
+    // ElevenLabs Voice Selection Logic 
+    const elevenlabsVoices = [ 
+      { id: "UgBBYS2sOqTuMpoF3BR0", name: "Adam" }, 
+      { id: "SOYHLrjzK2X1ezoPC6cr", name: "Dorothy" }, 
+      { id: "21m00Tcm4TlvDq8ikWAM", name: "Rachel" } 
+    ]; 
+ 
+    selectedVoiceId = elevenlabsVoices[0].id; 
+ 
+    const voiceSelectionRow = document.getElementById('voice-selection-row'); 
+    const selectedVoiceNameEl = document.getElementById('selected-voice-name'); 
+    const voiceSelectionPanel = document.getElementById('voice-selection-panel'); 
+    const voiceListEl = document.getElementById('voice-list'); 
+    const closeVoicePanelBtn = document.getElementById('close-voice-panel-btn'); 
+ 
+    function populateVoiceList() { 
+      voiceListEl.innerHTML = ''; 
+      elevenlabsVoices.forEach(voice => { 
+        const li = document.createElement('li'); 
+        li.textContent = voice.name; 
+        li.dataset.voiceId = voice.id; 
+        if (voice.id === selectedVoiceId) { 
+          li.classList.add('selected'); 
+        } 
+        li.addEventListener('click', () => { 
+          selectedVoiceId = voice.id; 
+          selectedVoiceNameEl.textContent = voice.name; 
+          voiceSelectionPanel.style.display = 'none'; 
+          // Update selected class 
+          voiceListEl.querySelector('.selected')?.classList.remove('selected'); 
+          li.classList.add('selected'); 
+        }); 
+        voiceListEl.appendChild(li); 
+      }); 
+    } 
+ 
+    voiceSelectionRow.addEventListener('click', () => { 
+      voiceSelectionPanel.style.display = 'block'; 
+    }); 
+ 
+    closeVoicePanelBtn.addEventListener('click', () => { 
+      voiceSelectionPanel.style.display = 'none'; 
+    }); 
+ 
+    dragElement(voiceSelectionPanel); 
+     
+    selectedVoiceNameEl.textContent = elevenlabsVoices.find(v => v.id === selectedVoiceId).name; 
+    populateVoiceList(); 
+ 
+    // --- Background Music Logic --- 
+    window.backgroundTracks = [ 
+        // Placeholder for user to add tracks 
+        // { id: 'track1', name: 'Jazz Relax', url: 'path/to/jazz.mp3' }, 
+        { id: 'none', name: 'Ninguna', url: '' }  
+    ]; 
+    window.selectedBgMusicId = 'none'; 
+ 
+    const bgMusicSelectionRow = document.getElementById('bg-music-selection-row'); 
+    const selectedBgMusicNameEl = document.getElementById('selected-bg-music-name'); 
+    const bgMusicSelectionPanel = document.getElementById('bg-music-selection-panel'); 
+    const bgMusicListEl = document.getElementById('bg-music-list'); 
+    const closeBgMusicPanelBtn = document.getElementById('close-bg-music-panel-btn'); 
+ 
+    function populateBgMusicList() { 
+      bgMusicListEl.innerHTML = ''; 
+      window.backgroundTracks.forEach(track => { 
+        const li = document.createElement('li'); 
+        li.textContent = track.name; 
+        li.dataset.trackId = track.id; 
+        if (track.id === window.selectedBgMusicId) { 
+          li.classList.add('selected'); 
+        } 
+        li.addEventListener('click', () => { 
+          window.selectedBgMusicId = track.id; 
+          selectedBgMusicNameEl.textContent = track.name; 
+          bgMusicSelectionPanel.style.display = 'none'; 
+           
+          const currentSelected = bgMusicListEl.querySelector('.selected'); 
+          if (currentSelected) currentSelected.classList.remove('selected'); 
+          li.classList.add('selected'); 
+        }); 
+        bgMusicListEl.appendChild(li); 
+      }); 
+    } 
+ 
+    bgMusicSelectionRow.addEventListener('click', () => { 
+        bgMusicSelectionPanel.style.display = 'block'; 
+    }); 
+ 
+    closeBgMusicPanelBtn.addEventListener('click', () => { 
+        bgMusicSelectionPanel.style.display = 'none'; 
+    }); 
+ 
+    dragElement(bgMusicSelectionPanel); 
+    populateBgMusicList(); 
+    // ----------------------------- 
+ 
+    // Manual Script Editing Logic 
+    const manualScriptToggle = document.getElementById('manual-script-toggle'); 
+    const manualScriptPanel = document.getElementById('manual-script-panel'); 
+    const manualScriptTextarea = document.getElementById('manual-script-textarea'); 
+    const closeManualScriptPanelBtn = document.getElementById('close-manual-script-panel-btn'); 
+ 
+    dragElement(document.getElementById('manual-script-panel')); 
+ 
+    let manualScriptContent = { 
+        en: '', 
+        es: '' 
+    }; 
+ 
+    function getGeneratedScript() { 
+        const isSpanish = document.getElementById('language-toggle').checked; 
+        const restaurantName = document.getElementById('restaurant-name-input').value; 
+        const dishInputs = Array.from(document.querySelectorAll('.dish-input')); 
+        const dishes = dishInputs.map(input => input.value).filter(Boolean); 
+        const promotion = document.getElementById('promotion-input').value; 
+        const address = document.getElementById('address-input').value; 
+ 
+        if (isSpanish) { 
+            const dishText = dishes.length > 0 ? `Ven a probar ${dishes.join(', ')}.` : ''; 
+            return `En ${restaurantName || '[NOMBRE DEL RESTAURANTE]'} te espera buena comida y mejor atención. ${dishText} Además, aprovecha nuestra promoción: ${promotion || '[DESCRIPCIÓN DE LA PROMOCIÓN]'}. Visítanos en ${address || '[DIRECCIÓN COMPLETA DEL RESTAURANTE]'}. Te esperamos.`; 
+        } else { 
+            const dishText = dishes.length > 0 ? `Come try ${dishes.join(', ')}.` : ''; 
+            return `At ${restaurantName || '[RESTAURANT NAME]'} you’ll find great food and great service. ${dishText} Plus, take advantage of our promotion: ${promotion || '[PROMOTION DETAILS]'}. Visit us at ${address || '[RESTAURANT ADDRESS]'}. We’ll be waiting for you.`; 
+        } 
+    } 
+ 
+    manualScriptToggle.addEventListener('change', function() { 
+        if (this.checked) { 
+            const currentLang = document.getElementById('language-toggle').checked ? 'es' : 'en'; 
+            // If there's no custom script for the current language, pre-fill it 
+            if (!manualScriptContent[currentLang]) { 
+                manualScriptTextarea.value = getGeneratedScript(); 
+                manualScriptContent[currentLang] = manualScriptTextarea.value; 
+            } 
+            manualScriptPanel.style.display = 'block'; 
+        } else { 
+            manualScriptPanel.style.display = 'none'; 
+        } 
+    }); 
+ 
+    closeManualScriptPanelBtn.addEventListener('click', () => { 
+        manualScriptPanel.style.display = 'none'; 
+        manualScriptToggle.checked = false; // Also uncheck the toggle 
+    }); 
+ 
+    manualScriptTextarea.addEventListener('input', () => { 
+        const currentLang = document.getElementById('language-toggle').checked ? 'es' : 'en'; 
+        manualScriptContent[currentLang] = manualScriptTextarea.value; 
+    }); 
+ 
+    updatePreviewOrientation();      
+    
+    document.getElementById('language-toggle').addEventListener('change', function() {    
+        const isSpanish = this.checked; 
+        document.getElementById('language-label').textContent = isSpanish ? 'Español' : 'English'; 
+         
+        // Save current script before switching 
+        const oldLang = isSpanish ? 'en' : 'es'; 
+        manualScriptContent[oldLang] = manualScriptTextarea.value; 
+ 
+        // Load new script 
+        const newLang = isSpanish ? 'es' : 'en'; 
+        // If the manual script for the new language is empty, generate it 
+        if (!manualScriptContent[newLang]) { 
+            manualScriptTextarea.value = getGeneratedScript(); 
+            manualScriptContent[newLang] = manualScriptTextarea.value; 
+        } else { 
+            manualScriptTextarea.value = manualScriptContent[newLang]; 
+        } 
+    });    
+    
+    const dishInputsContainer = document.getElementById('dish-inputs');    
+    
+    function renumberDishes() {    
+        const dishRows = dishInputsContainer.querySelectorAll('.setting-row');    
+        dishRows.forEach((row, index) => {    
+            row.querySelector('label').textContent = `Dish ${index + 1}:`;    
+        });    
+    }    
+    
+    // Event delegation for deleting dishes    
+    dishInputsContainer.addEventListener('click', function(e) {    
+        if (e.target && e.target.classList.contains('delete-dish-btn')) {    
+            e.target.closest('.setting-row').remove();    
+            renumberDishes();    
+        }    
+    });    
+    
+    document.getElementById('add-dish-btn').addEventListener('click', function() {    
+        const newDishCount = dishInputsContainer.querySelectorAll('.setting-row').length + 1;    
+        const newDishInput = document.createElement('div');    
+        newDishInput.className = 'setting-row';    
+        newDishInput.innerHTML = `    
+            <label>Dish ${newDishCount}:</label>    
+            <div class="dish-input-wrapper">    
+              <input type="text" class="dish-input" placeholder="e.g., Delicious Dish">    
+              <button class="delete-dish-btn">&times;</button>    
+            </div>    
+        `;    
+        dishInputsContainer.appendChild(newDishInput);    
+    });    
+});      
+      
+function setupPanelToggle(buttonId, panelId, collapsedText, expandedText) {      
+    const toggleBtn = document.getElementById(buttonId);      
+    const panel = document.getElementById(panelId);      
+      
+    toggleBtn.addEventListener('click', (e) => {      
+        e.stopPropagation();      
+        panel.classList.toggle('collapsed');      
+      
+        if (panel.classList.contains('collapsed')) {      
+            toggleBtn.textContent = collapsedText;      
+        } else {      
+            toggleBtn.textContent = expandedText;      
+        }      
+    });      
+}      
+      
+function dragElement(elmnt) { 
+    let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0; 
+    const header = elmnt.firstElementChild; 
+ 
+    const startMoving = (e) => { 
+        if (e.target.tagName === 'BUTTON') return; 
+        e.preventDefault(); 
+        // get the mouse cursor position at startup: 
+        pos3 = e.clientX; 
+        pos4 = e.clientY; 
+        document.addEventListener('mouseup', stopMoving); 
+        // call a function whenever the cursor moves: 
+        document.addEventListener('mousemove', moveElement); 
+    }; 
+ 
+    const moveElement = (e) => { 
+        e.preventDefault(); 
+        // calculate the new cursor position: 
+        pos1 = pos3 - e.clientX; 
+        pos2 = pos4 - e.clientY; 
+        pos3 = e.clientX; 
+        pos4 = e.clientY; 
+        // set the element's new position: 
+        let newTop = elmnt.offsetTop - pos2; 
+        let newLeft = elmnt.offsetLeft - pos1; 
+ 
+        // Boundary checks 
+        const minLeft = -elmnt.offsetWidth + 100; 
+        const maxLeft = window.innerWidth - 100; 
+        const minTop = 0; 
+        const maxTop = window.innerHeight - 50; 
+ 
+        elmnt.style.top = `${Math.max(minTop, Math.min(newTop, maxTop))}px`; 
+        elmnt.style.left = `${Math.max(minLeft, Math.min(newLeft, maxLeft))}px`; 
+    }; 
+ 
+    const stopMoving = () => { 
+        // stop moving when mouse button is released: 
+        document.removeEventListener('mouseup', stopMoving); 
+        document.removeEventListener('mousemove', moveElement); 
+    }; 
+ 
+    if (header) { 
+        header.addEventListener('mousedown', startMoving); 
+    } 
+}      
+</script>      
+  <script src="./assets/js/badge.js"></script>
+  <script src="https://menutech.xyz/menutechUI.min.js"></script>
+  <script src="./assets/js/renderer.js"></script>
+</body>      
+</html>

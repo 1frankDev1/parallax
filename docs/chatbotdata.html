@@ -1,0 +1,751 @@
+<!-- Ruta del archivo subido: /mnt/data/cf6e7f85-e6f2-4290-ac3c-7c9e5f6fa44b.png -->
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Base de Datos Menutech</title>
+
+<!-- Google Fonts (Inter) -->
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="./assets/css/badge.css">
+
+
+<!-- SweetAlert2 (popups profesionales) -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<!--<style>
+  :root{
+    --bg: #f6f8fb;
+    --card: #ffffff;
+    --muted: #6b7280;
+    --primary: #ff7a00;
+    --accent: #ffb37a;
+    --border: #e6e9ef;
+    --shadow: 0 6px 20px rgba(21,30,45,0.06);
+  }
+
+  html,body{height:100%}
+  body{
+    margin:0;
+    font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+    background: linear-gradient(180deg, #f8fafc 0%, #f2f6fb 100%);
+    color: #0f172a;
+    display:flex;
+    align-items:flex-start;
+    justify-content:center;
+    padding:28px;
+    box-sizing:border-box;
+  }
+
+  .container{
+    width:100%;
+    max-width:980px;
+  }
+
+  header{
+    display:flex;
+    align-items:center;
+    gap:16px;
+    margin-bottom:18px;
+  }
+  .logo{
+    width:56px;
+    height:56px;
+    border-radius:12px;
+    background:linear-gradient(135deg,var(--primary),#ff9a3d);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    color:white;
+    font-weight:700;
+    box-shadow: 0 6px 18px rgba(255,122,0,0.18);
+    flex-shrink:0;
+  }
+  header h1{
+    margin:0;
+    font-size:20px;
+    letter-spacing: -0.2px;
+  }
+  header p{
+    margin:0;
+    color:var(--muted);
+    font-size:13px;
+  }
+
+  .grid{
+    display:grid;
+    grid-template-columns: 1fr;
+    gap:18px;
+  }
+
+  /* Card */
+  .card{
+    background:var(--card);
+    border-radius:12px;
+    padding:18px;
+    box-shadow:var(--shadow);
+    border:1px solid var(--border);
+  }
+
+  /* Form */
+  .form-grid{
+    display:grid;
+    grid-template-columns: 1fr 1fr;
+    gap:12px;
+    align-items:start;
+  }
+  .field{
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+  }
+  label{
+    font-size:13px;
+    color:var(--muted);
+  }
+  input[type="text"], textarea{
+    font-size:14px;
+    padding:12px;
+    border-radius:9px;
+    border:1px solid #e6e9ef;
+    background:linear-gradient(180deg, #ffffff, #fcfdff);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.6);
+    transition: box-shadow 160ms ease, border-color 160ms ease, transform 120ms;
+    outline:none;
+    resize:vertical;
+  }
+  input[type="text"]:focus, textarea:focus{
+    box-shadow: 0 6px 18px rgba(34, 197, 94, 0.06);
+    border-color: #c7f59a;
+    transform: translateY(-1px);
+  }
+
+  .controls{
+    display:flex;
+    gap:10px;
+    align-items:center;
+    margin-top:6px;
+  }
+  .btn{
+    display:inline-flex;
+    align-items:center;
+    gap:10px;
+    padding:10px 14px;
+    border-radius:10px;
+    border:none;
+    cursor:pointer;
+    font-weight:600;
+    font-size:14px;
+  }
+  .btn-primary{
+    background: linear-gradient(90deg,var(--primary),#ff9a3d);
+    color:white;
+    box-shadow: 0 10px 30px rgba(255,122,0,0.14);
+  }
+  .btn-ghost{
+    background:transparent;
+    border:1px solid var(--border);
+    color:var(--muted);
+  }
+
+  /* Table */
+  .table-wrap{
+    overflow:auto;
+  }
+  table{
+    width:100%;
+    border-collapse:separate;
+    border-spacing:0 8px;
+    font-size:14px;
+  }
+  thead th{
+    text-align:left;
+    padding:12px 14px;
+    color:var(--muted);
+    font-size:13px;
+  }
+  tbody tr{
+    background:linear-gradient(180deg,#ffffff,#fbfdff);
+    border-radius:10px;
+    transition: transform 160ms ease, box-shadow 160ms;
+    box-shadow: 0 4px 18px rgba(10,20,40,0.03);
+  }
+  tbody tr:hover{
+    transform: translateY(-4px);
+    box-shadow: 0 18px 40px rgba(15,25,45,0.06);
+  }
+  td{
+    padding:12px 14px;
+    border-bottom: none;
+    vertical-align:top;
+    color:#0f172a;
+  }
+  .empty{
+    text-align:center;
+    padding:30px 12px;
+    color:var(--muted);
+  }
+
+  /* small helper */
+  .meta{
+    font-size:12px;
+    color:var(--muted);
+  }
+
+  /* loading overlay */
+  .overlay{
+    position:fixed;
+    inset:0;
+    display:none;
+    align-items:center;
+    justify-content:center;
+    background: rgba(6,11,20,0.4);
+    z-index:9999;
+  }
+  .loader-card{
+    background:var(--card);
+    padding:22px;
+    border-radius:12px;
+    display:flex;
+    gap:14px;
+    align-items:center;
+    box-shadow: 0 18px 40px rgba(0,0,0,0.25);
+    border:1px solid rgba(255,255,255,0.02);
+  }
+
+  /* spinner */
+  .spinner {
+    width:48px;
+    height:48px;
+    border-radius:50%;
+    border:5px solid rgba(0,0,0,0.06);
+    border-top-color:var(--primary);
+    animation: spin 0.9s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* responsive */
+  @media (max-width:720px){
+    .form-grid{ grid-template-columns: 1fr; }
+    header{ align-items:flex-start; gap:12px; }
+  }
+</style>-->
+<style>
+  :root{
+    --bg: #0c0f15;
+    --card: #181c24;
+    --muted: #9aa2b2;
+    --primary: #ff7a00;
+    --accent: #ffb37a;
+    --border: #2a2f3a;
+    --shadow: 0 6px 20px rgba(0,0,0,0.4);
+  }
+
+  html,body{height:100%}
+  body{
+    margin:0;
+    font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+    background: linear-gradient(180deg, #0c0f15 0%, #12161e 100%);
+    color: #e8ecf3;
+    display:flex;
+    align-items:flex-start;
+    justify-content:center;
+    padding:28px;
+    box-sizing:border-box;
+  }
+
+  .container{
+    width:100%;
+    max-width:980px;
+  }
+
+  header{
+    display:flex;
+    align-items:center;
+    gap:16px;
+    margin-bottom:18px;
+  }
+  .logo img{
+    width:160px;
+    
+  }
+  header h1{
+    margin:0;
+    font-size:20px;
+    letter-spacing: -0.2px;
+  }
+  header p{
+    margin:0;
+    color:var(--muted);
+    font-size:13px;
+  }
+
+  .grid{
+    display:grid;
+    grid-template-columns: 1fr;
+    gap:18px;
+  }
+
+  /* Card */
+  .card{
+    background:var(--card);
+    border-radius:12px;
+    padding:18px;
+    box-shadow:var(--shadow);
+    border:1px solid var(--border);
+  }
+
+  /* Form */
+  .form-grid{
+    display:grid;
+    grid-template-columns: 1fr 1fr;
+    gap:12px;
+    align-items:start;
+  }
+  .field{
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+  }
+  label{
+    font-size:13px;
+    color:var(--muted);
+  }
+  input[type="text"], textarea{
+    font-size:14px;
+    padding:12px;
+    border-radius:9px;
+    border:1px solid #303743;
+    background:linear-gradient(180deg, #1b222b, #11161e);
+    color: #e9eef6;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.04);
+    transition: box-shadow 160ms ease, border-color 160ms ease, transform 120ms;
+    outline:none;
+    resize:vertical;
+  }
+  input[type="text"]:focus, textarea:focus{
+    box-shadow: 0 6px 18px rgba(255,122,0,0.2);
+    border-color: var(--primary);
+    transform: translateY(-1px);
+  }
+
+  .controls{
+    display:flex;
+    gap:10px;
+    align-items:center;
+    margin-top:6px;
+  }
+  .btn{
+    display:inline-flex;
+    align-items:center;
+    gap:10px;
+    padding:10px 14px;
+    border-radius:10px;
+    border:none;
+    cursor:pointer;
+    font-weight:600;
+    font-size:14px;
+  }
+  .btn-primary{
+    background: linear-gradient(90deg,var(--primary),#ff9a3d);
+    color:white;
+    box-shadow: 0 10px 30px rgba(255,122,0,0.25);
+  }
+  .btn-ghost{
+    background:transparent;
+    border:1px solid var(--border);
+    color:var(--muted);
+  }
+
+  /* Table */
+  .table-wrap{
+    overflow:auto;
+  }
+  table{
+    width:100%;
+    border-collapse:separate;
+    border-spacing:0 8px;
+    font-size:14px;
+  }
+  thead th{
+    text-align:left;
+    padding:12px 14px;
+    color:var(--muted);
+    font-size:13px;
+  }
+  tbody tr{
+    background:linear-gradient(180deg,#1b222b,#10141a);
+    border-radius:10px;
+    transition: transform 160ms ease, box-shadow 160ms;
+    box-shadow: 0 4px 18px rgba(0,0,0,0.25);
+  }
+  tbody tr:hover{
+    transform: translateY(-4px);
+    box-shadow: 0 18px 40px rgba(0,0,0,0.45);
+  }
+  td{
+    padding:12px 14px;
+    border-bottom: none;
+    vertical-align:top;
+    color:#e8ecf3;
+  }
+  .empty{
+    text-align:center;
+    padding:30px 12px;
+    color:var(--muted);
+  }
+
+  /* small helper */
+  .meta{
+    font-size:12px;
+    color:var(--muted);
+  }
+
+  /* loading overlay */
+  .overlay{
+    position:fixed;
+    inset:0;
+    display:none;
+    align-items:center;
+    justify-content:center;
+    background: rgba(0,0,0,0.5);
+    z-index:9999;
+  }
+  .loader-card{
+    background:var(--card);
+    padding:22px;
+    border-radius:12px;
+    display:flex;
+    gap:14px;
+    align-items:center;
+    box-shadow: 0 18px 40px rgba(0,0,0,0.35);
+    border:1px solid rgba(255,255,255,0.06);
+  }
+
+  /* spinner */
+  .spinner {
+    width:48px;
+    height:48px;
+    border-radius:50%;
+    border:5px solid rgba(255,255,255,0.06);
+    border-top-color:var(--primary);
+    animation: spin 0.9s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* responsive */
+  @media (max-width:720px){
+    .form-grid{ grid-template-columns: 1fr; }
+    header{ align-items:flex-start; gap:12px; }
+  }
+</style>
+
+</head>
+<body>
+    <!-- ICONO Y BADGE (sin barra, con margen propio) -->
+<img id="login-icon" class="login-icon" src="./assets/img/user.svg">
+
+  <!-- Placa del usuario -->
+<div id="user-badge" class="user-badge hidden" style="position: fixed;">
+  <div id="badge-username"></div>
+  <div id="badge-role"></div>
+</div>
+
+<!-- Menú ahora fuera del badge -->
+<div id="badge-menu" class="hidden">
+  <button id="logout-btn" class="logout-btn">Cerrar sesión</button>
+</div>
+
+
+<!-- PANEL DE LOGIN -->
+<div id="login-panel" class="login-panel hidden">
+
+  <h3>Iniciar sesión</h3>
+
+  <input id="user" class="input" placeholder="Usuario">
+  <input id="pass" class="input" type="password" placeholder="Contraseña">
+
+  <button id="login-btn" class="login-btn">Entrar</button>
+
+  <!-- Estado del login -->
+  <div id="login-status" class="status"></div>
+</div>
+
+<!-- TU DRAWER -->
+<menutech-drawer id="main-drawer" class="hidden"></menutech-drawer>
+
+
+  <!-- NAVBAR NEOMÓRFICO INFERIOR -->
+<div class="neo-nav-container">
+    <button id="neoNavBack" class="neo-nav-btn">
+        <svg viewBox="0 0 24 24" class="neo-nav-icon">
+            <path d="M15 18l-6-6 6-6" stroke="currentColor" stroke-width="2"
+                  fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+    </button>
+
+    <button id="neoNavHome" class="neo-nav-btn">
+        <svg viewBox="0 0 24 24" class="neo-nav-icon">
+            <path d="M3 11l9-7 9 7v8a2 2 0 0 1-2 2h-4a2 2 0 0 1-2-2v-4H9v4a2 
+                     2 0 0 1-2 2H5a2 2 0 0 1-2-2z"
+                  stroke="currentColor" stroke-width="2" fill="none"
+                  stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+    </button>
+</div>
+<div class="container">
+
+  <header>
+    <div class="logo"><img src="https://menutech.services/assets/img/logomt.png"/></div>
+    <div>
+      <h1>Base de Datos</h1>
+      <p class="meta">Agrega preguntas frecuentes.</p>
+    </div>
+  </header>
+
+  <div class="grid">
+
+    <!-- Form card -->
+    <section class="card" aria-labelledby="form-title">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px">
+        <div>
+          <h2 id="form-title" style="margin:0;font-size:16px;">Agregar nueva entrada</h2>
+          <div class="meta" style="margin-top:6px">Completa la pregunta y respuesta, luego presiona Guardar.</div>
+        </div>
+        <div style="font-size:13px;color:var(--muted)">Estado: <span id="statusSmall">Conectando…</span></div>
+      </div>
+
+      <div class="form-grid">
+        <div class="field">
+          <label for="newQ">Pregunta</label>
+          <input id="newQ" type="text" placeholder="Escribe la pregunta..." maxlength="250" />
+        </div>
+
+        <div class="field">
+          <label for="newA">Respuesta</label>
+          <textarea id="newA" rows="4" placeholder="Escribe la respuesta..."></textarea>
+        </div>
+      </div>
+
+      <div class="controls" style="margin-top:14px">
+        <button id="btnSave" class="btn btn-primary">
+          <svg id="saveIcon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24"><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.6" d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.6" d="M17 21v-8H7v8"/></svg>
+          Guardar
+        </button>
+        <button id="btnClear" class="btn btn-ghost">Limpiar</button>
+
+        <div style="margin-left:auto; display:flex; gap:8px; align-items:center;">
+          <span class="meta">Última carga:</span>
+          <strong id="lastLoaded" class="meta">—</strong>
+        </div>
+      </div>
+    </section>
+
+    <!-- Table card -->
+    <section class="card" aria-labelledby="list-title">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px">
+        <div>
+          <h2 id="list-title" style="margin:0;font-size:16px;">Listado actual</h2>
+          <div class="meta" style="margin-top:6px">Las entradas se muestran en la tabla.</div>
+        </div>
+        <div>
+          <button id="btnReload" class="btn btn-ghost" title="Recargar">Recargar</button>
+        </div>
+      </div>
+
+      <div class="table-wrap">
+        <table aria-live="polite">
+          <thead>
+            <tr><th style="width:30%;">Pregunta</th><th>Respuesta</th></tr>
+          </thead>
+          <tbody id="kbBody">
+            <tr><td class="empty" colspan="2">Cargando...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+  </div>
+</div>
+
+<!-- loading overlay -->
+<div class="overlay" id="overlay" aria-hidden="true">
+  <div class="loader-card" role="status" aria-live="assertive">
+    <div class="spinner" aria-hidden="true"></div>
+    <div>
+      <div style="font-weight:600">Guardando entrada…</div>
+      <div class="meta" style="margin-top:6px">No cierres la ventana hasta que finalice.</div>
+    </div>
+  </div>
+</div>
+
+
+<script>
+/* -------------------------
+  CONFIGURACIÓN: Cambia esto
+   - API_URL debe apuntar a tu WebApp
+--------------------------*/
+const API_URL = "https://script.google.com/macros/s/AKfycbyCPz710krQ7-9AzNO9u-AS5yjH7EJ3X8Lo-S73r_JBrpaf8_tJUFQadh5uenV5u-8F/exec";
+
+/* Helpers UI */
+const overlay = document.getElementById('overlay');
+const btnSave = document.getElementById('btnSave');
+const btnClear = document.getElementById('btnClear');
+const btnReload = document.getElementById('btnReload');
+const statusSmall = document.getElementById('statusSmall');
+const lastLoaded = document.getElementById('lastLoaded');
+
+function showOverlay() { overlay.style.display = 'flex'; overlay.setAttribute('aria-hidden','false'); }
+function hideOverlay(){ overlay.style.display = 'none'; overlay.setAttribute('aria-hidden','true'); }
+
+/* Inicializa */
+document.addEventListener('DOMContentLoaded', () => {
+  bindActions();
+  loadKB();
+});
+
+/* Enlazar botones */
+function bindActions(){
+  btnSave.addEventListener('click', handleSave);
+  btnClear.addEventListener('click', () => {
+    document.getElementById('newQ').value = '';
+    document.getElementById('newA').value = '';
+  });
+  btnReload.addEventListener('click', loadKB);
+}
+
+/* Carga base de conocimiento */
+async function loadKB(){
+  const body = document.getElementById('kbBody');
+  body.innerHTML = `<tr><td class="empty" colspan="2">Cargando...</td></tr>`;
+  statusSmall.textContent = 'Conectando…';
+
+  try {
+    const res = await fetch(`${API_URL}?t=${Date.now()}`);
+    if(!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+
+    // render
+    if(!Array.isArray(data) || data.length === 0){
+      body.innerHTML = `<tr><td class="empty" colspan="2">No hay entradas aún.</td></tr>`;
+    } else {
+      body.innerHTML = '';
+      data.forEach(row => {
+        const tr = document.createElement('tr');
+        const tdQ = document.createElement('td');
+        const tdA = document.createElement('td');
+        tdQ.textContent = row.q || '';
+        tdA.textContent = row.a || '';
+        tr.appendChild(tdQ);
+        tr.appendChild(tdA);
+        body.appendChild(tr);
+      });
+    }
+
+    const now = new Date();
+    lastLoaded.textContent = now.toLocaleString();
+    statusSmall.textContent = 'Conectado';
+  } catch(err){
+    console.error(err);
+    body.innerHTML = `<tr><td class="empty" colspan="2">Error al conectar: ${err.message}</td></tr>`;
+    statusSmall.textContent = 'Error';
+    // Mensaje bonito
+    Swal.fire({
+      icon: 'error',
+      title: 'No se pudo cargar',
+      text: 'Hubo un problema al conectar con la WebApp. Revisa la URL o permisos.',
+      footer: 'Revisa la consola para más detalles'
+    });
+  }
+}
+
+/* Guardar entrada */
+async function handleSave(){
+  const q = document.getElementById('newQ').value.trim();
+  const a = document.getElementById('newA').value.trim();
+
+  // Validación elegante con SweetAlert2
+  if(!q || !a){
+    await Swal.fire({
+      icon: 'warning',
+      title: 'Campos incompletos',
+      text: 'Por favor completa la pregunta y la respuesta antes de guardar.',
+      confirmButtonColor: '#ff7a00'
+    });
+    return;
+  }
+
+  // Confirmación previa (opcional, pequeña)
+  const confirmed = await Swal.fire({
+    title: '¿Guardar entrada?',
+    html: `<strong>Pregunta:</strong><br>${escapeHtml(q)}<hr style="margin:8px 0"><strong>Respuesta:</strong><br>${escapeHtml(a)}`,
+    showCancelButton: true,
+    confirmButtonText: 'Sí, guardar',
+    cancelButtonText: 'Cancelar',
+    confirmButtonColor: '#ff7a00',
+    width: 600
+  });
+
+  if(!confirmed.isConfirmed) return;
+
+  // Mostrar loader
+  showOverlay();
+
+  try {
+    // Evitar cache; también puedes cambiar a POST si decides actualizar AppScript
+    const url = `${API_URL}?add=1&q=${encodeURIComponent(q)}&a=${encodeURIComponent(a)}&t=${Date.now()}`;
+    const res = await fetch(url);
+    // intenta leer respuesta JSON (si tu WebApp devuelve JSON)
+    let json;
+    try { json = await res.json(); } catch(e) { json = null; }
+
+    hideOverlay();
+
+    // Confirmación de éxito
+    await Swal.fire({
+      icon: 'success',
+      title: 'Guardado',
+      text: 'La entrada se agregó correctamente a la base de datos.',
+      confirmButtonColor: '#ff7a00',
+      timer: 1600,
+      showConfirmButton: true
+    });
+
+    // Limpiar campos y recargar lista
+    document.getElementById('newQ').value = '';
+    document.getElementById('newA').value = '';
+    loadKB();
+  } catch(err){
+    hideOverlay();
+    console.error(err);
+    await Swal.fire({
+      icon: 'error',
+      title: 'Error al guardar',
+      text: 'Ocurrió un error al intentar guardar. Revisa la consola y los permisos de la WebApp.',
+      confirmButtonColor: '#ff7a00'
+    });
+  }
+}
+
+/* función de escape para mostrar en HTML dentro de Swal */
+function escapeHtml(text){
+  return String(text).replace(/[&<>"'`=\/]/g, function (s) {
+    return ({
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      '"': '&quot;',
+      "'": '&#39;',
+      '/': '&#x2F;',
+      '`': '&#x60;',
+      '=': '&#x3D;'
+    })[s];
+  });
+}
+</script>
+  <script src="./assets/js/renderer.js"></script>
+<script src="./assets/js/badge.js"></script>
+<script src="https://menutech.xyz/menutechUI.min.js"></script>
+</body>
+</html>

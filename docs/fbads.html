@@ -1,0 +1,493 @@
+<!DOCTYPE html>  
+<html lang="en">  
+<head>  
+    <meta charset="UTF-8">  
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">  
+    <title>Restaurant Marketing Objectives - MenuTech</title>  
+      <link rel="stylesheet" href="./assets/css/badge.css">
+    <style>  
+          
+body {  
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;  
+    margin: 0;  
+    background-color: #f0f2f5;  
+    color: #1c1e21;  
+}  
+  
+header {  
+    background-color: #fff;  
+    padding: 1rem 2rem;  
+    border-bottom: 1px solid #dddfe2;  
+}  
+  
+nav {  
+    display: flex;  
+    justify-content: space-between;  
+    align-items: center;  
+    max-width: 1200px;  
+    margin: 0 auto;  
+}  
+  
+.logo img {  
+    height: 50px;  
+    display: block;  
+}  
+  
+.language-switcher button {  
+    background: none;  
+    border: none;  
+    padding: 0.5rem 1rem;  
+    cursor: pointer;  
+    font-size: 1rem;  
+    color: #606770;  
+    border-radius: 6px;  
+}  
+  
+.language-switcher button.active {  
+    color: #f59a23;  
+    background-color: #fff5e6;  
+}  
+  
+.main-container {  
+    display: flex;  
+    max-width: 1200px;  
+    margin: 2rem auto;  
+    gap: 2rem;  
+    padding: 0 2rem;  
+}  
+  
+.accordion-container {  
+    flex: 1;  
+    background-color: #fff;  
+    border-radius: 8px;  
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);  
+    padding: 1rem;  
+    height: 75vh; /* ==================== Adjust container height here */
+    display: flex;
+    flex-direction: column;
+}  
+  
+.media-container {  
+    flex: 1;  
+    display: flex;  
+    align-items: center;  
+    justify-content: center;  
+    height: 75vh; /* ==================== Adjust container height here */
+    background-color: #f0f2f5;
+}  
+  
+#objective-image, #objective-video {  
+    max-width: 100%;  
+    width: 100%; 
+    height: 100%;
+    border-radius: 8px;  
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);  
+    object-fit: contain; /* Show the whole video, letterboxed */
+}  
+  
+#objective-video {  
+    display: none; /* Hidden by default */  
+}  
+  
+/* Accordion Styles */  
+.accordion-item {  
+    border-bottom: 1px solid #dddfe2;  
+}  
+  
+.accordion-item:last-child {  
+    border-bottom: none;  
+}  
+  
+.accordion-title {  
+    padding: 1.5rem 1rem;  
+    cursor: pointer;  
+    font-size: 1.25rem;  
+    font-weight: 500;  
+    margin: 0;  
+    position: relative;  
+    transition: background-color 0.3s ease;  
+}  
+  
+.accordion-title::after {  
+    content: '+';  
+    position: absolute;  
+    right: 1rem;  
+    top: 50%;  
+    transform: translateY(-50%);  
+    font-size: 1.5rem;  
+    color: #606770;  
+    transition: transform 0.3s ease;  
+}  
+  
+.accordion-item.active .accordion-title::after {  
+    transform: translateY(-50%) rotate(180deg);  
+    content: '−';  
+}  
+  
+.accordion-item.active .accordion-title {  
+    color: #f59a23;  
+}  
+  
+.accordion-content {  
+    max-height: 0;  
+    overflow: hidden;  
+    padding: 0 1rem;  
+    color: #333;  
+    line-height: 1.6;  
+    transition: max-height 0.5s ease-in-out, padding 0.5s ease-in-out;  
+}  
+  
+.accordion-item.active .accordion-content {  
+    max-height: 500px; /* Adjust as needed */  
+    padding: 0 1rem 1.5rem;  
+}  
+  
+.accordion-content .details-container {  
+    margin-top: 1rem;  
+    padding-left: 1rem;  
+    border-left: 2px solid #fff5e6;  
+}  
+  
+.accordion-content .detail-item {  
+    margin-bottom: 1rem;  
+    cursor: pointer; /* Make subtitles clickable */  
+}  
+  
+.accordion-content .detail-item strong {  
+    display: block;  
+    margin-bottom: 0.25rem;  
+    color: #1c1e21;  
+    pointer-events: none; /* So the click is on the parent */  
+}  
+  
+.accordion-content .detail-item p {  
+    margin: 0;  
+    color: #606770;  
+    pointer-events: none; /* So the click is on the parent */  
+}  
+  
+.accordion-content .detail-item:hover strong {  
+    color: #f59a23;  
+}  
+  
+</style>  
+</head>  
+<body>  
+      <!-- ICONO Y BADGE (sin barra, con margen propio) -->
+<img id="login-icon" class="login-icon" src="./assets/img/user.svg">
+
+  <!-- Placa del usuario -->
+<div id="user-badge" class="user-badge hidden" style="position: fixed;">
+  <div id="badge-username"></div>
+  <div id="badge-role"></div>
+</div>
+
+<!-- Menú ahora fuera del badge -->
+<div id="badge-menu" class="hidden">
+  <button id="logout-btn" class="logout-btn">Cerrar sesión</button>
+</div>
+
+
+<!-- PANEL DE LOGIN -->
+<div id="login-panel" class="login-panel hidden">
+
+  <h3>Iniciar sesión</h3>
+
+  <input id="user" class="input" placeholder="Usuario">
+  <input id="pass" class="input" type="password" placeholder="Contraseña">
+
+  <button id="login-btn" class="login-btn">Entrar</button>
+
+  <!-- Estado del login -->
+  <div id="login-status" class="status"></div>
+</div>
+
+<!-- TU DRAWER -->
+<menutech-drawer id="main-drawer" class="hidden"></menutech-drawer>
+
+
+  <!-- NAVBAR NEOMÓRFICO INFERIOR -->
+<div class="neo-nav-container">
+    <button id="neoNavBack" class="neo-nav-btn">
+        <svg viewBox="0 0 24 24" class="neo-nav-icon">
+            <path d="M15 18l-6-6 6-6" stroke="currentColor" stroke-width="2"
+                  fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+    </button>
+
+    <button id="neoNavHome" class="neo-nav-btn">
+        <svg viewBox="0 0 24 24" class="neo-nav-icon">
+            <path d="M3 11l9-7 9 7v8a2 2 0 0 1-2 2h-4a2 2 0 0 1-2-2v-4H9v4a2 
+                     2 0 0 1-2 2H5a2 2 0 0 1-2-2z"
+                  stroke="currentColor" stroke-width="2" fill="none"
+                  stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+    </button>
+</div>
+  <menutech-themes></menutech-themes>
+  <menutech-chatbot></menutech-chatbot>
+    <header>  
+        <nav>  
+            <div class="logo"> 
+                <img src="https://menutech.services/assets/img/logomt.png" alt="MenuTech Logo"> 
+            </div>  
+            <div class="language-switcher">  
+                <button id="lang-en" class="active">English</button>  
+                <button id="lang-es">Español</button>  
+            </div>  
+        </nav>  
+    </header>  
+  
+    <main class="main-container">  
+        <div class="accordion-container">  
+            <!-- Accordion items will be injected here by script.js -->  
+        </div>  
+        <div class="media-container">  
+            <img src="" alt="" id="objective-image">  
+            <video src="" id="objective-video" autoplay muted loop playsinline></video>  
+        </div>  
+    </main>  
+  
+    <script>  
+document.addEventListener('DOMContentLoaded', () => {  
+    const accordionContainer = document.querySelector('.accordion-container');  
+    const objectiveImage = document.getElementById('objective-image');  
+    const objectiveVideo = document.getElementById('objective-video');  
+    const langEnBtn = document.getElementById('lang-en');  
+    const langEsBtn = document.getElementById('lang-es');  
+  
+    let currentLanguage = 'en';  
+  
+    const content = {  
+        en: [  
+            {  
+                title: 'Sales',  
+                text: 'We drive more orders for your restaurant through your custom online ordering button. We fully integrate it into your Facebook Fanpage, Google Business profile, and Website.',  
+                details: [  
+                    // Add your video URLs here. Leave empty string if no video.  
+                    { title: 'Conversions', description: 'We turn visitors into customers with a seamless ordering experience integrated directly into your site.', videoUrl: 'https://www.w3schools.com/html/mov_bbb.mp4' },  
+                    { title: 'Catalog sales', description: 'We showcase your most popular dishes from your menu to hungry customers looking for a meal.', videoUrl: '' },  
+                    { title: 'Online Ordering Button', description: 'We maximize your revenue with a direct "Order Now" button on all your social and web platforms.', videoUrl: '' }  
+                ],  
+                imageUrl: 'https://cdn.prod.website-files.com/5f28f6242b5cee6e96d76336/68358ce87f2cc521db956c47_AD_4nXcdJIrty1bHn-VGnIhB6pnxC4LCWotECuVh6jA3KOWxPEX66na-lGzm0qg9Kin2anhHpIibvK3771WzWCFfJDWu5GRSETKxhgN_OCuuvHuK6kiUHeUid8AIUIYg28hWNv4e14tf.avif'  
+            },  
+            {  
+                title: 'Leads',  
+                text: 'We capture information from customers interested in private events and catering services for your restaurant.',  
+                details: [  
+                    // Add your video URLs here. Leave empty string if no video.  
+                    { title: 'Instant Forms', description: 'We allow customers to book events or request catering quotes directly through a simple form.', videoUrl: 'https://www.w3schools.com/html/mov_bbb.mp4' },  
+                    { title: 'Instant Experiences', description: 'We create immersive mobile experiences to showcase your event spaces and capture lead information instantly.', videoUrl: 'https://menutechdeveloper.github.io/bddImg/assets/img/experienciasinsta.mp4' }  
+                ],  
+                imageUrl: 'https://wp.klientboost.com/wp-content/uploads/2021/08/Screenshot-2025-02-23-at-12.49.22%E2%80%AFPM.png'  
+            },  
+            {  
+                title: 'Engagement',  
+                text: 'We increase interest in your menu and online ordering button while providing basic automated support.',  
+                details: [  
+                    // Add your video URLs here. Leave empty string if no video.  
+                    { title: 'Messages', description: 'We set up a simple Messenger chatbot to provide instant answers to Frequently Asked Questions (FAQ) about your menu and hours.', videoUrl: 'https://menutechdeveloper.github.io/bddImg/assets/img/emensajes.mp4' },  
+                    { title: 'Video views', description: 'We show customers a tour of your kitchen or a look at your best-selling dishes.', videoUrl: '' },  
+                    { title: 'Post engagement', description: 'We boost interactions on your food photos to encourage people to use your online ordering button.', videoUrl: 'https://menutechdeveloper.github.io/bddImg/assets/img/emaps.mp4' }  
+                ],  
+                imageUrl: 'https://wp.klientboost.com/wp-content/uploads/2021/08/img_610869539bce4.png'  
+            },  
+            {  
+                title: 'Traffic',  
+                text: 'We direct hungry customers to your online menu and ordering system.',  
+                details: [  
+                    // Add your video URLs here. Leave empty string if no video.  
+                    { title: 'Link clicks', description: 'We send people straight to your ordering system from Facebook, Google, or your website.', videoUrl: '' },  
+                    { title: 'Landing page views', description: 'We ensure potential diners see your full menu and latest specials before they order.', videoUrl: '' }  
+                ],  
+                imageUrl: 'https://wp.klientboost.com/wp-content/uploads/2020/07/Sunday-Facebook-Ad-Example-1.png'  
+            },  
+            {  
+                title: 'Awareness',  
+                text: 'We keep your restaurant top-of-mind for locals in your area.',  
+                details: [  
+                    // Add your video URLs here. Leave empty string if no video.  
+                    { title: 'Reach', description: 'We show your restaurant to the maximum number of people in your neighborhood.', videoUrl: '' },  
+                    { title: 'Brand awareness', description: 'We focus on people most likely to remember your restaurant when deciding where to eat.', videoUrl: '' },  
+                    { title: 'Video views', description: 'We use short, mouth-watering clips to introduce your menu to new customers.', videoUrl: '' }  
+                ],  
+                imageUrl: 'https://cdn.prod.website-files.com/5f28f6242b5cee6e96d76336/68358ce8751885e0ba73f6e4_AD_4nXeLFgld0K3FQGwEUNAFJPucuO2KysMoLgp5I6fjq-1brP0b6g64l95aXza00qbliTjlbyDdg28DTCxnTNYPjqEVIauTCi4yZ_-nBu_elP1dvbVxI2i2UjRg6leVftIUfJHQK_mDSw.avif'  
+            }  
+        ],  
+        es: [  
+            {  
+                title: 'Ventas',  
+                text: 'Impulsamos más pedidos para tu restaurante a través de tu botón de pedidos en línea personalizado. Lo integramos totalmente en tu Fanpage de Facebook, perfil de Google Business y Sitio Web.',  
+                details: [  
+                    // Agrega tus URLs de video aquí. Deja la cadena vacía si no hay video.  
+                    { title: 'Conversiones', description: 'Convertimos visitantes en clientes con una experiencia de pedido fluida integrada directamente en tu sitio.', videoUrl: 'https://www.w3schools.com/html/mov_bbb.mp4' },  
+                    { title: 'Ventas del catálogo', description: 'Mostramos tus platos más populares del menú a clientes hambrientos que buscan comida.', videoUrl: '' },  
+                    { title: 'Botón de Pedidos en Línea', description: 'Maximizamos tus ingresos con un botón directo de "Pedir Ahora" en todas tus plataformas sociales y web.', videoUrl: '' }  
+                ],  
+                imageUrl: 'https://cdn.prod.website-files.com/5f28f6242b5cee6e96d76336/68358ce87f2cc521db956c47_AD_4nXcdJIrty1bHn-VGnIhB6pnxC4LCWotECuVh6jA3KOWxPEX66na-lGzm0qg9Kin2anhHpIibvK3771WzWCFfJDWu5GRSETKxhgN_OCuuvHuK6kiUHeUid8AIUIYg28hWNv4e14tf.avif'  
+            },  
+            {  
+                title: 'Clientes potenciales',  
+                text: 'Capturamos información de clientes interesados en eventos privados y servicios de catering para tu restaurante.',  
+                details: [  
+                    // Agrega tus URLs de video aquí. Deja la cadena vacía si no hay video.  
+                    { title: 'Formularios instantáneos', description: 'Permitimos que los clientes reserven eventos o soliciten presupuestos de catering directamente a través de un formulario sencillo.', videoUrl: 'https://www.w3schools.com/html/mov_bbb.mp4' },  
+                    { title: 'Experiencias instantáneas', description: 'Creamos experiencias móviles envolventes para mostrar tus espacios de eventos y capturar información de clientes potenciales al instante.', videoUrl: 'https://menutechdeveloper.github.io/bddImg/assets/img/experienciasinsta.mp4' }  
+                ],  
+                imageUrl: 'https://wp.klientboost.com/wp-content/uploads/2021/08/Screenshot-2025-02-23-at-12.49.22%E2%80%AFPM.png'  
+            },  
+            {  
+                title: 'Interacción',  
+                text: 'Aumentamos el interés en tu menú y tu botón de pedidos en línea mientras ofrecemos soporte automatizado básico.',  
+                details: [  
+                     // Agrega tus URLs de video aquí. Deja la cadena vacía si no hay video.  
+                    { title: 'Mensajes', description: 'Configuramos un chatbot de Messenger sencillo para dar respuestas instantáneas a Preguntas Frecuentes (FAQ) sobre tu menú y horarios.', videoUrl: 'https://menutechdeveloper.github.io/bddImg/assets/img/emensajes.mp4' },  
+                    { title: 'Reproducciones de video', description: 'Les mostramos a los clientes un recorrido por tu cocina o un vistazo a tus platos más vendidos.', videoUrl: '' },  
+                    { title: 'Interacción con la publicación', description: 'Impulsamos más interacciones en tus fotos de comida para animar a las personas a usar tu botón de pedidos en línea.', videoUrl: 'https://menutechdeveloper.github.io/bddImg/assets/img/emaps.mp4' }  
+                ],  
+                imageUrl: 'https://wp.klientboost.com/wp-content/uploads/2021/08/img_610869539bce4.png'  
+            },  
+            {  
+                title: 'Tráfico',  
+                text: 'Dirigimos a clientes hambrientos a tu menú en línea y sistema de pedidos.',  
+                details: [  
+                     // Agrega tus URLs de video aquí. Deja la cadena vacía si no hay video.  
+                    { title: 'Clics en el enlace', description: 'Enviamos a las personas directamente a tu sistema de pedidos desde Facebook, Google o tu sitio web.', videoUrl: '' },  
+                    { title: 'Vistas de la página de destino', description: 'Nos aseguramos de que los comensales potenciales vean tu menú completo y especiales antes de pedir.', videoUrl: '' }  
+                ],  
+                imageUrl: 'https://wp.klientboost.com/wp-content/uploads/2020/07/Sunday-Facebook-Ad-Example-1.png'  
+            },  
+            {  
+                title: 'Reconocimiento',  
+                text: 'Mantenemos tu restaurante presente en la mente de los locales en tu área.',  
+                details: [  
+                     // Agrega tus URLs de video aquí. Deja la cadena vacía si no hay video.  
+                    { title: 'Alcance', description: 'Mostramos tu anuncio a la mayor cantidad posible de personas en tu vecindario.', videoUrl: '' },  
+                    { title: 'Reconocimiento de marca', description: 'Nos enfocamos en personas con más probabilidades de recordar tu restaurante al decidir dónde comer.', videoUrl: '' },  
+                    { title: 'Reproducciones de video', description: 'Usamos clips cortos y apetitosos para presentar tu menú a nuevos clientes.', videoUrl: '' }  
+                ],  
+                imageUrl: 'https://cdn.prod.website-files.com/5f28f6242b5cee6e96d76336/68358ce8751885e0ba73f6e4_AD_4nXeLFgld0K3FQGwEUNAFJPucuO2KysMoLgp5I6fjq-1brP0b6g64l95aXza00qbliTjlbyDdg28DTCxnTNYPjqEVIauTCi4yZ_-nBu_elP1dvbVxI2i2UjRg6leVftIUfJHQK_mDSw.avif'  
+            }  
+        ]  
+    };  
+  
+    function renderAccordion() {  
+        accordionContainer.innerHTML = '';  
+        const langContent = content[currentLanguage];  
+  
+        langContent.forEach((item, index) => {  
+            const accordionItem = document.createElement('div');  
+            accordionItem.classList.add('accordion-item');  
+  
+            const title = document.createElement('h3');  
+            title.classList.add('accordion-title');  
+            title.textContent = item.title;  
+            title.dataset.imageUrl = item.imageUrl;  
+  
+            const contentDiv = document.createElement('div');  
+            contentDiv.classList.add('accordion-content');  
+              
+            const text = document.createElement('p');  
+            text.textContent = item.text;  
+            contentDiv.appendChild(text);  
+  
+            const detailsContainer = document.createElement('div');  
+            detailsContainer.classList.add('details-container');  
+            item.details.forEach(detail => {  
+                const detailItem = document.createElement('div');  
+                detailItem.classList.add('detail-item');  
+                detailItem.dataset.videoUrl = detail.videoUrl; // Store video URL  
+                  
+                const detailTitle = document.createElement('strong');  
+                detailTitle.textContent = detail.title;  
+                detailItem.appendChild(detailTitle);  
+  
+                const detailDescription = document.createElement('p');  
+                detailDescription.textContent = detail.description;  
+                detailItem.appendChild(detailDescription);  
+  
+                detailsContainer.appendChild(detailItem);  
+            });  
+            contentDiv.appendChild(detailsContainer);  
+  
+            accordionItem.appendChild(title);  
+            accordionItem.appendChild(contentDiv);  
+            accordionContainer.appendChild(accordionItem);  
+  
+            if (index === 0) {  
+                accordionItem.classList.add('active');  
+                showImage(item.imageUrl, item.title);  
+            }  
+        });  
+  
+        addAccordionListeners();  
+    }  
+  
+    function showImage(src, alt) {  
+        objectiveImage.style.display = 'block';  
+        objectiveVideo.style.display = 'none';  
+        objectiveImage.src = src;  
+        objectiveImage.alt = alt;  
+        objectiveVideo.pause();  
+    }  
+  
+    function showVideo(src) {  
+        if (src) {  
+            objectiveImage.style.display = 'none';  
+            objectiveVideo.style.display = 'block';  
+            objectiveVideo.src = src;  
+            objectiveVideo.play();  
+        }  
+    }  
+  
+    function addAccordionListeners() {  
+        const accordionItems = document.querySelectorAll('.accordion-item');  
+        accordionItems.forEach(item => {  
+            const title = item.querySelector('.accordion-title');  
+            title.addEventListener('click', function() {  
+                const isActive = item.classList.contains('active');  
+  
+                accordionItems.forEach(otherItem => {  
+                    otherItem.classList.remove('active');  
+                });  
+  
+                if (!isActive) {  
+                    item.classList.add('active');  
+                    showImage(this.dataset.imageUrl, this.textContent);  
+                } else {  
+                    // Optional: remove active class if clicked again, hiding content  
+                    item.classList.remove('active');  
+                }  
+            });  
+  
+            const detailItems = item.querySelectorAll('.detail-item');  
+            detailItems.forEach(detail => {  
+                detail.addEventListener('click', function() {  
+                    showVideo(this.dataset.videoUrl);  
+                });  
+            });  
+        });  
+    }  
+  
+    langEnBtn.addEventListener('click', () => {  
+        currentLanguage = 'en';  
+        langEnBtn.classList.add('active');  
+        langEsBtn.classList.remove('active');  
+        renderAccordion();  
+    });  
+  
+    langEsBtn.addEventListener('click', () => {  
+        currentLanguage = 'es';  
+        langEsBtn.classList.add('active');  
+        langEnBtn.classList.remove('active');  
+        renderAccordion();  
+    });  
+  
+    renderAccordion();  
+});  
+    </script>  
+      <script src="./assets/js/badge.js"></script>
+  <script src="https://menutech.xyz/menutechUI.min.js"></script>
+  <script src="./assets/js/renderer.js"></script>
+</body>  
+</html>  

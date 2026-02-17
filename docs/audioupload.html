@@ -1,0 +1,1139 @@
+<!DOCTYPE html>  
+<html lang="es">  
+<head>  
+<meta charset="UTF-8" />  
+<title>Audio Manager</title>  
+  
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css">  
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">  
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
+<link rel="stylesheet" href="./assets/css/badge.css">
+<!-- SweetAlert2 -->  
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>  
+  
+<style>  
+    :root{  
+        --bg:#0b0b0c;  
+        --card:#121215;  
+        --muted:#9aa0a6;  
+        --accent:#6ee7b7;
+        --glass-bg: rgba(255,255,255,0.04);  
+        --glass: rgba(255,255,255,0.03);
+        --glass-border: rgba(255,255,255,0.06);  
+        --twitch-purple:#6441a5;  
+        --twitch-glow: rgba(100,65,165,0.25);  
+        --success-green: linear-gradient(135deg,#2ee6a6,#00c176);  
+    }  
+  
+    *{box-sizing:border-box}  
+    body {  
+        font-family: "Inter", sans-serif;  
+        margin: 0;  
+        padding: 0;  
+        background: linear-gradient(180deg,#050506 0%, #0b0b0c 100%);  
+        color: #e6eef3;  
+        -webkit-font-smoothing:antialiased;  
+        -moz-osx-font-smoothing:grayscale;  
+    }  
+  
+    .container {  
+        max-width: 980px;  
+        margin: 28px auto;  
+        padding: 22px;  
+    }  
+  
+    h2 {  
+        font-weight: 600;  
+        margin-bottom: 12px;  
+        color: #ffffff;  
+        letter-spacing: -0.2px;  
+    }  
+  
+    .card {  
+        background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));  
+        border: 1px solid var(--glass-border);  
+        padding: 22px;  
+        border-radius: 14px;  
+        box-shadow: 0 8px 30px rgba(4,6,11,0.6);  
+        margin-bottom: 26px;  
+        backdrop-filter: blur(6px) saturate(120%);  
+    }  
+  
+    label {  
+        display: block;  
+        margin-top: 10px;  
+        font-weight: 600;  
+        color: var(--muted);  
+        font-size: 13px;  
+    }  
+  
+    input[type="text"], textarea, select {  
+        width: 100%;  
+        padding: 12px;  
+        margin-top: 6px;  
+        border: 1px solid rgba(255,255,255,0.04);  
+        border-radius: 10px;  
+        font-size: 14px;  
+        background: #0f1112;  
+        color: #e6eef3;  
+        outline: none;  
+    }  
+  
+    textarea { min-height:70px; resize:vertical; }  
+  
+    button {  
+        background: linear-gradient(90deg,#6b46c1,#4f46e5);  
+        color: white;  
+        border: none;  
+        padding: 11px 16px;  
+        border-radius: 10px;  
+        margin-top: 14px;  
+        cursor: pointer;  
+        font-weight: 700;  
+        letter-spacing: 0.2px;  
+        box-shadow: 0 6px 20px rgba(79,70,229,0.14);  
+    }  
+  
+    button:active { transform: translateY(1px); }  
+  
+    /* track list (kept your base) */  
+    .track {  
+        background: linear-gradient(180deg, rgba(255,255,255,0.015), rgba(255,255,255,0.01));  
+        border: 1px solid rgba(255,255,255,0.03);  
+        padding: 14px;  
+        border-radius: 12px;  
+        margin-bottom: 14px;  
+        display:flex;  
+        gap:14px;  
+        align-items:center;  
+        justify-content:space-between;  
+    }  
+  
+    .track-left {  
+        display:flex;  
+        gap:12px;  
+        align-items:center;  
+        min-width:0;  
+        flex:1;  
+    }  
+  
+    .track-info { min-width:0; }  
+    .track h3 { margin:0; font-size:16px; font-weight:700; color:#fff; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }  
+    .track small { color:var(--muted); font-size:13px; display:block; margin-top:4px; }  
+  
+    /* Estilos mejorados para grupos de controles */ 
+    .track-controls { 
+        display: flex; 
+        align-items: center; 
+        gap: 16px; 
+        justify-content: flex-end; 
+        flex-shrink: 0; 
+    } 
+ 
+    .track-playback, .track-actions { 
+        display: flex; 
+        align-items: center; 
+        gap: 10px; 
+    } 
+ 
+    .track-actions { 
+        padding-left: 16px; 
+        border-left: 1px solid var(--glass-border); 
+    } 
+  
+    .btn-play {  
+        background:transparent;  
+        border:1px solid rgba(255,255,255,0.04);  
+        color:#fff;  
+        width:44px;  
+        height:44px;  
+        border-radius:10px;  
+        display:inline-flex;  
+        align-items:center;  
+        justify-content:center;  
+        cursor:pointer;  
+        font-size:16px;  
+        flex-shrink:0;  
+    }  
+  
+    .progress {  
+        -webkit-appearance:none;  
+        appearance:none;  
+        height:6px;  
+        background: linear-gradient(90deg, rgba(255,255,255,0.04), rgba(255,255,255,0.03));  
+        border-radius:6px;  
+        width:220px;  
+        outline:none;  
+    }  
+    .progress::-webkit-slider-thumb {  
+        -webkit-appearance:none;  
+        width:14px; height:14px; border-radius:50%;  
+        background: #fff;  
+        box-shadow: 0 2px 8px rgba(0,0,0,0.6);  
+        cursor:pointer;  
+        border: 3px solid #3b82f6;  
+    }  
+  
+    .time { font-size:12px; color:var(--muted); min-width:48px; text-align:center; }  
+  
+    .control-btn.speed {  
+        background:transparent;  
+        border:1px solid rgba(255,255,255,0.04);  
+        padding:8px 10px;  
+        border-radius:10px;  
+        cursor:pointer;  
+        font-weight:700;  
+        min-width:48px;  
+    }  
+  
+    .control-btn.icon {  
+        background:transparent;  
+        border:1px solid rgba(255,255,255,0.04);  
+        padding:8px;  
+        border-radius:10px;  
+        cursor:pointer;  
+    }  
+  
+    .control-btn.delete { background:linear-gradient(90deg,#3b0000,#600000); border:none; box-shadow: 0 8px 20px rgba(255,0,0,0.06); }  
+  
+    /* floating player (kept but hidden by default) */  
+    .floating-player {  
+        position: fixed;  
+        bottom: 18px;  
+        left: 50%;  
+        transform: translateX(-50%);  
+        background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));  
+        border: 1px solid rgba(255,255,255,0.04);  
+        color: white;  
+        padding: 12px 16px;  
+        border-radius: 14px;  
+        width: 92%;  
+        max-width: 780px; 
+        display: none; /* Oculto por defecto */ 
+        z-index: 9999; 
+        box-shadow: 0 18px 46px rgba(11,11,11,0.6); 
+        gap: 16px; 
+        align-items: center; 
+    } 
+  
+    .fp-left { flex:1; min-width:0; }  
+    .fp-title { font-weight:700; font-size:15px; margin-bottom:6px; color:#fff; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }  
+    .fp-controls { display:flex; align-items:center; gap:10px; }  
+  
+    .fp-progress { width:420px; }  
+    .fp-close { cursor:pointer; font-size:18px; padding:8px; border-radius:10px; border:1px solid rgba(255,255,255,0.04); }  
+  
+    /* twitch-like toasts */  
+    #twitchToasts {  
+        position: fixed;  
+        top: 18px;  
+        right: 18px;  
+        display:flex;  
+        flex-direction:column;  
+        gap:10px;  
+        z-index: 12000;  
+        pointer-events:none;  
+    }  
+  
+    .t-toast {  
+        pointer-events:auto;  
+        min-width:260px;  
+        max-width:360px;  
+        padding:12px 14px;  
+        border-radius:10px;  
+        color:#fff;  
+        background: linear-gradient(90deg,var(--twitch-purple), #7b5bdc);  
+        box-shadow: 0 10px 30px var(--twitch-glow);  
+        display:flex;  
+        gap:12px;  
+        align-items:flex-start;  
+        transform: translateY(-8px);  
+        animation: toastIn 360ms cubic-bezier(.2,.9,.2,1);  
+        border: 1px solid rgba(255,255,255,0.04);  
+    }  
+  
+    .t-toast.info { background: linear-gradient(90deg,#444,#5b3aa8); }  
+    .t-toast.success { background: linear-gradient(90deg,#00c176,#2ee6a6); color:#022; box-shadow:0 10px 30px rgba(0,193,119,0.12); }  
+    .t-toast.warn { background: linear-gradient(90deg,#ff8a00,#ff5e5e); }  
+  
+    .t-toast .icon { font-size:18px; opacity:0.95; margin-top:2px; }  
+    .t-toast .txt { flex:1; font-weight:700; font-size:13px; }  
+    .t-toast small { display:block; font-weight:600; opacity:0.88; margin-top:6px; font-size:12px; color:rgba(255,255,255,0.9); }  
+  
+    @keyframes toastIn { from {opacity:0; transform: translateY(-8px) scale(.98);} to {opacity:1; transform: translateY(0) scale(1);} }  
+  
+    @media (max-width:720px){  
+        .track-controls { width:auto; gap:8px; }  
+        .fp-progress { width:220px; }  
+        .upload-icon { width:46px; height:46px; }  
+        .progress { width:120px; }  
+    }  
+  
+    /* SweetAlert2 glass style override */  
+    .swal2-glass {  
+        background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01)) !important;  
+        color: #eef6f7 !important;  
+        border: 1px solid rgba(255,255,255,0.04) !important;  
+        backdrop-filter: blur(8px) saturate(120%) !important;  
+        box-shadow: 0 18px 50px rgba(2,6,23,0.6) !important;  
+        border-radius: 14px !important;  
+    }  
+    .swal2-glass .swal2-title { color:#fff; font-weight:800; }  
+    .swal2-glass .swal2-html-container, .swal2-glass .swal2-content { color:var(--muted); font-weight:600; }  
+    .swal2-glass .swal2-confirm { background: linear-gradient(90deg,#6b46c1,#4f46e5) !important; color:white !important; border:none !important; box-shadow: 0 10px 30px rgba(79,70,229,0.12) !important; }  
+    .swal2-glass .swal2-cancel { background:transparent !important; color:var(--muted) !important; border:1px solid rgba(255,255,255,0.04) !important; }  
+  
+    /* small helpers */  
+    .muted { color:var(--muted); font-weight:600; font-size:13px; }  
+
+/* Upload area */ 
+.upload-area { 
+  border:2px dashed rgba(255,255,255,0.04); 
+  padding:18px;border-radius:12px; text-align:center; transition:all .2s ease; position:relative; overflow:hidden; 
+} 
+.upload-area.dragover { background: linear-gradient(135deg, rgba(110,231,183,0.04), rgba(96,165,250,0.02)); transform:scale(1.01); border-color: rgba(110,231,183,0.12);}  
+.upload-area .hint { color:var(--muted); margin-top:8px; font-size:14px;} 
+.upload-area .big { font-size:36px; color:var(--accent); } 
+ 
+/* Form inputs */ 
+.field{margin-top:12px;display:flex;flex-direction:column; gap:8px} 
+.input, textarea { 
+  background:var(--glass); border:1px solid var(--glass-border); padding:10px 12px; border-radius:10px; color: #e6eef6; outline:none; 
+  font-size:14px; 
+} 
+.field select{background: black;}
+.input:focus, textarea:focus, select:focus { box-shadow: 0 6px 18px rgba(96,165,250,0.06); transform: translateY(-1px); border-color: rgba(96,165,250,0.15); } 
+ 
+.row { display:flex; gap:10px; align-items:center; } 
+.btn { 
+  background: linear-gradient(90deg, #60a5fa, #6ee7b7); 
+  color:#042028; border:none; padding:10px 14px; border-radius:10px; font-weight:600; cursor:pointer; 
+  box-shadow: 0 8px 20px rgba(96,165,250,0.12); transition: transform .12s ease; 
+} 
+.btn.secondary { background:transparent; border:1px solid var(--glass-border); color:var(--muted); box-shadow:none; } 
+.btn:active{ transform: translateY(1px); } 
+
+.small{font-size:13px;color:var(--muted)} 
+
+.fade-up { animation: fadeUp .28s both } 
+@keyframes fadeUp { from{ opacity:0; transform: translateY(8px) } to { opacity:1; transform:none } } 
+
+.volume-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 80px;
+  height: 5px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 5px;
+  outline: none;
+  transition: opacity 0.2s;
+}
+
+.volume-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #fff;
+  cursor: pointer;
+  border: 2px solid var(--accent);
+}
+
+.speed-control-container {
+  position: relative;
+  display: inline-block;
+}
+
+.speed-options-dropdown {
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: #0b0b0c;
+  border: 1px solid var(--glass-border);
+  border-radius: 8px;
+  padding: 5px;
+  margin-bottom: 5px;
+  z-index: 1000;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+}
+
+.speed-option {
+  padding: 8px 12px;
+  cursor: pointer;
+  color: white;
+  font-size: 13px;
+  border-radius: 6px;
+}
+
+.speed-option:hover {
+  background-color: var(--accent);
+  color: #0b0b0c;
+}
+
+
+
+
+</style>  
+  
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>  
+</head>  
+<body>
+  <!-- ICONO Y BADGE (sin barra, con margen propio) -->
+<img id="login-icon" class="login-icon" src="./assets/img/user.svg">
+
+  <!-- Placa del usuario -->
+<div id="user-badge" class="user-badge hidden" style="position: fixed;">
+  <div id="badge-username"></div>
+  <div id="badge-role"></div>
+</div>
+
+<!-- Menú ahora fuera del badge -->
+<div id="badge-menu" class="hidden">
+  <button id="logout-btn" class="logout-btn">Cerrar sesión</button>
+</div>
+
+
+<!-- PANEL DE LOGIN -->
+<div id="login-panel" class="login-panel hidden">
+
+  <h3>Iniciar sesión</h3>
+
+  <input id="user" class="input" placeholder="Usuario">
+  <input id="pass" class="input" type="password" placeholder="Contraseña">
+
+  <button id="login-btn" class="login-btn">Entrar</button>
+
+  <!-- Estado del login -->
+  <div id="login-status" class="status"></div>
+</div>
+
+<!-- TU DRAWER -->
+<menutech-drawer id="main-drawer" class="hidden"></menutech-drawer>
+
+
+  <!-- NAVBAR NEOMÓRFICO INFERIOR -->
+<div class="neo-nav-container">
+    <button id="neoNavBack" class="neo-nav-btn">
+        <svg viewBox="0 0 24 24" class="neo-nav-icon">
+            <path d="M15 18l-6-6 6-6" stroke="currentColor" stroke-width="2"
+                  fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+    </button>
+
+    <button id="neoNavHome" class="neo-nav-btn">
+        <svg viewBox="0 0 24 24" class="neo-nav-icon">
+            <path d="M3 11l9-7 9 7v8a2 2 0 0 1-2 2h-4a2 2 0 0 1-2-2v-4H9v4a2 
+                     2 0 0 1-2 2H5a2 2 0 0 1-2-2z"
+                  stroke="currentColor" stroke-width="2" fill="none"
+                  stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+    </button>
+</div>
+<div class="container">  
+  
+    <div class="card">
+      <h3 style="margin:0 0 8px 0;">Subir audio</h3>
+      <p class="small">Arrastra y suelta o haz click para seleccionar. Incluye título, descripción y categoría.</p>
+
+      <div id="uploadArea" class="upload-area fade-up" tabindex="0">
+        <div class="big"><i class="fa-solid fa-cloud-arrow-up"></i></div>
+        <div style="font-weight:700;margin-top:6px">Arrastra tu archivo de audio aquí</div>
+        <div class="hint">o <button class="btn" id="browseBtn" style="padding:6px 10px;margin-left:6px">Seleccionar archivo</button></div>
+        <input type="file" id="audioFile" accept="audio/*" style="display:none">
+        <div id="uploadFilename" class="small" style="margin-top:8px;color:var(--muted)"></div>
+      </div>
+
+      <div class="field">
+        <input id="title" class="input" placeholder="Título del audio" />
+        <textarea id="description" class="input" rows="3" placeholder="Descripción (opcional)"></textarea>
+        <select id="category" class="input">
+          <option value="Customer Service">Choose an option</option>  
+          <option value="Customer Service">Customer Service</option>
+          <option value="Opening">Opening</option>
+          <option value="Closers">Closers</option>
+        </select>
+
+        <div style="display:flex;gap:10px;align-items:center;margin-top:8px">
+          <button id="uploadBtn" class="btn"><i class="fa-solid fa-upload"></i> Subir Audio</button>
+          <button id="clearBtn" class="btn secondary"><i class="fa-solid fa-trash-can"></i> Limpiar</button>
+          <div class="small" id="status">Esperando archivo...</div>
+        </div>
+      </div>
+    </div>  
+  
+    <h2>Pistas Guardadas</h2>  
+    <div id="lista"></div>  
+  
+</div>  
+  
+<!-- PLAYER FLOTANTE -->  
+<div id="floatingPlayer" class="floating-player" role="region" aria-label="Mini reproductor">  
+    <div class="fp-left">  
+        <div class="fp-title" id="fpTitle">Título</div>  
+        <div style="display:flex;align-items:center;gap:10px;">  
+            <button class="control-btn play" id="fpPlayBtn"><i class="ri-play-line"></i></button>  
+            <div class="fp-controls">  
+                <input id="fpProgress" class="fp-progress progress" type="range" min="0" max="100" value="0" step="0.1">  
+                <div class="time" id="fpTime">0:00</div>  
+                <div class="speed-control-container">
+                    <button class="control-btn speed" id="fpSpeedBtn">x1</button>
+                    <div id="speedOptions" class="speed-options-dropdown" style="display: none;">
+                        <div class="speed-option" data-speed="0.5">0.5x</div>
+                        <div class="speed-option" data-speed="1">1.0x</div>
+                        <div class="speed-option" data-speed="1.5">1.5x</div>
+                        <div class="speed-option" data-speed="2">2.0x</div>
+                    </div>
+                </div>
+                <input type="range" id="fpVolume" class="volume-slider" min="0" max="1" step="0.05" value="1" title="Volume">
+            </div>  
+        </div>  
+    </div>  
+    <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px;">  
+        <div class="fp-close" id="fpClose">✖</div>  
+    </div>  
+</div>  
+  
+<!-- Twitch-like toast container -->  
+<div id="twitchToasts" aria-hidden="true"></div>  
+ <script src="https://menutech.xyz/menutechUI.min.js"></script>
+<script> 
+// === HACER EL NAV ARRASTRABLE ===
+const nav = document.querySelector('.neo-nav-container');
+const hint = document.getElementById('dragHint');
+
+let offsetX = 0;
+let offsetY = 0;
+let dragging = false;
+
+// Cargar posición guardada
+const savedX = localStorage.getItem('neoNavX');
+const savedY = localStorage.getItem('neoNavY');
+
+if (savedX && savedY) {
+    nav.style.left = savedX + "px";
+    nav.style.top = savedY + "px";
+    nav.style.bottom = "auto";
+    nav.style.transform = "none";
+}
+
+// Mostrar hint solo primera vez
+if (!localStorage.getItem("seenNavDragHint")) {
+    setTimeout(() => {
+        hint.style.opacity = "1";
+        hint.classList.add("pulsing");
+
+        // Pequeño movimiento animado del nav (para indicar que se mueve)
+        TinyAnimate.animate(nav, "bottom", 20, 30, 600, "easeInOutSine", () => {
+            TinyAnimate.animate(nav, "bottom", 30, 20, 600, "easeInOutSine");
+        });
+
+    }, 800);
+}
+
+// Iniciar arrastre
+nav.addEventListener('mousedown', (e) => {
+    dragging = true;
+
+    offsetX = e.clientX - nav.offsetLeft;
+    offsetY = e.clientY - nav.offsetTop;
+
+    nav.style.transition = "none";
+
+    // Ocultar hint en cuanto empiece a mover
+    if (!localStorage.getItem("seenNavDragHint")) {
+        hint.style.opacity = "0";
+        hint.classList.remove("pulsing");
+        localStorage.setItem("seenNavDragHint", "true");
+    }
+});
+
+document.addEventListener('mousemove', (e) => {
+    if (!dragging) return;
+
+    let x = e.clientX - offsetX;
+    let y = e.clientY - offsetY;
+
+    // Limitar a pantalla
+    x = Math.max(0, Math.min(window.innerWidth - nav.offsetWidth, x));
+    y = Math.max(0, Math.min(window.innerHeight - nav.offsetHeight, y));
+
+    nav.style.left = x + "px";
+    nav.style.top = y + "px";
+    nav.style.bottom = "auto";
+    nav.style.transform = "none";
+});
+
+document.addEventListener('mouseup', () => {
+    if (!dragging) return;
+    dragging = false;
+
+    // Guardar posición
+    localStorage.setItem('neoNavX', nav.offsetLeft);
+    localStorage.setItem('neoNavY', nav.offsetTop);
+
+    nav.style.transition = "";
+});
+
+// Botón Atrás
+document.getElementById("neoNavBack").addEventListener("click", () => {
+    if (window.history.length > 1) window.history.back();
+});
+
+// Botón Inicio
+document.getElementById("neoNavHome").addEventListener("click", () => {
+    window.location.href = "index.html"; // Cambia por tu ruta principal
+});
+/* ---------------------------------------------------------  
+   SUPABASE CONFIG (NO MODIFICAR)  
+--------------------------------------------------------- */  
+const SUPABASE_URL = "https://ojpyfjgkffmzwvukjagf.supabase.co";  
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9qcHlmamdrZmZtend2dWtqYWdmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQxNDIwMzYsImV4cCI6MjA3OTcxODAzNn0.dlVYmoMumBse_O1PLBx0FeNITqY4YktefD6l_uonSgo";  
+  
+const client = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);  
+  
+/* ---------------------------------------------------------  
+   UI HELPERS: Twitch-like toasts  
+--------------------------------------------------------- */  
+const toastsContainer = document.getElementById('twitchToasts');  
+function showTwitchToast(text, type = 'info', sub = '') {  
+    const el = document.createElement('div');  
+    el.className = 't-toast ' + (type === 'success' ? 'success' : type === 'warn' ? 'warn' : 'info');  
+    el.innerHTML = `  
+        <div class="icon">${ type === 'success' ? '✔' : type === 'warn' ? '!' : '🔔' }</div>  
+        <div class="txt">${text}${ sub ? `<small>${sub}</small>` : '' }</div>  
+    `;  
+    toastsContainer.prepend(el);  
+    setTimeout(()=> {  
+        el.style.transition = 'opacity .35s ease, transform .35s ease';  
+        el.style.opacity = '0'; el.style.transform = 'translateX(8px)';  
+        setTimeout(()=> el.remove(), 400);  
+    }, 2600);  
+}  
+  
+/* ---------------------------------------------------------  
+   DRAG & DROP  
+--------------------------------------------------------- */  
+const fileInput = document.getElementById('audioFile'); 
+const uploadArea = document.getElementById('uploadArea'); 
+const browseBtn = document.getElementById('browseBtn'); 
+const uploadFilename = document.getElementById('uploadFilename'); 
+const statusEl = document.getElementById('status'); 
+const clearBtn = document.getElementById('clearBtn'); 
+let selectedFile = null;  
+
+browseBtn.addEventListener('click', () => fileInput.click()); 
+fileInput.addEventListener('change', (e)=>{ 
+  if (fileInput.files.length>0) { 
+    selectedFile = fileInput.files[0]; 
+    uploadFilename.textContent = selectedFile.name + " • " + (Math.round(selectedFile.size/1024) + " KB"); 
+    statusEl.textContent = "Listo para subir."; 
+  } 
+}); 
+ 
+['dragenter','dragover'].forEach(ev=>{ 
+  uploadArea.addEventListener(ev, (e)=>{ 
+    e.preventDefault(); e.stopPropagation(); 
+    uploadArea.classList.add('dragover'); 
+  }); 
+}); 
+['dragleave','drop'].forEach(ev=>{ 
+  uploadArea.addEventListener(ev, (e)=>{ 
+    e.preventDefault(); e.stopPropagation(); 
+    uploadArea.classList.remove('dragover'); 
+  }); 
+}); 
+uploadArea.addEventListener('drop', (e)=>{ 
+  const f = e.dataTransfer.files && e.dataTransfer.files[0]; 
+  if (f) { 
+    selectedFile = f; 
+    fileInput.files = e.dataTransfer.files; 
+    uploadFilename.textContent = selectedFile.name + " • " + (Math.round(selectedFile.size/1024) + " KB"); 
+    statusEl.textContent = "Archivo listo para subir."; 
+  } 
+}); 
+
+clearBtn.addEventListener('click', ()=>{ 
+  fileInput.value = ""; 
+  selectedFile = null; 
+  uploadFilename.textContent = ""; 
+  statusEl.textContent = "Limpiado."; 
+}); 
+  
+/* ---------------------------------------------------------  
+   UPLOAD  
+   (mantuve toda la lógica de Supabase exactamente)  
+--------------------------------------------------------- */  
+document.getElementById("uploadBtn").addEventListener("click", async () => {  
+  
+    if (!selectedFile) {  
+        showTwitchToast("Selecciona un archivo para subir", "warn");  
+        return;  
+    }  
+  
+    const title = document.getElementById("title").value.trim();  
+    const description = document.getElementById("description").value.trim();  
+    const category = document.getElementById("category").value;  
+  
+    if (title === "") {  
+        showTwitchToast("Escribe un título antes de subir", "warn");  
+        return;  
+    }  
+  
+    document.getElementById("status").textContent = "Subiendo...";  
+  
+    const filePath = `${Date.now()}-${selectedFile.name}`;  
+  
+    const { error: uploadError } = await client  
+        .storage.from("audios")  
+        .upload(filePath, selectedFile);  
+  
+    if (uploadError) {  
+        Swal.fire({  
+            title: "Error al subir",  
+            text: "No se pudo subir el archivo. Revisa tu conexión.",  
+            icon: "error",  
+            customClass: { popup: "swal2-glass" }  
+        });  
+        return;  
+    }  
+  
+    const { data: urlData } = client  
+        .storage.from("audios")  
+        .getPublicUrl(filePath);  
+  
+    const fileUrl = urlData.publicUrl;  
+  
+    await client.from("audio_items").insert({  
+        title,  
+        description,  
+        category,  
+        filename: selectedFile.name,  
+        file_url: fileUrl  
+    });  
+  
+    showTwitchToast("Audio subido correctamente", "success", selectedFile.name);  
+    Swal.fire({  
+        title: "Subida completa",  
+        text: "Tu audio se subió correctamente.",  
+        icon: "success",  
+        showConfirmButton: false,  
+        timer: 1400,  
+        customClass: { popup: "swal2-glass" }  
+    });  
+  
+    selectedFile = null;  
+    fileInput.value = "";
+    uploadFilename.textContent = "";
+    document.getElementById("title").value = "";  
+    document.getElementById("description").value = "";  
+    document.getElementById("status").textContent = "Esperando archivo...";  
+  
+    loadList();  
+});  
+  
+/* ---------------------------------------------------------  
+   LOAD LIST + RENDER with custom controls (AJUSTADO)  
+   - Cambié la estructura de la pista para que el Play quede junto al título  
+   - Moví la llamada a setFloatingPlayer AL CLICK del usuario (no en evento 'play')  
+--------------------------------------------------------- */  
+async function loadList() {  
+    const lista = document.getElementById("lista");  
+    lista.innerHTML = `<div class="muted">Cargando...</div>`;  
+  
+    const { data, error } = await client  
+        .from("audio_items")  
+        .select("*")  
+        .order("created_at", { ascending: false });  
+  
+    if (error) {  
+        lista.innerHTML = `<div class="muted">Error cargando pistas</div>`;  
+        return;  
+    }  
+  
+    renderList(data || []);  
+}  
+  
+function formatTime(seconds) {  
+    if (!seconds || isNaN(seconds)) return "0:00";  
+    const m = Math.floor(seconds / 60);  
+    const s = Math.floor(seconds % 60).toString().padStart(2,'0');  
+    return `${m}:${s}`;  
+}  
+  
+function escapeHtml(txt = "") {  
+    return String(txt).replace(/[&<>"']/g, m => ({  
+        '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'  
+    }[m]));  
+}  
+  
+function renderList(arr) {  
+    const lista = document.getElementById("lista");  
+    lista.innerHTML = "";  
+  
+    arr.forEach(item => {  
+        const track = document.createElement('div');  
+        track.className = 'track';  
+  
+        // hidden native audio element  
+        const audioEl = document.createElement('audio');  
+        audioEl.src = item.file_url;  
+        audioEl.preload = "metadata";  
+        audioEl.id = `audio-${item.id}`;  
+        audioEl.style.display = 'none';  
+  
+        // LEFT: play + info (play is next to title)  
+        const left = document.createElement('div');  
+        left.className = 'track-left';  
+  
+        const playBtn = document.createElement('button');  
+        playBtn.className = 'btn-play';  
+        playBtn.innerHTML = `<i class="ri-play-line"></i>`;  
+        playBtn.title = 'Play / Pause';  
+  
+        const info = document.createElement('div');  
+        info.className = 'track-info';  
+        info.innerHTML = `<h3>${escapeHtml(item.title)}</h3><small>${escapeHtml(item.category)}</small>`;  
+  
+        left.appendChild(playBtn);  
+        left.appendChild(info);  
+  
+        // RIGHT: controls (progress, speed, volume, edit, delete)  
+        const controls = document.createElement('div');  
+        controls.className = 'track-controls';  
+  
+        const progress = document.createElement('input');  
+        progress.type = 'range';  
+        progress.min = 0;  
+        progress.max = 100;  
+        progress.value = 0;  
+        progress.step = 0.1;  
+        progress.className = 'progress';  
+        progress.title = 'Seek';  
+  
+        const timeLabel = document.createElement('div');  
+        timeLabel.className = 'time';  
+        timeLabel.textContent = '0:00';  
+  
+        const speedBtn = document.createElement('button');  
+        speedBtn.className = 'control-btn speed';  
+        speedBtn.textContent = 'x1';  
+        speedBtn.title = 'Velocidad';  
+  
+        const volBtn = document.createElement('button');  
+        volBtn.className = 'control-btn icon';  
+        volBtn.innerHTML = `<i class="ri-volume-up-line"></i>`;  
+        volBtn.title = 'Volumen';  
+  
+        const editBtn = document.createElement('button');  
+        editBtn.className = 'control-btn';  
+        editBtn.innerHTML = '<i class="ri-pencil-line"></i>';  
+        editBtn.title = 'Editar';  
+  
+        const delBtn = document.createElement('button');  
+        delBtn.className = 'control-btn delete';  
+        delBtn.innerHTML = '<i class="ri-delete-bin-line"></i>';  
+        delBtn.title = 'Eliminar';  
+  
+        // Agrupar controles de reproducción 
+        const playbackControls = document.createElement('div'); 
+        playbackControls.className = 'track-playback'; 
+        playbackControls.appendChild(progress); 
+        playbackControls.appendChild(timeLabel); 
+        playbackControls.appendChild(speedBtn); 
+        playbackControls.appendChild(volBtn); 
+ 
+        // Agrupar botones de acción 
+        const actionControls = document.createElement('div'); 
+        actionControls.className = 'track-actions'; 
+        actionControls.appendChild(editBtn); 
+        actionControls.appendChild(delBtn); 
+ 
+        // Añadir grupos al contenedor principal de controles 
+        controls.appendChild(playbackControls); 
+        controls.appendChild(actionControls); 
+  
+        // assemble track  
+        track.appendChild(audioEl);  
+        track.appendChild(left);  
+        track.appendChild(controls);  
+        lista.appendChild(track);  
+  
+        // AUDIO EVENTS and control wiring (kept almost identical)  
+        let speed = 1;  
+  
+        // update duration once metadata loaded  
+        audioEl.addEventListener('loadedmetadata', () => {  
+            // set progress max to duration for precise seeking  
+            progress.max = Math.max(1, audioEl.duration);  
+        });  
+  
+        audioEl.addEventListener('timeupdate', () => {  
+            // sync per-track progress and time  
+            progress.value = audioEl.currentTime;  
+            timeLabel.textContent = formatTime(audioEl.currentTime);  
+  
+            // if this audio is the one showing in floating player, sync fp elements  
+            if (fpLinkedAudio === audioEl) {  
+                fpProgress.max = Math.max(1, audioEl.duration || 1);  
+                fpProgress.value = audioEl.currentTime;  
+                fpTime.textContent = formatTime(audioEl.currentTime);  
+            }  
+        });  
+  
+        // REMOVE automatic mini-player show on audio.play (we only show mini-player on USER CLICK)  
+        audioEl.addEventListener('play', () => {  
+            playBtn.innerHTML = `<i class="ri-pause-line"></i>`;  
+            showTwitchToast(`Reproduciendo: ${item.title}`, 'info');  
+            // NO setFloatingPlayer here (was removed) - prevents auto-show unless user clicked  
+        });  
+  
+        audioEl.addEventListener('pause', () => {  
+            playBtn.innerHTML = `<i class="ri-play-line"></i>`;  
+            showTwitchToast(`Pausado: ${item.title}`, 'info');  
+        });  
+  
+        // PLAY BUTTON: when user clicks we: pause other audios, call setFloatingPlayer (so FP only appears on user click), then toggle play  
+        playBtn.addEventListener('click', () => {  
+            // pause any other audios  
+            document.querySelectorAll('audio').forEach(a => {  
+                if (a !== audioEl) a.pause();  
+            });  
+  
+            // *** show floating player ONLY on user click (so it won't appear from programmatic play)  
+            setFloatingPlayer(item.title, item.file_url, audioEl, item.id);  
+  
+            if (audioEl.paused) audioEl.play().catch(()=>{}); else audioEl.pause();  
+        });  
+  
+        progress.addEventListener('input', (e) => {  
+            audioEl.currentTime = Number(e.target.value);  
+        });  
+  
+        speedBtn.addEventListener('click', () => {  
+            speed = speed === 1 ? 2 : 1;  
+            audioEl.playbackRate = speed;  
+            speedBtn.textContent = `x${speed}`;  
+            showTwitchToast(`Velocidad: x${speed}`, 'info');  
+  
+            // sync floating player speed if linked  
+            if (fpLinkedAudio === audioEl) {  
+                fpSpeedBtn.textContent = `x${speed}`;  
+            }  
+        });  
+  
+        volBtn.addEventListener('click', () => {  
+            if (fpLinkedAudio) {
+                fpVolume.value = fpLinkedAudio.volume > 0 ? 0 : 1;
+                fpLinkedAudio.volume = fpLinkedAudio.volume > 0 ? 0 : 1;
+            }
+        });  
+  
+        // Edit and delete with SweetAlert (glass style) - kept original logic  
+        editBtn.addEventListener('click', async () => {  
+            const { value: formValues } = await Swal.fire({  
+                title: 'Editar pista',  
+                html:  
+                    `<input id="swTitle" class="swal2-input" placeholder="Título" value="${escapeHtml(item.title)}">` +  
+                    `<textarea id="swDesc" class="swal2-textarea" placeholder="Descripción">${escapeHtml(item.description || '')}</textarea>` +  
+                    `<select id="swCat" class="swal2-input">  
+                        <option ${item.category === 'Customer Service' ? 'selected' : ''}>Customer Service</option>  
+                        <option ${item.category === 'Opening' ? 'selected' : ''}>Opening</option>  
+                        <option ${item.category === 'Closers' ? 'selected' : ''}>Closers</option>  
+                    </select>`,  
+                focusConfirm: false,  
+                showCancelButton: true,  
+                confirmButtonText: 'Guardar',  
+                cancelButtonText: 'Cancelar',  
+                customClass: { popup: 'swal2-glass' },  
+                preConfirm: () => {  
+                    return {  
+                        title: document.getElementById('swTitle').value,  
+                        description: document.getElementById('swDesc').value,  
+                        category: document.getElementById('swCat').value  
+                    };  
+                }  
+            });  
+  
+            if (!formValues) return;  
+  
+            await client  
+                .from("audio_items")  
+                .update({  
+                    title: formValues.title.trim(),  
+                    description: formValues.description.trim(),  
+                    category: formValues.category  
+                })  
+                .eq("id", item.id);  
+  
+            showTwitchToast('Pista actualizada', 'success', formValues.title.trim() || item.title);  
+            Swal.fire({ title: 'Guardado', icon: 'success', timer: 1200, showConfirmButton: false, customClass: { popup: 'swal2-glass' } });  
+            loadList();  
+        });  
+  
+        delBtn.addEventListener('click', async () => {  
+            const result = await Swal.fire({  
+                title: '¿Eliminar audio?',  
+                text: 'Esta acción no se puede deshacer',  
+                icon: 'warning',  
+                showCancelButton: true,  
+                confirmButtonText: 'Sí, eliminar',  
+                cancelButtonText: 'Cancelar',  
+                customClass: { popup: 'swal2-glass' }  
+            });  
+  
+            if (!result.isConfirmed) return;  
+  
+            const { data } = await client  
+                .from("audio_items")  
+                .select("*")  
+                .eq("id", item.id)  
+                .single();  
+  
+            const path = data.file_url.split("/audios/")[1];  
+  
+            await client.storage.from("audios").remove([path]);  
+            await client.from("audio_items").delete().eq("id", item.id);  
+  
+            showTwitchToast('Pista eliminada', 'success', item.title);  
+            Swal.fire({ title: 'Eliminada', icon: 'success', timer: 1000, showConfirmButton: false, customClass: { popup: 'swal2-glass' } });  
+            loadList();  
+        });  
+    });  
+}  
+  
+/* ---------------------------------------------------------  
+   FLOATING PLAYER Implementation (only shown when user clicks)  
+   - fpLinkedAudio stores the actual audio element being represented  
+   - setFloatingPlayer is now called only from user click handlers  
+--------------------------------------------------------- */  
+const floatingPlayer = document.getElementById('floatingPlayer');  
+const fpTitle = document.getElementById('fpTitle');  
+const fpProgress = document.getElementById('fpProgress');  
+const fpTime = document.getElementById('fpTime');  
+const fpSpeedBtn = document.getElementById('fpSpeedBtn');  
+const fpPlayBtn = document.getElementById('fpPlayBtn');  
+const fpClose = document.getElementById('fpClose');  
+const fpVolume = document.getElementById('fpVolume');
+  
+let fpLinkedAudio = null; // the actual audio element currently represented  
+let fpSpeed = 1;  
+
+const handleFpAudioPlay = () => {
+    fpPlayBtn.innerHTML = `<i class="ri-pause-line"></i>`;
+};
+const handleFpAudioPause = () => {
+    fpPlayBtn.innerHTML = `<i class="ri-play-line"></i>`;
+};
+  
+function setFloatingPlayer(title, url, linkedAudio = null, id = null) {  
+    if (fpLinkedAudio && fpLinkedAudio !== linkedAudio) {
+        fpLinkedAudio.removeEventListener('play', handleFpAudioPlay);
+        fpLinkedAudio.removeEventListener('pause', handleFpAudioPause);
+    }
+
+    fpLinkedAudio = linkedAudio || null;  
+    
+    if (fpLinkedAudio) {
+        fpLinkedAudio.addEventListener('play', handleFpAudioPlay);
+        fpLinkedAudio.addEventListener('pause', handleFpAudioPause);
+    }
+
+    fpTitle.textContent = title;  
+    floatingPlayer.style.display = 'flex';  
+    floatingPlayer.setAttribute('aria-hidden','false');  
+  
+    // sync play/pause button initial state  
+    if (fpLinkedAudio && !fpLinkedAudio.paused) {  
+        fpPlayBtn.innerHTML = `<i class="ri-pause-line"></i>`;  
+    } else {  
+        fpPlayBtn.innerHTML = `<i class="ri-play-line"></i>`;  
+    }  
+  
+    // set speed button to current playbackRate  
+    fpSpeed = (fpLinkedAudio && fpLinkedAudio.playbackRate) || 1;  
+    fpSpeedBtn.textContent = `x${fpSpeed}`;  
+  
+    // set initial volume icon  
+    if (fpLinkedAudio) {
+      fpVolume.value = fpLinkedAudio.volume;
+    }
+}  
+
+fpVolume.addEventListener('input', (e) => {
+    if (fpLinkedAudio) {
+        fpLinkedAudio.volume = e.target.value;
+    }
+});
+  
+// FP audio sync events: we don't use a separate audio element here, we sync to the linked audio element  
+function rafSync() {
+    if (fpLinkedAudio && !fpLinkedAudio.paused) {
+        try {
+            fpProgress.max = Math.max(1, fpLinkedAudio.duration || 1);
+            fpProgress.value = fpLinkedAudio.currentTime || 0;
+            fpTime.textContent = formatTime(fpLinkedAudio.currentTime || 0);
+        } catch (e) {
+            console.warn("rafSync error:", e);
+        }
+    }
+    requestAnimationFrame(rafSync);
+}
+requestAnimationFrame(rafSync);
+  
+fpPlayBtn.addEventListener('click', () => {  
+    if (!fpLinkedAudio) return;  
+    if (fpLinkedAudio.paused) fpLinkedAudio.play().catch(()=>{}); else fpLinkedAudio.pause();  
+});  
+  
+fpProgress.addEventListener('input', () => {  
+    if (!fpLinkedAudio) return;  
+    fpLinkedAudio.currentTime = Number(fpProgress.value);  
+});  
+  
+fpSpeedBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const speedOptions = document.getElementById('speedOptions');
+    speedOptions.style.display = speedOptions.style.display === 'none' ? 'block' : 'none';
+});
+
+document.querySelectorAll('.speed-option').forEach(option => {
+    option.addEventListener('click', (e) => {
+        const speed = e.target.getAttribute('data-speed');
+        fpSpeed = parseFloat(speed);
+        fpSpeedBtn.textContent = `${speed}x`;
+        if (fpLinkedAudio) {
+            fpLinkedAudio.playbackRate = fpSpeed;
+        }
+        showTwitchToast(`Velocidad: ${speed}x`, 'info');
+        document.getElementById('speedOptions').style.display = 'none';
+    });
+});
+
+document.addEventListener('click', (e) => {
+    const speedControl = document.querySelector('.speed-control-container');
+    if (!speedControl.contains(e.target)) {
+        document.getElementById('speedOptions').style.display = 'none';
+    }
+});
+  
+fpClose.addEventListener('click', () => {  
+    if (fpLinkedAudio) fpLinkedAudio.pause();  
+    fpLinkedAudio = null;  
+    floatingPlayer.style.display = 'none';  
+    floatingPlayer.setAttribute('aria-hidden','true');  
+});  
+  
+/* ---------------------------------------------------------  
+   INIT  
+--------------------------------------------------------- */  
+loadList();  
+  
+</script>  
+
+    <script src="./assets/js/renderer.js"></script>
+
+  <script src="./assets/js/badge.js"></script>
+</body>  
+</html>  

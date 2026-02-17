@@ -1,0 +1,615 @@
+<!DOCTYPE html> 
+<html lang="es"> 
+<head> 
+    <meta charset="UTF-8"> 
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
+    <title>Configuración del Directorio</title> 
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script> 
+      <link rel="stylesheet" href="./assets/css/badge.css"> 
+    <style> 
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap'); 
+ 
+        :root { 
+            --bg-color: #1a1a1a; 
+            --card-bg: #2b2b2b; 
+            --text-color: #e0e0e0; 
+            --primary-color: #ffa200; 
+            --border-color: #444; 
+            --shadow-color: rgba(0, 0, 0, 0.2); 
+            --success-color: #28a745; 
+            --danger-color: #dc3545; 
+        } 
+ 
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background-color: var(--bg-color); 
+            color: var(--text-color); 
+            margin: 0; 
+            padding: 40px; 
+        } 
+ 
+        .container { 
+            width: 100%; 
+            max-width: 1200px; 
+            margin: 0 auto; 
+        } 
+ 
+        h1 { 
+            color: white; 
+            text-align: center; 
+            font-size: 2.5rem; 
+            margin-bottom: 40px; 
+        } 
+         
+        .toolbar { 
+            display: flex; 
+            justify-content: flex-end; 
+            margin-bottom: 20px; 
+        } 
+         
+        button { 
+            padding: 12px 25px; 
+            font-size: 1rem; 
+            font-weight: 600; 
+            border-radius: 8px; 
+            border: none; 
+            cursor: pointer; 
+            transition: all 0.3s ease; 
+        } 
+ 
+        #new-btn, #save-btn { 
+            background-color: var(--primary-color); 
+            color: white; 
+        } 
+         
+        #new-btn:hover, #save-btn:hover { 
+            opacity: 0.9; 
+        } 
+         
+        .table-container { 
+            background-color: var(--card-bg); 
+            border-radius: 15px; 
+            padding: 20px; 
+            border: 1px solid var(--border-color); 
+            box-shadow: 0 4px 15px var(--shadow-color); 
+        } 
+         
+        table { 
+            width: 100%; 
+            border-collapse: collapse; 
+        } 
+         
+        th, td { 
+            padding: 15px; 
+            text-align: left; 
+            border-bottom: 1px solid var(--border-color); 
+        } 
+         
+        th { 
+            font-size: 1.1rem; 
+            color: white; 
+        } 
+         
+        td { 
+            color: var(--text-color); 
+        } 
+         
+        tr:last-child td { 
+            border-bottom: none; 
+        } 
+         
+        .actions-cell { 
+            display: flex; 
+            gap: 10px; 
+        } 
+         
+        .actions-cell button { 
+            padding: 8px 12px; 
+            font-size: 0.9rem; 
+        } 
+         
+        .edit-btn { 
+            background-color: #555; 
+            color: white; 
+        } 
+         
+        .delete-btn { 
+            background-color: var(--danger-color); 
+            color: white; 
+        } 
+ 
+        /* --- Estilos del Modal --- */ 
+        .modal-overlay { 
+            position: fixed; 
+            top: 0; 
+            left: 0; 
+            width: 100%; 
+            height: 100%; 
+            background-color: rgba(0, 0, 0, 0.7); 
+            display: none; /* Oculto por defecto */ 
+            justify-content: center; 
+            align-items: center; 
+            z-index: 1000; 
+        } 
+         
+        .modal-container { 
+            background-color: var(--card-bg); 
+            border-radius: 15px; 
+            border: 1px solid var(--border-color); 
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5); 
+            width: 100%; 
+            max-width: 700px; 
+            position: absolute; /* Para arrastrar */ 
+        } 
+         
+        .modal-header { 
+            padding: 15px 20px; 
+            border-bottom: 1px solid var(--border-color); 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            cursor: move; /* Cursor para arrastrar */ 
+        } 
+         
+        .modal-header h2 { 
+            margin: 0; 
+            font-size: 1.5rem; 
+        } 
+         
+        .close-btn { 
+            background: none; 
+            border: none; 
+            color: var(--text-color); 
+            font-size: 1.8rem; 
+            cursor: pointer; 
+        } 
+         
+        .modal-body { 
+            padding: 30px; 
+            max-height: 70vh; 
+            overflow-y: auto; 
+        } 
+         
+        .form-grid { 
+            display: grid; 
+            grid-template-columns: 1fr 1fr; 
+            gap: 20px; 
+        } 
+ 
+        .form-group { display: flex; flex-direction: column; } 
+        .full-width { grid-column: 1 / -1; } 
+        label { margin-bottom: 8px; font-weight: 500; color: white; } 
+ 
+        input[type="text"] { 
+            padding: 12px; 
+            font-size: 1rem; 
+            background-color: #3c3c3c; 
+            border: 1px solid var(--border-color); 
+            border-radius: 8px; 
+            color: var(--text-color); 
+        } 
+         
+        .logo-preview-container { display: flex; gap: 20px; align-items: center; } 
+        .logo-input-field { flex-grow: 1; } 
+        .logo-preview { 
+            width: 100px; height: 100px; background-color: #333; 
+            border-radius: 10px; border: 1px solid var(--border-color); 
+            display: flex; align-items: center; justify-content: center; 
+            overflow: hidden; flex-shrink: 0; 
+        } 
+        .logo-preview img { width: 100%; height: 100%; object-fit: cover; } 
+ 
+        .modal-footer { 
+            padding: 20px; 
+            border-top: 1px solid var(--border-color); 
+            display: flex; 
+            justify-content: flex-end; 
+        } 
+ 
+        /* --- Notificaciones --- */ 
+        .notification { 
+            position: fixed; bottom: 20px; left: 50%; 
+            transform: translateX(-50%); padding: 15px 25px; 
+            border-radius: 8px; color: white; font-size: 1rem; 
+            opacity: 0; visibility: hidden; 
+            transition: opacity 0.3s, visibility 0.3s, transform 0.3s; 
+            z-index: 1001; 
+        } 
+        .notification.show { opacity: 1; visibility: visible; transform: translate(-50%, -10px); } 
+        .notification.success { background-color: var(--success-color); } 
+        .notification.error { background-color: var(--danger-color); } 
+
+        /* --- Estilos del Popup de Confirmación --- */
+        #confirm-modal-overlay .modal-body p {
+            text-align: center;
+            font-size: 1.1rem;
+            line-height: 1.6;
+            margin: 0;
+        }
+
+        #confirm-delete-btn:hover {
+            opacity: 0.8;
+            transform: scale(1.02);
+        }
+
+        #confirm-cancel-btn:hover {
+            opacity: 0.8;
+        }
+    </style> 
+</head> 
+<body> 
+  <!-- ICONO Y BADGE (sin barra, con margen propio) --> 
+<img id="login-icon" class="login-icon" src="./assets/img/user.svg"> 
+ 
+  <!-- Placa del usuario --> 
+<div id="user-badge" class="user-badge hidden" style="position: fixed;"> 
+  <div id="badge-username"></div> 
+  <div id="badge-role"></div> 
+</div> 
+ 
+<!-- Menú ahora fuera del badge --> 
+<div id="badge-menu" class="hidden"> 
+  <button id="logout-btn" class="logout-btn">Cerrar sesión</button> 
+</div> 
+ 
+ 
+<!-- PANEL DE LOGIN --> 
+<div id="login-panel" class="login-panel hidden"> 
+ 
+  <h3>Iniciar sesión</h3> 
+ 
+  <input id="user" class="input" placeholder="Usuario"> 
+  <input id="pass" class="input" type="password" placeholder="Contraseña"> 
+ 
+  <button id="login-btn" class="login-btn">Entrar</button> 
+ 
+  <!-- Estado del login --> 
+  <div id="login-status" class="status"></div> 
+</div> 
+ 
+<!-- TU DRAWER --> 
+<menutech-drawer id="main-drawer" class="hidden"></menutech-drawer> 
+ 
+ 
+  <!-- NAVBAR NEOMÓRFICO INFERIOR --> 
+<div class="neo-nav-container"> 
+    <button id="neoNavBack" class="neo-nav-btn"> 
+        <svg viewBox="0 0 24 24" class="neo-nav-icon"> 
+            <path d="M15 18l-6-6 6-6" stroke="currentColor" stroke-width="2" 
+                  fill="none" stroke-linecap="round" stroke-linejoin="round"/> 
+        </svg> 
+    </button> 
+ 
+    <button id="neoNavHome" class="neo-nav-btn"> 
+        <svg viewBox="0 0 24 24" class="neo-nav-icon"> 
+            <path d="M3 11l9-7 9 7v8a2 2 0 0 1-2 2h-4a2 2 0 0 1-2-2v-4H9v4a2  
+                     2 0 0 1-2 2H5a2 2 0 0 1-2-2z" 
+                  stroke="currentColor" stroke-width="2" fill="none" 
+                  stroke-linecap="round" stroke-linejoin="round"/> 
+        </svg> 
+    </button> 
+</div> 
+  <menutech-themes></menutech-themes> 
+  <menutech-chatbot></menutech-chatbot> 
+ 
+    <div class="container"> 
+        <h1>Panel de Administración</h1> 
+        <div class="toolbar"> 
+            <button id="new-btn">+ Nuevo Restaurante</button> 
+        </div> 
+        <div class="table-container"> 
+            <table> 
+                <thead> 
+                    <tr> 
+                        <th>Nombre</th> 
+                        <th>Dirección</th> 
+                        <th style="width: 150px;">Acciones</th> 
+                    </tr> 
+                </thead> 
+                <tbody id="restaurant-table-body"></tbody> 
+            </table> 
+        </div> 
+    </div> 
+ 
+    <!-- Formulario Modal --> 
+    <div id="modal-overlay" class="modal-overlay"> 
+        <div id="modal-container" class="modal-container"> 
+            <div id="modal-header" class="modal-header"> 
+                <h2 id="modal-title"></h2> 
+                <button class="close-btn">&times;</button> 
+            </div> 
+            <div class="modal-body"> 
+                <form id="restaurant-form"> 
+                    <input type="hidden" id="restaurant-id"> 
+                    <div class="form-grid"> 
+                        <div class="form-group full-width"> 
+                            <label for="nombre">Nombre</label> 
+                            <input type="text" id="nombre"> 
+                        </div> 
+                        <div class="form-group full-width"> 
+                            <label for="direccion">Dirección</label> 
+                            <input type="text" id="direccion"> 
+                        </div> 
+                        <div class="form-group"> 
+                            <label for="telefono">Teléfono</label> 
+                            <input type="text" id="telefono"> 
+                        </div> 
+                        <div class="form-group"> 
+                            <label for="website">Website</label> 
+                            <input type="text" id="website"> 
+                        </div> 
+                        <div class="form-group logo-preview-container full-width"> 
+                            <div class="logo-input-field form-group"> 
+                                <label for="logo">Logo (URL)</label> 
+                                <input type="text" id="logo"> 
+                            </div> 
+                            <div class="logo-preview"> 
+                                <img id="logo-preview-img" src="https://via.placeholder.com/100" alt="Logo Preview"> 
+                            </div> 
+                        </div> 
+                        <div class="form-group"> 
+                            <label for="google_business">Google Business</label> 
+                            <input type="text" id="google_business"> 
+                        </div> 
+                        <div class="form-group"> 
+                            <label for="facebook">Facebook</label> 
+                            <input type="text" id="facebook"> 
+                        </div> 
+                        <div class="form-group"> 
+                            <label for="instagram">Instagram</label> 
+                            <input type="text" id="instagram"> 
+                        </div> 
+                        <div class="form-group"> 
+                            <label for="marketing_kit">Marketing Kit</label> 
+                            <input type="text" id="marketing_kit"> 
+                        </div> 
+                    </div> 
+                </form> 
+            </div> 
+            <div class="modal-footer"> 
+                <button type="submit" form="restaurant-form" id="save-btn">Guardar</button> 
+            </div> 
+        </div> 
+    </div> 
+     
+    <div id="notification" class="notification"></div> 
+
+    <!-- Popup de Confirmación de Eliminación -->
+    <div id="confirm-modal-overlay" class="modal-overlay">
+        <div class="modal-container" style="max-width: 450px;">
+            <div class="modal-header">
+                <h2 id="confirm-modal-title" style="color: white;">Confirmar Eliminación</h2>
+            </div>
+            <div class="modal-body">
+                <p style="color: white;">¿Estás seguro de que quieres eliminar este restaurante? Esta acción no se puede deshacer.</p>
+            </div>
+            <div class="modal-footer" style="justify-content: flex-end; gap: 10px;">
+                <button id="confirm-cancel-btn" class="edit-btn" style="background-color: #555;">Cancelar</button>
+                <button id="confirm-delete-btn" class="delete-btn">Eliminar</button>
+            </div>
+        </div>
+    </div>
+ 
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- Elementos UI ---
+            const tableBody = document.getElementById('restaurant-table-body');
+            const modalOverlay = document.getElementById('modal-overlay');
+            const modalContainer = document.getElementById('modal-container');
+            const modalTitle = document.getElementById('modal-title');
+            const form = document.getElementById('restaurant-form');
+            const logoInput = document.getElementById('logo');
+            const logoPreview = document.getElementById('logo-preview-img');
+            const newBtn = document.getElementById('new-btn');
+            const closeBtn = modalContainer.querySelector('.close-btn');
+            const modalHeader = document.getElementById('modal-header');
+
+            // --- Elementos del Popup de Confirmación ---
+            const confirmModalOverlay = document.getElementById('confirm-modal-overlay');
+            const confirmCancelBtn = document.getElementById('confirm-cancel-btn');
+            const confirmDeleteBtn = document.getElementById('confirm-delete-btn');
+
+            let supabase = null;
+            let restaurantIdToDelete = null; // Para guardar el ID a eliminar
+
+            // --- Lógica de la Notificación ---
+            function showNotification(message, type) {
+                const notification = document.getElementById('notification');
+                notification.textContent = message;
+                notification.className = `notification ${type} show`;
+                setTimeout(() => { notification.classList.remove('show'); }, 3000);
+            }
+
+            // --- Lógica de UI (independiente de Supabase) ---
+            function openModal() { modalOverlay.style.display = 'flex'; }
+            function closeModal() { modalOverlay.style.display = 'none'; }
+
+            function openConfirmModal() { confirmModalOverlay.style.display = 'flex'; }
+            function closeConfirmModal() {
+                confirmModalOverlay.style.display = 'none';
+                restaurantIdToDelete = null;
+            }
+
+            function resetForm() {
+                form.reset();
+                form.querySelector('#restaurant-id').value = '';
+                logoPreview.src = 'https://via.placeholder.com/100';
+            }
+
+            newBtn.addEventListener('click', () => {
+                modalTitle.textContent = 'Nuevo Restaurante';
+                resetForm();
+                openModal();
+            });
+
+            closeBtn.addEventListener('click', closeModal);
+            modalOverlay.addEventListener('click', (e) => {
+                if (e.target === modalOverlay) closeModal();
+            });
+
+            logoInput.addEventListener('input', () => {
+                logoPreview.src = logoInput.value || 'https://via.placeholder.com/100';
+            });
+
+            // Eventos del Popup de Confirmación
+            confirmCancelBtn.addEventListener('click', closeConfirmModal);
+            confirmModalOverlay.addEventListener('click', (e) => {
+                if (e.target === confirmModalOverlay) closeConfirmModal();
+            });
+
+
+            // Lógica de Arrastre
+            let isDragging = false, offsetX, offsetY;
+            modalHeader.addEventListener('mousedown', (e) => {
+                isDragging = true;
+                const rect = modalContainer.getBoundingClientRect();
+                offsetX = e.clientX - rect.left;
+                offsetY = e.clientY - rect.top;
+            });
+            document.addEventListener('mousemove', (e) => {
+                if (!isDragging) return;
+                modalContainer.style.left = `${e.clientX - offsetX}px`;
+                modalContainer.style.top = `${e.clientY - offsetY}px`;
+            });
+            document.addEventListener('mouseup', () => { isDragging = false; });
+
+            // --- Lógica de Datos (dependiente de Supabase) ---
+            function initializeSupabase() {
+                if (typeof window.supabase === 'undefined') {
+                    console.error("Supabase library not loaded. Data operations unavailable.");
+                    showNotification('Error de conexión con la base de datos.', 'error');
+                    renderTable([]);
+                    return;
+                }
+
+                const SUPABASE_URL = 'https://ojpyfjgkffmzwvukjagf.supabase.co';
+                const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9qcHlmamdrZmZtend2dWtqYWdmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQxNDIwMzYsImV4cCI6MjA3OTcxODAzNn0.dlVYmoMumBse_O1PLBx0FeNITqY4YktefD6l_uonSgo';
+                supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+                addCrudEventListeners();
+                fetchRestaurants();
+            }
+
+            function renderTable(restaurants) {
+                tableBody.innerHTML = '';
+                if (restaurants.length === 0) {
+                    tableBody.innerHTML = '<tr><td colspan="3" style="text-align: center;">No hay restaurantes registrados.</td></tr>';
+                } else {
+                    restaurants.forEach(r => {
+                        const tr = document.createElement('tr');
+                        tr.dataset.id = r.id;
+                        tr.innerHTML = ` 
+                            <td>${r.nombre || 'Sin nombre'}</td> 
+                            <td>${r.direccion || 'Sin dirección'}</td> 
+                            <td class="actions-cell"> 
+                                <button class="edit-btn" data-id="${r.id}">Editar</button> 
+                                <button class="delete-btn" data-id="${r.id}">Eliminar</button> 
+                            </td> 
+                        `;
+                        tableBody.appendChild(tr);
+                    });
+                }
+            }
+
+            async function fetchRestaurants() {
+                if (!supabase) return;
+                const { data, error } = await supabase.from('restaurantes').select('*').order('nombre', { ascending: true });
+                if (error) {
+                    showNotification('Error al cargar restaurantes.', 'error');
+                } else {
+                    renderTable(data);
+                }
+            }
+
+            function addCrudEventListeners() {
+                form.addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    if (!supabase) return;
+
+                    const restaurantData = {
+                        nombre: form.querySelector('#nombre').value,
+                        direccion: form.querySelector('#direccion').value,
+                        telefono: form.querySelector('#telefono').value,
+                        website: form.querySelector('#website').value,
+                        logo: form.querySelector('#logo').value,
+                        google_business: form.querySelector('#google_business').value,
+                        facebook: form.querySelector('#facebook').value,
+                        instagram: form.querySelector('#instagram').value,
+                        marketing_kit: form.querySelector('#marketing_kit').value,
+                    };
+
+                    const id = form.querySelector('#restaurant-id').value;
+                    let error;
+                    if (id) {
+                        const { error: updateError } = await supabase.from('restaurantes').update(restaurantData).eq('id', id);
+                        error = updateError;
+                    } else {
+                        const { error: insertError } = await supabase.from('restaurantes').insert([restaurantData]);
+                        error = insertError;
+                    }
+
+                    if (error) {
+                        showNotification(`Error: ${error.message}`, 'error');
+                    } else {
+                        showNotification('Restaurante guardado con éxito.', 'success');
+                        closeModal();
+                        fetchRestaurants();
+                    }
+                });
+
+                tableBody.addEventListener('click', async (e) => {
+                    if (!supabase) return;
+                    const id = e.target.dataset.id;
+                    if (!id) return;
+
+                    if (e.target.classList.contains('edit-btn')) {
+                        const { data, error } = await supabase.from('restaurantes').select('*').eq('id', id).single();
+                        if (error) {
+                            showNotification('Error al cargar datos del restaurante.', 'error');
+                            return;
+                        }
+
+                        modalTitle.textContent = 'Editar Restaurante';
+                        form.querySelector('#restaurant-id').value = data.id;
+                        form.querySelector('#nombre').value = data.nombre || '';
+                        form.querySelector('#direccion').value = data.direccion || '';
+                        form.querySelector('#telefono').value = data.telefono || '';
+                        form.querySelector('#website').value = data.website || '';
+                        form.querySelector('#logo').value = data.logo || '';
+                        form.querySelector('#google_business').value = data.google_business || '';
+                        form.querySelector('#facebook').value = data.facebook || '';
+                        form.querySelector('#instagram').value = data.instagram || '';
+                        form.querySelector('#marketing_kit').value = data.marketing_kit || '';
+                        logoPreview.src = data.logo || 'https://via.placeholder.com/100';
+                        openModal();
+                    }
+
+                    if (e.target.classList.contains('delete-btn')) {
+                        restaurantIdToDelete = id; // Guardar el ID
+                        openConfirmModal();     // Abrir el popup de confirmación
+                    }
+                });
+
+                confirmDeleteBtn.addEventListener('click', async () => {
+                    if (!restaurantIdToDelete || !supabase) return;
+
+                    const { error } = await supabase.from('restaurantes').delete().eq('id', restaurantIdToDelete);
+                    if (error) {
+                        showNotification('Error al eliminar.', 'error');
+                    } else {
+                        showNotification('Restaurante eliminado.', 'success');
+                        fetchRestaurants();
+                    }
+                    closeConfirmModal();
+                });
+            }
+
+            // Iniciar la aplicación
+            initializeSupabase();
+        });
+    </script> 
+      <script src="./assets/js/badge.js"></script> 
+  <script src="https://menutech.xyz/menutechUI.min.js"></script> 
+  <script src="./assets/js/renderer.js"></script> 
+</body> 
+</html> 

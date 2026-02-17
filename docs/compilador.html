@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Compilador de Código</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap');
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Roboto', sans-serif;
+  background-color: #2c3e50;
+  color: #ecf0f1;
+  padding: 20px 0; /* Vertical padding */
+}
+
+.container {
+  background-color: #34495e;
+  border-radius: 10px;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+  padding: 25px;
+  width: 95%;
+  max-width: 1200px;
+  margin: 20px auto; /* Centering horizontally */
+  display: flex;
+  flex-direction: column;
+  /* Removed height and max-height to allow natural growth */
+}
+
+header {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 20px;
+  flex-shrink: 0;
+}
+
+.logo {
+  width: 120px;
+  animation: pulse 2s infinite ease-in-out;
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+
+.editor {
+  display: flex;
+  flex-direction: column;
+}
+
+.tabs {
+  display: flex;
+  margin-bottom: 10px;
+}
+
+.tab-button {
+  background-color: #2c3e50;
+  border: none;
+  color: #ecf0f1;
+  padding: 12px 22px;
+  cursor: pointer;
+  border-radius: 5px 5px 0 0;
+  font-size: 16px;
+  transition: background-color 0.3s, transform 0.3s;
+}
+
+.tab-button.active {
+  background-color: #e67e22;
+  transform: translateY(-2px);
+  box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.2);
+}
+
+.tab-button:hover {
+  background-color: #f39c12;
+}
+
+.editor-windows {
+  height: 350px; /* Give editor a consistent initial height */
+  position: relative;
+}
+
+.editor-window { display: none; width: 100%; height: 100%; }
+.editor-window.active { display: block; }
+
+textarea {
+  width: 100%;
+  height: 100%;
+  background-color: #2c3e50;
+  border: 1px solid #34495e;
+  color: #ecf0f1;
+  padding: 15px;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 16px;
+  line-height: 1.5;
+  resize: none;
+  border-radius: 5px;
+}
+
+.controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 15px 0;
+  flex-shrink: 0;
+}
+
+.preview-controls {
+  display: flex;
+  align-items: center;
+  color: #ecf0f1;
+}
+
+.preview-controls label {
+  margin-right: 15px;
+  font-size: 14px;
+}
+
+input[type=number] {
+  background-color: #2c3e50;
+  color: #ecf0f1;
+  border: 1px solid #4a637a;
+  border-radius: 4px;
+  padding: 5px 8px;
+  width: 80px;
+}
+
+.buttons { display: flex; }
+
+.run-button,
+.clear-button {
+  border: none;
+  color: white;
+  padding: 12px 25px;
+  font-size: 16px;
+  cursor: pointer;
+  border-radius: 5px;
+  transition: background-color 0.3s, transform 0.3s, box-shadow 0.3s;
+  margin-left: 10px;
+}
+
+.run-button { background-color: #f39c12; }
+.clear-button { background-color: #e74c3c; }
+
+.run-button:hover, .clear-button:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 5px 10px rgba(0,0,0,0.2);
+}
+
+.run-button:active, .clear-button:active {
+  transform: translateY(0px) scale(0.98);
+  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+
+.preview {
+  height: 300px; /* Initial height, controlled by JS */
+  border: 1px solid #2c3e50;
+  border-radius: 5px;
+  overflow: hidden;
+  background-color: #fff;
+  flex-shrink: 0;
+  transition: height 0.3s ease-in-out;
+}
+
+#preview-pane {
+  width: 100%;
+  height: 100%;
+  border: none;
+}
+
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <img src="https://menutech.services/assets/img/logomt.png" alt="Logo" class="logo">
+    </header>
+    <div class="editor">
+      <div class="tabs">
+        <button class="tab-button active" data-tab="html">HTML</button>
+        <button class="tab-button" data-tab="css">CSS</button>
+        <button class="tab-button" data-tab="js">JavaScript</button>
+      </div>
+      <div class="editor-windows">
+        <div class="editor-window active" id="html-editor">
+          <textarea placeholder="Escribe tu código HTML aquí..."></textarea>
+        </div>
+        <div class="editor-window" id="css-editor">
+          <textarea placeholder="Escribe tu código CSS aquí..."></textarea>
+        </div>
+        <div class="editor-window" id="js-editor">
+          <textarea placeholder="Escribe tu código JavaScript aquí..."></textarea>
+        </div>
+      </div>
+    </div>
+    <div class="controls">
+      <div class="preview-controls">
+        <label for="preview-height">Altura del Preview (px):</label>
+        <input type="number" id="preview-height" value="300" min="100" step="10">
+      </div>
+      <div class="buttons">
+        <button class="run-button">Run</button>
+        <button class="clear-button">Clear</button>
+      </div>
+    </div>
+    <div class="preview">
+      <iframe id="preview-pane"></iframe>
+    </div>
+  </div>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+  // Element selections
+  const tabs = document.querySelectorAll('.tab-button');
+  const editorWindows = document.querySelectorAll('.editor-window');
+  const htmlEditor = document.querySelector('#html-editor textarea');
+  const cssEditor = document.querySelector('#css-editor textarea');
+  const jsEditor = document.querySelector('#js-editor textarea');
+  const previewPane = document.getElementById('preview-pane');
+  const runButton = document.querySelector('.run-button');
+  const clearButton = document.querySelector('.clear-button');
+  const previewHeightInput = document.getElementById('preview-height');
+  const previewContainer = document.querySelector('.preview');
+
+  // --- Tab Functionality ---
+  tabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+      const targetTab = tab.dataset.tab;
+
+      tabs.forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+
+      editorWindows.forEach(window => {
+        window.classList.remove('active');
+        if (window.id === `${targetTab}-editor`) {
+          window.classList.add('active');
+        }
+      });
+    });
+  });
+
+  // --- Code Execution ---
+  const runCode = () => {
+    const htmlCode = htmlEditor.value;
+    const cssCode = `<style>${cssEditor.value}</style>`;
+    const jsCode = `<script>${jsEditor.value}<\/script>`;
+    const menutechUIScript = '<script src="https://menutech.xyz/menutechUI.min.js"><\/script>';
+    
+    const combinedCode = `
+      <!DOCTYPE html>
+      <html lang="es">
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        ${menutechUIScript}
+        ${cssCode}
+      </head>
+      <body>
+        ${htmlCode}
+        ${jsCode}
+      </body>
+      </html>
+    `;
+    
+    previewPane.srcdoc = combinedCode;
+  };
+
+  // --- Clear Editors ---
+  const clearCode = () => {
+    htmlEditor.value = '';
+    cssEditor.value = '';
+    jsEditor.value = '';
+    previewPane.srcdoc = '';
+  };
+
+  // --- HTML Editor Auto-close Tags ---
+  htmlEditor.addEventListener('input', (e) => {
+    if (e.inputType === 'insertText' && e.data === '>') {
+      const text = htmlEditor.value;
+      const cursorPos = htmlEditor.selectionStart;
+      const textBeforeCursor = text.slice(0, cursorPos);
+      
+      const tagMatch = textBeforeCursor.match(/<([a-zA-Z0-9\-]+)[^>]*$/);
+      
+      if (tagMatch) {
+        const tagName = tagMatch[1];
+        const selfClosingTags = ['area', 'base', 'br', 'col', 'embed', 'hr', 'img', 'input', 'link', 'meta', 'param', 'source', 'track', 'wbr'];
+        
+        if (!selfClosingTags.includes(tagName.toLowerCase())) {
+          // Check if the tag is already closed
+          const nextChar = htmlEditor.value.substring(cursorPos, cursorPos + 1);
+          if (nextChar !== '<') {
+             const closingTag = `</${tagName}>`;
+             const textAfterCursor = text.slice(cursorPos);
+             htmlEditor.value = text.slice(0, cursorPos) + closingTag + textAfterCursor;
+             htmlEditor.setSelectionRange(cursorPos, cursorPos);
+          }
+        }
+      }
+    }
+  });
+
+  // --- Preview Pane Height Adjustment ---
+  const setPreviewHeight = (height) => {
+    const finalHeight = Math.max(100, parseInt(height, 10) || 100); // Ensure a minimum height
+    previewContainer.style.height = `${finalHeight}px`;
+  };
+
+  previewHeightInput.addEventListener('input', (e) => {
+    setPreviewHeight(e.target.value);
+  });
+
+  // Set initial preview height
+  setPreviewHeight(previewHeightInput.value);
+
+  // --- Event Listeners for Buttons ---
+  runButton.addEventListener('click', runCode);
+  clearButton.addEventListener('click', clearCode);
+});
+
+  </script>
+</body>
+</html>
