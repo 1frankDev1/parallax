@@ -1,0 +1,14 @@
+-- SQL para la tabla de notificaciones
+CREATE TABLE notificaciones (
+    id SERIAL PRIMARY KEY,
+    mensaje TEXT NOT NULL,
+    tipo_destino TEXT NOT NULL, -- 'all', 'roles', 'users'
+    destinos JSONB, -- Array de roles ['CS', 'Closers'] o array de usuarios ['username1', 'username2']
+    emisor TEXT NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Habilitar RLS (opcional, dependiendo de la configuración de Supabase)
+-- ALTER TABLE notificaciones ENABLE ROW LEVEL SECURITY;
+-- CREATE POLICY "Permitir lectura a todos" ON notificaciones FOR SELECT USING (true);
+-- CREATE POLICY "Permitir inserción a administradores" ON notificaciones FOR INSERT WITH CHECK (auth.uid() IN (SELECT id FROM usuarios WHERE role LIKE 'Admin%'));
