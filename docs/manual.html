@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Manual Menutech</title>
     <link rel="icon" type="image/png" sizes="192x192" href="./assets/img/Diseño%20sin%20título%20(8).png">
+    <link rel="stylesheet" href="./assets/css/badge.css">
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -179,37 +180,6 @@
             background: #ffa733;
         }
 
-        /* Badge and login styles overrides to match index */
-        .user-badge {
-            left: 65px;
-            top: 15px;
-            background: #161b22;
-            padding: 8px 14px;
-            border-radius: 12px;
-            border: 1px solid #2d333b;
-            z-index: 2001;
-            cursor: pointer;
-            transition: 0.25s;
-        }
-        .user-badge.expand { opacity: 1 !important; transform: scale(1); }
-        #badge-username { font-size: 15px; font-weight: 600; color: #e6edf3; }
-        #badge-role { font-size: 12px; color: #8b949e; }
-
-        #badge-menu {
-            position: fixed;
-            z-index: 9999;
-            transition: opacity .2s ease, transform .2s ease;
-        }
-        #badge-menu.show { opacity: 1; pointer-events: auto; transform: translateY(0); }
-        .logout-btn {
-            background: #ff8c00;
-            padding: 10px;
-            border: none;
-            color: white;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: 600;
-        }
     </style>
 </head>
 <body>
@@ -226,7 +196,7 @@
         </div>
     </div>
 
-    <img id="login-icon" class="login-icon" src="./assets/img/user.svg" style="position: fixed; top: 15px; left: 15px; width: 38px; height: 38px; cursor: pointer; z-index: 2000;">
+    <img id="login-icon" class="login-icon" src="./assets/img/user.svg">
     <div id="user-badge" class="user-badge hidden" style="position: fixed;">
         <div id="badge-username"></div>
         <div id="badge-role"></div>
@@ -251,90 +221,120 @@
         </div>
 
         <div id="main-content">
-            <div id="bienvenida" class="content-section active">
-                <h2>Bienvenido al Manual de Menutech</h2>
-                <p>Aquí encontrarás toda la información necesaria para dominar nuestras herramientas y procesos.</p>
-                <div class="media-container">
-                    <div class="media-item">
-                        <img src="./assets/img/mks%20(9).png" alt="Menutech Logo" style="max-width: 200px; display: block; margin: 0 auto;">
-                        <p>Estamos comprometidos con tu éxito. Explora las secciones para comenzar.</p>
-                    </div>
-                </div>
-            </div>
-
-            <div id="vender" class="content-section">
-                <h2>¿Cómo vender?</h2>
-                <p>Consejos y estrategias para cerrar más ventas con nuestros clientes de restaurantes.</p>
-                <ul>
-                    <li>Identifica el punto de dolor del cliente.</li>
-                    <li>Muestra demos en vivo de la plataforma.</li>
-                    <li>Resalta los beneficios del Menú Digital.</li>
-                </ul>
-                <div class="media-container">
-                    <div class="media-item">
-                        <video controls>
-                            <source src="./assets/demo.mp4" type="video/mp4">
-                            Tu navegador no soporta videos.
-                        </video>
-                        <p>Video Tutorial: Estrategias de Venta</p>
-                    </div>
-                </div>
-            </div>
-
-            <div id="productos" class="content-section">
-                <h2>Nuestros Productos</h2>
-                <p>Conoce a detalle todo lo que ofrecemos.</p>
-                <div class="media-container">
-                    <div class="media-item">
-                        <h3>POS System</h3>
-                        <p>Sistema de punto de venta optimizado.</p>
-                    </div>
-                    <div class="media-item">
-                        <h3>Digital Menus</h3>
-                        <p>Menús interactivos con QR.</p>
-                    </div>
-                </div>
-            </div>
-
-            <div id="tutoriales" class="content-section">
-                <h2>Tutoriales Video</h2>
-                <div class="media-container">
-                    <div class="media-item">
-                        <iframe src="https://www.youtube.com/embed/dQw4w9WgXcQ" allowfullscreen></iframe>
-                        <p>Configuración Inicial</p>
-                    </div>
-                    <div class="media-item">
-                        <iframe src="https://www.youtube.com/embed/dQw4w9WgXcQ" allowfullscreen></iframe>
-                        <p>Gestión de Pedidos</p>
-                    </div>
-                </div>
-            </div>
-
-            <div id="descargas" class="content-section">
-                <h2>PDFs y Recursos</h2>
-                <div class="media-container">
-                    <div class="media-item">
-                        <h3>Brochure Comercial</h3>
-                        <a href="#" class="logout-btn" style="display:inline-block; text-decoration:none; margin-top:10px;">Descargar PDF</a>
-                    </div>
-                    <div class="media-item">
-                        <h3>Guía de Usuario</h3>
-                        <a href="#" class="logout-btn" style="display:inline-block; text-decoration:none; margin-top:10px;">Descargar PDF</a>
-                    </div>
-                </div>
-            </div>
+            <!-- Content sections will be dynamically generated -->
         </div>
     </div>
 
-    <a href="./index.html" class="back-btn">
-        ← Volver al Inicio
-    </a>
+    <!-- NAVBAR NEOMÓRFICO INFERIOR -->
+    <div class="neo-nav-container">
+        <button id="neoNavBack" class="neo-nav-btn">
+            <svg viewBox="0 0 24 24" class="neo-nav-icon">
+                <path d="M15 18l-6-6 6-6" stroke="currentColor" stroke-width="2"
+                    fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+        </button>
+
+        <button id="neoNavHome" class="neo-nav-btn">
+            <svg viewBox="0 0 24 24" class="neo-nav-icon">
+                <path d="M3 11l9-7 9 7v8a2 2 0 0 1-2 2h-4a2 2 0 0 1-2-2v-4H9v4a2
+                        2 0 0 1-2 2H5a2 2 0 0 1-2-2z"
+                    stroke="currentColor" stroke-width="2" fill="none"
+                    stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+        </button>
+    </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tiny-animate/1.1.0/tinyanimate.min.js"></script>
     <script src="./assets/js/badge.js"></script>
     <script src="https://menutech.xyz/menutechUI.min.js"></script>
     <script src="./assets/js/renderer.js"></script>
     <script>
+        const STORAGE_KEY = 'menutech_manual_content';
+
+        function loadDynamicContent() {
+            const storedItems = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+            const mainContent = document.getElementById('main-content');
+
+            // Map items to their sections
+            const sections = {
+                bienvenida: [],
+                vender: [],
+                productos: [],
+                tutoriales: [],
+                descargas: []
+            };
+
+            storedItems.forEach(item => {
+                if (sections[item.section]) {
+                    sections[item.section].push(item);
+                }
+            });
+
+            // Default content if localStorage is empty
+            const defaults = {
+                bienvenida: { title: "Bienvenido al Manual de Menutech", desc: "Aquí encontrarás toda la información necesaria para dominar nuestras herramientas y procesos." },
+                vender: { title: "¿Cómo vender?", desc: "Consejos y estrategias para cerrar más ventas con nuestros clientes de restaurantes." },
+                productos: { title: "Nuestros Productos", desc: "Conoce a detalle todo lo que ofrecemos." },
+                tutoriales: { title: "Tutoriales Video", desc: "Aprende visualmente cómo usar la plataforma." },
+                descargas: { title: "PDFs y Recursos", desc: "Material descargable para tu apoyo." }
+            };
+
+            mainContent.innerHTML = '';
+
+            Object.keys(sections).forEach(sectionId => {
+                const sectionDiv = document.createElement('div');
+                sectionDiv.id = sectionId;
+                sectionDiv.className = 'content-section' + (sectionId === 'bienvenida' ? ' active' : '');
+
+                const def = defaults[sectionId];
+                sectionDiv.innerHTML = `<h2>${def.title}</h2><p>${def.desc}</p>`;
+
+                const mediaContainer = document.createElement('div');
+                mediaContainer.className = 'media-container';
+
+                sections[sectionId].forEach(item => {
+                    const mediaItem = document.createElement('div');
+                    mediaItem.className = 'media-item';
+
+                    let mediaHTML = '';
+                    if (item.type === 'video') {
+                        if (item.source.includes('youtube.com') || item.source.includes('youtu.be')) {
+                            const videoId = item.source.split('v=')[1] || item.source.split('/').pop();
+                            mediaHTML = `<iframe src="https://www.youtube.com/embed/${videoId}" allowfullscreen></iframe>`;
+                        } else {
+                            mediaHTML = `<video controls><source src="${item.source}" type="video/mp4"></video>`;
+                        }
+                    } else if (item.type === 'image') {
+                        mediaHTML = `<img src="${item.source}" alt="${item.title}">`;
+                    } else if (item.type === 'pdf') {
+                        mediaHTML = `<iframe src="${item.source}" style="height:400px;"></iframe>
+                                     <a href="${item.source}" target="_blank" class="logout-btn" style="display:inline-block; text-decoration:none; margin-top:10px;">Descargar PDF</a>`;
+                    }
+
+                    mediaItem.innerHTML = `
+                        <h3>${item.title}</h3>
+                        ${mediaHTML}
+                        <p>${item.description}</p>
+                    `;
+                    mediaContainer.appendChild(mediaItem);
+                });
+
+                // Add default logo to bienvenida if empty
+                if (sectionId === 'bienvenida' && sections[sectionId].length === 0) {
+                    const mediaItem = document.createElement('div');
+                    mediaItem.className = 'media-item';
+                    mediaItem.innerHTML = `<img src="./assets/img/mks%20(9).png" alt="Menutech Logo" style="max-width: 200px; display: block; margin: 0 auto;">
+                                           <p>Estamos comprometidos con tu éxito. Explora las secciones para comenzar.</p>`;
+                    mediaContainer.appendChild(mediaItem);
+                }
+
+                sectionDiv.appendChild(mediaContainer);
+                mainContent.appendChild(sectionDiv);
+            });
+        }
+
+        loadDynamicContent();
+
         // DRAGGABLE LOGIC
         const panel = document.getElementById('indexer-panel');
         const header = document.getElementById('indexer-header');
@@ -403,6 +403,22 @@
                 });
             });
         });
+
+        // NAVBAR NAVIGATION
+        const neoNavBack = document.getElementById("neoNavBack");
+        if (neoNavBack) {
+            neoNavBack.addEventListener("click", () => {
+                if (window.history.length > 1) window.history.back();
+                else window.location.href = "index.html";
+            });
+        }
+
+        const neoNavHome = document.getElementById("neoNavHome");
+        if (neoNavHome) {
+            neoNavHome.addEventListener("click", () => {
+                window.location.href = "index.html";
+            });
+        }
     </script>
 </body>
 </html>
