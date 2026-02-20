@@ -154,6 +154,58 @@
             z-index: 10000;
         }
         .popup.show { right: 20px; }
+
+        /* Drag and Drop Zone */
+        .drop-zone {
+            width: 100%;
+            height: 150px;
+            padding: 25px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            font-family: "Quicksand", sans-serif;
+            font-weight: 500;
+            font-size: 20px;
+            cursor: pointer;
+            color: #ccc;
+            border: 2px dashed #00bcd4;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            transition: background 0.3s, border-color 0.3s;
+        }
+
+        .drop-zone--over {
+            border-style: solid;
+            background-color: rgba(0, 188, 212, 0.1);
+        }
+
+        .drop-zone__input {
+            display: none;
+        }
+
+        .drop-zone__thumb {
+            width: 100%;
+            height: 100%;
+            border-radius: 10px;
+            overflow: hidden;
+            background-color: #444;
+            background-size: cover;
+            position: relative;
+        }
+
+        .drop-zone__thumb::after {
+            content: attr(data-label);
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            padding: 5px 0;
+            color: #ffffff;
+            background: rgba(0, 0, 0, 0.75);
+            font-size: 14px;
+            text-align: center;
+        }
     </style>
 </head>
 <body>
@@ -176,38 +228,28 @@
             <form id="content-form">
                 <div class="form-grid">
                     <div class="input-group">
-                        <label>Título</label>
-                        <input type="text" id="title" required placeholder="Ej: Cómo vender">
+                        <label>Título del Contenido</label>
+                        <input type="text" id="title" required placeholder="Ej: Cómo realizar una venta">
                     </div>
                     <div class="input-group">
-                        <label>Clasificación / Sección</label>
-                        <select id="section">
-                            <option value="bienvenida">Bienvenida</option>
-                            <option value="vender">¿Cómo vender?</option>
-                            <option value="productos">Nuestros Productos</option>
-                            <option value="tutoriales">Tutoriales Video</option>
-                            <option value="descargas">PDFs y Recursos</option>
-                        </select>
-                    </div>
-                    <div class="input-group">
-                        <label>Tipo de Contenido</label>
-                        <select id="type">
-                            <option value="text">Texto</option>
-                            <option value="image">Imagen</option>
-                            <option value="video">Video</option>
-                            <option value="pdf">PDF</option>
-                        </select>
-                    </div>
-                    <div class="input-group">
-                        <label>URL / Fuente (Imagen, Video o PDF)</label>
-                        <input type="text" id="source" placeholder="https://...">
+                        <label>URL / Fuente (Opcional si arrastras un archivo abajo)</label>
+                        <input type="text" id="source" placeholder="https://youtube.com/...">
                     </div>
                 </div>
+
                 <div class="input-group" style="margin-top: 20px;">
-                    <label>Descripción / Texto</label>
-                    <textarea id="description" placeholder="Escribe el contenido aquí..."></textarea>
+                    <label>Arrastra tus archivos aquí (Imágenes, Videos o PDFs)</label>
+                    <div class="drop-zone">
+                        <span class="drop-zone__prompt">Suelta el archivo aquí o haz clic para subir</span>
+                        <input type="file" name="myFile" class="drop-zone__input" id="file-input">
+                    </div>
                 </div>
-                <button type="submit">Guardar Contenido</button>
+
+                <div class="input-group" style="margin-top: 20px;">
+                    <label>Descripción / Texto Adicional</label>
+                    <textarea id="description" placeholder="Escribe información adicional aquí..."></textarea>
+                </div>
+                <button type="submit" style="width: 100%;">Guardar Contenido</button>
             </form>
         </div>
 
@@ -216,29 +258,12 @@
                 <thead>
                     <tr>
                         <th>Título</th>
-                        <th>Sección</th>
                         <th>Tipo</th>
                         <th>Acciones</th>
                     </tr>
                 </thead>
                 <tbody id="content-table-body">
-                    <!-- Placeholder data -->
-                    <tr>
-                        <td>Bienvenida</td>
-                        <td>bienvenida</td>
-                        <td><span class="type-badge type-text">Texto</span></td>
-                        <td>
-                            <button class="action-btn delete-btn">Eliminar</button>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>Tutorial Ventas</td>
-                        <td>vender</td>
-                        <td><span class="type-badge type-video">Video</span></td>
-                        <td>
-                            <button class="action-btn delete-btn">Eliminar</button>
-                        </td>
-                    </tr>
+                    <!-- Data will be loaded here -->
                 </tbody>
             </table>
         </div>
@@ -267,55 +292,237 @@
     <script src="https://menutech.xyz/menutechUI.min.js"></script>
     <script src="./assets/js/renderer.js"></script>
     <script>
-        const STORAGE_KEY = 'menutech_manual_content';
+        let supabase = null;
+        let isInitializing = false;
 
-        function loadItems() {
-            const items = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+        // Drag and Drop Logic
+        document.querySelectorAll(".drop-zone__input").forEach((inputElement) => {
+            const dropZoneElement = inputElement.closest(".drop-zone");
+
+            dropZoneElement.addEventListener("click", (e) => {
+                inputElement.click();
+            });
+
+            inputElement.addEventListener("change", (e) => {
+                if (inputElement.files.length) {
+                    updateThumbnail(dropZoneElement, inputElement.files[0]);
+                }
+            });
+
+            dropZoneElement.addEventListener("dragover", (e) => {
+                e.preventDefault();
+                dropZoneElement.classList.add("drop-zone--over");
+            });
+
+            ["dragleave", "dragend"].forEach((type) => {
+                dropZoneElement.addEventListener(type, (e) => {
+                    dropZoneElement.classList.remove("drop-zone--over");
+                });
+            });
+
+            dropZoneElement.addEventListener("drop", (e) => {
+                e.preventDefault();
+
+                if (e.dataTransfer.files.length) {
+                    inputElement.files = e.dataTransfer.files;
+                    updateThumbnail(dropZoneElement, e.dataTransfer.files[0]);
+                }
+
+                dropZoneElement.classList.remove("drop-zone--over");
+            });
+        });
+
+        function updateThumbnail(dropZoneElement, file) {
+            let thumbnailElement = dropZoneElement.querySelector(".drop-zone__thumb");
+
+            if (dropZoneElement.querySelector(".drop-zone__prompt")) {
+                dropZoneElement.querySelector(".drop-zone__prompt").remove();
+            }
+
+            if (!thumbnailElement) {
+                thumbnailElement = document.createElement("div");
+                thumbnailElement.classList.add("drop-zone__thumb");
+                dropZoneElement.appendChild(thumbnailElement);
+            }
+
+            thumbnailElement.dataset.label = file.name;
+
+            if (file.type.startsWith("image/")) {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = () => {
+                    thumbnailElement.style.backgroundImage = `url('${reader.result}')`;
+                };
+            } else {
+                thumbnailElement.style.backgroundImage = null;
+            }
+        }
+
+        function resetDropZone() {
+            const dropZoneElement = document.querySelector(".drop-zone");
+            const thumbnailElement = dropZoneElement.querySelector(".drop-zone__thumb");
+            if (thumbnailElement) thumbnailElement.remove();
+
+            if (!dropZoneElement.querySelector(".drop-zone__prompt")) {
+                const prompt = document.createElement("span");
+                prompt.classList.add("drop-zone__prompt");
+                prompt.innerText = "Suelta el archivo aquí o haz clic para subir";
+                dropZoneElement.appendChild(prompt);
+            }
+            document.getElementById('file-input').value = "";
+        }
+
+        async function initSupabase(retries = 3) {
+            if (supabase) return supabase;
+            if (isInitializing) {
+                while (isInitializing) await new Promise(r => setTimeout(r, 100));
+                return supabase;
+            }
+            isInitializing = true;
+
+            for (let i = 0; i < retries; i++) {
+                try {
+                    const mod = await import("https://esm.sh/@supabase/supabase-js");
+                    const createClient = mod.createClient;
+                    supabase = createClient(
+                        "https://ojpyfjgkffmzwvukjagf.supabase.co",
+                        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9qcHlmamdrZmZtend2dWtqYWdmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQxNDIwMzYsImV4cCI6MjA3OTcxODAzNn0.dlVYmoMumBse_O1PLBx0FeNITqY4YktefD6l_uonSgo"
+                    );
+                    console.log("Supabase inicializado en Admin");
+                    break;
+                } catch (err) {
+                    console.error(`Error cargando Supabase (intento ${i + 1}):`, err);
+                    if (i < retries - 1) await new Promise(r => setTimeout(r, 1000 * (i + 1)));
+                }
+            }
+            isInitializing = false;
+            return supabase;
+        }
+
+        async function loadItems() {
+            const client = await initSupabase();
+            if (!client) return;
+
+            const { data, error } = await client
+                .from('manual_content')
+                .select('*')
+                .order('created_at', { ascending: false });
+
+            if (error) {
+                console.error("Error cargando items:", error);
+                return;
+            }
+
             const tbody = document.getElementById('content-table-body');
             tbody.innerHTML = '';
 
-            items.forEach((item, index) => {
+            data.forEach((item) => {
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
                     <td>${item.title}</td>
-                    <td>${item.section}</td>
                     <td><span class="type-badge type-${item.type}">${item.type}</span></td>
                     <td>
-                        <button class="action-btn delete-btn" onclick="deleteItem(${index})">Eliminar</button>
+                        <button class="action-btn delete-btn" onclick="deleteItem('${item.id}', '${item.source_url}')">Eliminar</button>
                     </td>
                 `;
                 tbody.appendChild(tr);
             });
         }
 
-        window.deleteItem = function(index) {
-            const items = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
-            items.splice(index, 1);
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
-            loadItems();
+        window.deleteItem = async function(id, sourceUrl) {
+            if (!confirm("¿Estás seguro de eliminar este contenido?")) return;
+            const client = await initSupabase();
+
+            // Si el archivo está en nuestro storage, intentar borrarlo
+            if (sourceUrl && sourceUrl.includes('/storage/v1/object/public/manual/')) {
+                const fileName = sourceUrl.split('/').pop();
+                await client.storage.from('manual').remove([fileName]);
+            }
+
+            const { error } = await client
+                .from('manual_content')
+                .delete()
+                .eq('id', id);
+
+            if (error) console.error("Error al eliminar:", error);
+            else loadItems();
         };
 
-        document.getElementById('content-form').addEventListener('submit', (e) => {
+        function detectType(file, sourceUrl) {
+            if (file) {
+                if (file.type.startsWith("image/")) return "image";
+                if (file.type.startsWith("video/")) return "video";
+                if (file.type === "application/pdf") return "pdf";
+                return "text";
+            }
+            if (sourceUrl) {
+                const url = sourceUrl.toLowerCase();
+                if (url.includes("youtube.com") || url.includes("youtu.be")) return "video";
+                if (url.endsWith(".jpg") || url.endsWith(".png") || url.endsWith(".webp") || url.endsWith(".jpeg")) return "image";
+                if (url.endsWith(".mp4") || url.endsWith(".webm") || url.endsWith(".ogg")) return "video";
+                if (url.endsWith(".pdf")) return "pdf";
+            }
+            return "text";
+        }
+
+        document.getElementById('content-form').addEventListener('submit', async (e) => {
             e.preventDefault();
+            const client = await initSupabase();
+            const btn = e.target.querySelector('button');
+            btn.disabled = true;
+            btn.innerText = "Guardando...";
 
-            const newItem = {
+            let source_url = document.getElementById('source').value;
+            const fileInput = document.getElementById('file-input');
+            let file = fileInput.files.length > 0 ? fileInput.files[0] : null;
+
+            if (file) {
+                const fileExt = file.name.split('.').pop();
+                const fileName = `${Math.random().toString(36).substring(2)}.${fileExt}`;
+                const filePath = fileName;
+
+                const { data: uploadData, error: uploadError } = await client.storage
+                    .from('manual')
+                    .upload(filePath, file);
+
+                if (uploadError) {
+                    console.error("Error al subir archivo:", uploadError);
+                    alert("Error al subir archivo: " + uploadError.message);
+                    btn.disabled = false;
+                    btn.innerText = "Guardar Contenido";
+                    return;
+                }
+
+                const { data: urlData } = client.storage
+                    .from('manual')
+                    .getPublicUrl(filePath);
+
+                source_url = urlData.publicUrl;
+            }
+
+            const contentType = detectType(file, source_url);
+
+            const { error } = await client.from('manual_content').insert([{
                 title: document.getElementById('title').value,
-                section: document.getElementById('section').value,
-                type: document.getElementById('type').value,
-                source: document.getElementById('source').value,
+                type: contentType,
+                source_url: source_url,
                 description: document.getElementById('description').value
-            };
+            }]);
 
-            const items = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
-            items.push(newItem);
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
+            if (error) {
+                console.error("Error al guardar metadata:", error);
+                alert("Error al guardar en base de datos: " + error.message);
+            } else {
+                const popup = document.getElementById('popup');
+                popup.classList.add('show');
+                setTimeout(() => popup.classList.remove('show'), 3000);
+                e.target.reset();
+                resetDropZone();
+                loadItems();
+            }
 
-            const popup = document.getElementById('popup');
-            popup.classList.add('show');
-            setTimeout(() => popup.classList.remove('show'), 3000);
-
-            e.target.reset();
-            loadItems();
+            btn.disabled = false;
+            btn.innerText = "Guardar Contenido";
         });
 
         loadItems();

@@ -212,11 +212,7 @@
                 <button id="collapse-btn">−</button>
             </div>
             <div id="indexer-content">
-                <div class="index-item active" data-target="bienvenida">Bienvenida</div>
-                <div class="index-item" data-target="vender">¿Cómo vender?</div>
-                <div class="index-item" data-target="productos">Nuestros Productos</div>
-                <div class="index-item" data-target="tutoriales">Tutoriales Video</div>
-                <div class="index-item" data-target="descargas">PDFs y Recursos</div>
+                <!-- Titles will be loaded here -->
             </div>
         </div>
 
@@ -249,88 +245,141 @@
     <script src="https://menutech.xyz/menutechUI.min.js"></script>
     <script src="./assets/js/renderer.js"></script>
     <script>
-        const STORAGE_KEY = 'menutech_manual_content';
+        let supabase = null;
+        let isInitializing = false;
 
-        function loadDynamicContent() {
-            const storedItems = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+        async function initSupabase(retries = 3) {
+            if (supabase) return supabase;
+            if (isInitializing) {
+                while (isInitializing) await new Promise(r => setTimeout(r, 100));
+                return supabase;
+            }
+            isInitializing = true;
+
+            for (let i = 0; i < retries; i++) {
+                try {
+                    const mod = await import("https://esm.sh/@supabase/supabase-js");
+                    const createClient = mod.createClient;
+                    supabase = createClient(
+                        "https://ojpyfjgkffmzwvukjagf.supabase.co",
+                        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9qcHlmamdrZmZtend2dWtqYWdmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQxNDIwMzYsImV4cCI6MjA3OTcxODAzNn0.dlVYmoMumBse_O1PLBx0FeNITqY4YktefD6l_uonSgo"
+                    );
+                    console.log("Supabase inicializado en Manual");
+                    break;
+                } catch (err) {
+                    console.error(`Error cargando Supabase (intento ${i + 1}):`, err);
+                    if (i < retries - 1) await new Promise(r => setTimeout(r, 1000 * (i + 1)));
+                }
+            }
+            isInitializing = false;
+            return supabase;
+        }
+
+        let manualData = [];
+
+        async function loadDynamicContent() {
+            const client = await initSupabase();
+            if (!client) return;
+
+            const { data, error } = await client
+                .from('manual_content')
+                .select('*')
+                .order('created_at', { ascending: true });
+
+            if (error) {
+                console.error("Error cargando contenido de Supabase:", error);
+                return;
+            }
+
+            manualData = data;
+            const indexerContent = document.getElementById('indexer-content');
+            indexerContent.innerHTML = '';
+
+            if (manualData.length === 0) {
+                indexerContent.innerHTML = '<div class="index-item">No hay contenido</div>';
+                showWelcome();
+                return;
+            }
+
+            manualData.forEach((item, index) => {
+                const itemDiv = document.createElement('div');
+                itemDiv.className = 'index-item' + (index === 0 ? ' active' : '');
+                itemDiv.innerText = item.title;
+                itemDiv.onclick = () => selectItem(index);
+                indexerContent.appendChild(itemDiv);
+            });
+
+            // Mostramos el primero por defecto
+            selectItem(0);
+        }
+
+        function showWelcome() {
+            const mainContent = document.getElementById('main-content');
+            mainContent.innerHTML = `
+                <div class="content-section active">
+                    <h2>Bienvenido al Manual de Menutech</h2>
+                    <p>Aquí encontrarás toda la información necesaria para dominar nuestras herramientas y procesos.</p>
+                    <div class="media-container">
+                        <div class="media-item">
+                            <img src="./assets/img/mks%20(9).png" alt="Menutech Logo" style="max-width: 200px; display: block; margin: 0 auto;">
+                            <p>Estamos comprometidos con tu éxito. Explora las secciones en el panel lateral para comenzar.</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function selectItem(index) {
+            const item = manualData[index];
+            if (!item) return;
+
+            // Actualizar active en indexer
+            document.querySelectorAll('.index-item').forEach((div, i) => {
+                if (i === index) div.classList.add('active');
+                else div.classList.remove('active');
+            });
+
             const mainContent = document.getElementById('main-content');
 
-            // Map items to their sections
-            const sections = {
-                bienvenida: [],
-                vender: [],
-                productos: [],
-                tutoriales: [],
-                descargas: []
-            };
-
-            storedItems.forEach(item => {
-                if (sections[item.section]) {
-                    sections[item.section].push(item);
-                }
-            });
-
-            // Default content if localStorage is empty
-            const defaults = {
-                bienvenida: { title: "Bienvenido al Manual de Menutech", desc: "Aquí encontrarás toda la información necesaria para dominar nuestras herramientas y procesos." },
-                vender: { title: "¿Cómo vender?", desc: "Consejos y estrategias para cerrar más ventas con nuestros clientes de restaurantes." },
-                productos: { title: "Nuestros Productos", desc: "Conoce a detalle todo lo que ofrecemos." },
-                tutoriales: { title: "Tutoriales Video", desc: "Aprende visualmente cómo usar la plataforma." },
-                descargas: { title: "PDFs y Recursos", desc: "Material descargable para tu apoyo." }
-            };
-
-            mainContent.innerHTML = '';
-
-            Object.keys(sections).forEach(sectionId => {
-                const sectionDiv = document.createElement('div');
-                sectionDiv.id = sectionId;
-                sectionDiv.className = 'content-section' + (sectionId === 'bienvenida' ? ' active' : '');
-
-                const def = defaults[sectionId];
-                sectionDiv.innerHTML = `<h2>${def.title}</h2><p>${def.desc}</p>`;
-
-                const mediaContainer = document.createElement('div');
-                mediaContainer.className = 'media-container';
-
-                sections[sectionId].forEach(item => {
-                    const mediaItem = document.createElement('div');
-                    mediaItem.className = 'media-item';
-
-                    let mediaHTML = '';
-                    if (item.type === 'video') {
-                        if (item.source.includes('youtube.com') || item.source.includes('youtu.be')) {
-                            const videoId = item.source.split('v=')[1] || item.source.split('/').pop();
-                            mediaHTML = `<iframe src="https://www.youtube.com/embed/${videoId}" allowfullscreen></iframe>`;
-                        } else {
-                            mediaHTML = `<video controls><source src="${item.source}" type="video/mp4"></video>`;
-                        }
-                    } else if (item.type === 'image') {
-                        mediaHTML = `<img src="${item.source}" alt="${item.title}">`;
-                    } else if (item.type === 'pdf') {
-                        mediaHTML = `<iframe src="${item.source}" style="height:400px;"></iframe>
-                                     <a href="${item.source}" target="_blank" class="logout-btn" style="display:inline-block; text-decoration:none; margin-top:10px;">Descargar PDF</a>`;
+            let mediaHTML = '';
+            if (item.type === 'video') {
+                if (item.source_url && (item.source_url.includes('youtube.com') || item.source_url.includes('youtu.be'))) {
+                    let videoId = '';
+                    if (item.source_url.includes('v=')) {
+                        videoId = item.source_url.split('v=')[1].split('&')[0];
+                    } else {
+                        videoId = item.source_url.split('/').pop();
                     }
-
-                    mediaItem.innerHTML = `
-                        <h3>${item.title}</h3>
-                        ${mediaHTML}
-                        <p>${item.description}</p>
-                    `;
-                    mediaContainer.appendChild(mediaItem);
-                });
-
-                // Add default logo to bienvenida if empty
-                if (sectionId === 'bienvenida' && sections[sectionId].length === 0) {
-                    const mediaItem = document.createElement('div');
-                    mediaItem.className = 'media-item';
-                    mediaItem.innerHTML = `<img src="./assets/img/mks%20(9).png" alt="Menutech Logo" style="max-width: 200px; display: block; margin: 0 auto;">
-                                           <p>Estamos comprometidos con tu éxito. Explora las secciones para comenzar.</p>`;
-                    mediaContainer.appendChild(mediaItem);
+                    mediaHTML = `<div style="position:relative; padding-bottom:56.25%; height:0; overflow:hidden;">
+                                    <iframe src="https://www.youtube.com/embed/${videoId}"
+                                            style="position:absolute; top:0; left:0; width:100%; height:100%;"
+                                            allowfullscreen></iframe>
+                                 </div>`;
+                } else if (item.source_url) {
+                    mediaHTML = `<video controls style="max-height: 70vh;"><source src="${item.source_url}" type="video/mp4"></video>`;
                 }
+            } else if (item.type === 'image') {
+                mediaHTML = `<img src="${item.source_url}" alt="${item.title}" style="max-height: 70vh; object-fit: contain;">`;
+            } else if (item.type === 'pdf') {
+                mediaHTML = `<iframe src="${item.source_url}" style="height:70vh; width:100%;"></iframe>
+                             <div style="margin-top:15px; text-align:center;">
+                                <a href="${item.source_url}" target="_blank" class="logout-btn" style="display:inline-block; text-decoration:none;">Abrir PDF en pestaña nueva</a>
+                             </div>`;
+            }
 
-                sectionDiv.appendChild(mediaContainer);
-                mainContent.appendChild(sectionDiv);
-            });
+            mainContent.innerHTML = `
+                <div class="content-section active">
+                    <h2>${item.title}</h2>
+                    <div class="media-container" style="display:block;">
+                        <div class="media-item" style="background:none; border:none; padding:0;">
+                            ${mediaHTML}
+                        </div>
+                        <div style="margin-top:20px; font-size:1.1rem; line-height:1.6; color:#e0e0e0; white-space: pre-wrap;">
+                            ${item.description || ''}
+                        </div>
+                    </div>
+                </div>
+            `;
         }
 
         loadDynamicContent();
@@ -384,25 +433,6 @@
             collapseBtn.textContent = panel.classList.contains('collapsed') ? '+' : '−';
         });
 
-        // CONTENT SWITCHING LOGIC
-        const items = document.querySelectorAll('.index-item');
-        const sections = document.querySelectorAll('.content-section');
-
-        items.forEach(item => {
-            item.addEventListener('click', () => {
-                const target = item.getAttribute('data-target');
-
-                items.forEach(i => i.classList.remove('active'));
-                item.classList.add('active');
-
-                sections.forEach(s => {
-                    s.classList.remove('active');
-                    if (s.id === target) {
-                        s.classList.add('active');
-                    }
-                });
-            });
-        });
 
         // NAVBAR NAVIGATION
         const neoNavBack = document.getElementById("neoNavBack");
