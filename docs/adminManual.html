@@ -199,7 +199,11 @@
                         </select>
                     </div>
                     <div class="input-group">
-                        <label>URL / Fuente (Imagen, Video o PDF)</label>
+                        <label>Subir Archivo (Imagen, Video o PDF)</label>
+                        <input type="file" id="file-input">
+                    </div>
+                    <div class="input-group">
+                        <label>URL / Fuente (Opcional si subes archivo)</label>
                         <input type="text" id="source" placeholder="https://...">
                     </div>
                 </div>
@@ -267,55 +271,142 @@
     <script src="https://menutech.xyz/menutechUI.min.js"></script>
     <script src="./assets/js/renderer.js"></script>
     <script>
-        const STORAGE_KEY = 'menutech_manual_content';
+        let supabase = null;
+        let isInitializing = false;
 
-        function loadItems() {
-            const items = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+        async function initSupabase(retries = 3) {
+            if (supabase) return supabase;
+            if (isInitializing) {
+                while (isInitializing) await new Promise(r => setTimeout(r, 100));
+                return supabase;
+            }
+            isInitializing = true;
+
+            for (let i = 0; i < retries; i++) {
+                try {
+                    const mod = await import("https://esm.sh/@supabase/supabase-js");
+                    const createClient = mod.createClient;
+                    supabase = createClient(
+                        "https://ojpyfjgkffmzwvukjagf.supabase.co",
+                        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9qcHlmamdrZmZtend2dWtqYWdmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQxNDIwMzYsImV4cCI6MjA3OTcxODAzNn0.dlVYmoMumBse_O1PLBx0FeNITqY4YktefD6l_uonSgo"
+                    );
+                    console.log("Supabase inicializado en Admin");
+                    break;
+                } catch (err) {
+                    console.error(`Error cargando Supabase (intento ${i + 1}):`, err);
+                    if (i < retries - 1) await new Promise(r => setTimeout(r, 1000 * (i + 1)));
+                }
+            }
+            isInitializing = false;
+            return supabase;
+        }
+
+        async function loadItems() {
+            const client = await initSupabase();
+            if (!client) return;
+
+            const { data, error } = await client
+                .from('manual_content')
+                .select('*')
+                .order('created_at', { ascending: false });
+
+            if (error) {
+                console.error("Error cargando items:", error);
+                return;
+            }
+
             const tbody = document.getElementById('content-table-body');
             tbody.innerHTML = '';
 
-            items.forEach((item, index) => {
+            data.forEach((item) => {
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
                     <td>${item.title}</td>
                     <td>${item.section}</td>
                     <td><span class="type-badge type-${item.type}">${item.type}</span></td>
                     <td>
-                        <button class="action-btn delete-btn" onclick="deleteItem(${index})">Eliminar</button>
+                        <button class="action-btn delete-btn" onclick="deleteItem('${item.id}', '${item.source_url}')">Eliminar</button>
                     </td>
                 `;
                 tbody.appendChild(tr);
             });
         }
 
-        window.deleteItem = function(index) {
-            const items = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
-            items.splice(index, 1);
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
-            loadItems();
+        window.deleteItem = async function(id, sourceUrl) {
+            if (!confirm("¿Estás seguro de eliminar este contenido?")) return;
+            const client = await initSupabase();
+
+            // Si el archivo está en nuestro storage, intentar borrarlo
+            if (sourceUrl && sourceUrl.includes('/storage/v1/object/public/manual/')) {
+                const fileName = sourceUrl.split('/').pop();
+                await client.storage.from('manual').remove([fileName]);
+            }
+
+            const { error } = await client
+                .from('manual_content')
+                .delete()
+                .eq('id', id);
+
+            if (error) console.error("Error al eliminar:", error);
+            else loadItems();
         };
 
-        document.getElementById('content-form').addEventListener('submit', (e) => {
+        document.getElementById('content-form').addEventListener('submit', async (e) => {
             e.preventDefault();
+            const client = await initSupabase();
+            const btn = e.target.querySelector('button');
+            btn.disabled = true;
+            btn.innerText = "Guardando...";
 
-            const newItem = {
+            let source_url = document.getElementById('source').value;
+            const fileInput = document.getElementById('file-input');
+
+            if (fileInput.files.length > 0) {
+                const file = fileInput.files[0];
+                const fileExt = file.name.split('.').pop();
+                const fileName = `${Math.random().toString(36).substring(2)}.${fileExt}`;
+                const filePath = fileName;
+
+                const { data: uploadData, error: uploadError } = await client.storage
+                    .from('manual')
+                    .upload(filePath, file);
+
+                if (uploadError) {
+                    console.error("Error al subir archivo:", uploadError);
+                    alert("Error al subir archivo");
+                    btn.disabled = false;
+                    btn.innerText = "Guardar Contenido";
+                    return;
+                }
+
+                const { data: urlData } = client.storage
+                    .from('manual')
+                    .getPublicUrl(filePath);
+
+                source_url = urlData.publicUrl;
+            }
+
+            const { error } = await client.from('manual_content').insert([{
                 title: document.getElementById('title').value,
                 section: document.getElementById('section').value,
                 type: document.getElementById('type').value,
-                source: document.getElementById('source').value,
+                source_url: source_url,
                 description: document.getElementById('description').value
-            };
+            }]);
 
-            const items = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
-            items.push(newItem);
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
+            if (error) {
+                console.error("Error al guardar metadata:", error);
+                alert("Error al guardar en base de datos");
+            } else {
+                const popup = document.getElementById('popup');
+                popup.classList.add('show');
+                setTimeout(() => popup.classList.remove('show'), 3000);
+                e.target.reset();
+                loadItems();
+            }
 
-            const popup = document.getElementById('popup');
-            popup.classList.add('show');
-            setTimeout(() => popup.classList.remove('show'), 3000);
-
-            e.target.reset();
-            loadItems();
+            btn.disabled = false;
+            btn.innerText = "Guardar Contenido";
         });
 
         loadItems();

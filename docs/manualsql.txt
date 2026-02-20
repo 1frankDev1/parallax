@@ -1,0 +1,30 @@
+-- SQL para la creación de la tabla de contenido del manual
+CREATE TABLE IF NOT EXISTS public.manual_content (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    title TEXT NOT NULL,
+    section TEXT NOT NULL,
+    type TEXT NOT NULL, -- 'video', 'image', 'pdf', 'text'
+    source_url TEXT,
+    description TEXT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Habilitar RLS (Row Level Security)
+ALTER TABLE public.manual_content ENABLE ROW LEVEL SECURITY;
+
+-- Políticas para la tabla (Permitir lectura a todos, cambios a todos por simplicidad en este entorno)
+CREATE POLICY "Permitir lectura pública" ON public.manual_content FOR SELECT USING (true);
+CREATE POLICY "Permitir inserción pública" ON public.manual_content FOR INSERT WITH CHECK (true);
+CREATE POLICY "Permitir eliminación pública" ON public.manual_content FOR DELETE USING (true);
+
+-- SQL para la creación del Storage Bucket
+-- Nota: La creación de buckets a veces se hace desde la interfaz de Supabase,
+-- pero aquí están los comandos para insertarlo en la tabla de buckets si tienes permisos.
+INSERT INTO storage.buckets (id, name, public)
+VALUES ('manual', 'manual', true)
+ON CONFLICT (id) DO NOTHING;
+
+-- Políticas para el Storage (Permitir acceso público a los archivos)
+CREATE POLICY "Acceso público a manual" ON storage.objects FOR SELECT USING (bucket_id = 'manual');
+CREATE POLICY "Permitir subida a manual" ON storage.objects FOR INSERT WITH CHECK (bucket_id = 'manual');
+CREATE POLICY "Permitir borrado en manual" ON storage.objects FOR DELETE USING (bucket_id = 'manual');

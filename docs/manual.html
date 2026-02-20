@@ -249,10 +249,50 @@
     <script src="https://menutech.xyz/menutechUI.min.js"></script>
     <script src="./assets/js/renderer.js"></script>
     <script>
-        const STORAGE_KEY = 'menutech_manual_content';
+        let supabase = null;
+        let isInitializing = false;
 
-        function loadDynamicContent() {
-            const storedItems = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+        async function initSupabase(retries = 3) {
+            if (supabase) return supabase;
+            if (isInitializing) {
+                while (isInitializing) await new Promise(r => setTimeout(r, 100));
+                return supabase;
+            }
+            isInitializing = true;
+
+            for (let i = 0; i < retries; i++) {
+                try {
+                    const mod = await import("https://esm.sh/@supabase/supabase-js");
+                    const createClient = mod.createClient;
+                    supabase = createClient(
+                        "https://ojpyfjgkffmzwvukjagf.supabase.co",
+                        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9qcHlmamdrZmZtend2dWtqYWdmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQxNDIwMzYsImV4cCI6MjA3OTcxODAzNn0.dlVYmoMumBse_O1PLBx0FeNITqY4YktefD6l_uonSgo"
+                    );
+                    console.log("Supabase inicializado en Manual");
+                    break;
+                } catch (err) {
+                    console.error(`Error cargando Supabase (intento ${i + 1}):`, err);
+                    if (i < retries - 1) await new Promise(r => setTimeout(r, 1000 * (i + 1)));
+                }
+            }
+            isInitializing = false;
+            return supabase;
+        }
+
+        async function loadDynamicContent() {
+            const client = await initSupabase();
+            if (!client) return;
+
+            const { data: storedItems, error } = await client
+                .from('manual_content')
+                .select('*')
+                .order('created_at', { ascending: true });
+
+            if (error) {
+                console.error("Error cargando contenido de Supabase:", error);
+                // Fallback to empty list or handled defaults below
+            }
+
             const mainContent = document.getElementById('main-content');
 
             // Map items to their sections
@@ -292,31 +332,33 @@
                 const mediaContainer = document.createElement('div');
                 mediaContainer.className = 'media-container';
 
-                sections[sectionId].forEach(item => {
-                    const mediaItem = document.createElement('div');
-                    mediaItem.className = 'media-item';
+                (storedItems || []).forEach(item => {
+                    if (item.section === sectionId) {
+                        const mediaItem = document.createElement('div');
+                        mediaItem.className = 'media-item';
 
-                    let mediaHTML = '';
-                    if (item.type === 'video') {
-                        if (item.source.includes('youtube.com') || item.source.includes('youtu.be')) {
-                            const videoId = item.source.split('v=')[1] || item.source.split('/').pop();
-                            mediaHTML = `<iframe src="https://www.youtube.com/embed/${videoId}" allowfullscreen></iframe>`;
-                        } else {
-                            mediaHTML = `<video controls><source src="${item.source}" type="video/mp4"></video>`;
+                        let mediaHTML = '';
+                        if (item.type === 'video') {
+                            if (item.source_url && (item.source_url.includes('youtube.com') || item.source_url.includes('youtu.be'))) {
+                                const videoId = item.source_url.split('v=')[1] || item.source_url.split('/').pop();
+                                mediaHTML = `<iframe src="https://www.youtube.com/embed/${videoId}" allowfullscreen></iframe>`;
+                            } else {
+                                mediaHTML = `<video controls><source src="${item.source_url}" type="video/mp4"></video>`;
+                            }
+                        } else if (item.type === 'image') {
+                            mediaHTML = `<img src="${item.source_url}" alt="${item.title}">`;
+                        } else if (item.type === 'pdf') {
+                            mediaHTML = `<iframe src="${item.source_url}" style="height:400px;"></iframe>
+                                         <a href="${item.source_url}" target="_blank" class="logout-btn" style="display:inline-block; text-decoration:none; margin-top:10px;">Descargar PDF</a>`;
                         }
-                    } else if (item.type === 'image') {
-                        mediaHTML = `<img src="${item.source}" alt="${item.title}">`;
-                    } else if (item.type === 'pdf') {
-                        mediaHTML = `<iframe src="${item.source}" style="height:400px;"></iframe>
-                                     <a href="${item.source}" target="_blank" class="logout-btn" style="display:inline-block; text-decoration:none; margin-top:10px;">Descargar PDF</a>`;
-                    }
 
-                    mediaItem.innerHTML = `
-                        <h3>${item.title}</h3>
-                        ${mediaHTML}
-                        <p>${item.description}</p>
-                    `;
-                    mediaContainer.appendChild(mediaItem);
+                        mediaItem.innerHTML = `
+                            <h3>${item.title}</h3>
+                            ${mediaHTML}
+                            <p>${item.description}</p>
+                        `;
+                        mediaContainer.appendChild(mediaItem);
+                    }
                 });
 
                 // Add default logo to bienvenida if empty
