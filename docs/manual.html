@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manual Menutech</title>
+    <link rel="icon" type="image/png" sizes="192x192" href="./assets/img/Diseño%20sin%20título%20(8).png">
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #2a2a2a;
+            color: #fff;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            height: 100vh;
+        }
+
+        #manual-container {
+            display: flex;
+            height: 100vh;
+            width: 100vw;
+            padding-top: 60px; /* Space for nav if any */
+            box-sizing: border-box;
+        }
+
+        /* Sidebar Draggable Panel */
+        #indexer-panel {
+            position: absolute;
+            top: 80px;
+            left: 20px;
+            width: 250px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 15px;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+            z-index: 1000;
+            transition: width 0.3s ease, transform 0.1s ease;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        #indexer-header {
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.2);
+            cursor: move;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        #indexer-header h3 {
+            margin: 0;
+            font-size: 1rem;
+            color: #00bcd4;
+        }
+
+        #collapse-btn {
+            background: none;
+            border: none;
+            color: white;
+            cursor: pointer;
+            font-size: 1.2rem;
+        }
+
+        #indexer-content {
+            padding: 15px;
+            overflow-y: auto;
+            flex-grow: 1;
+        }
+
+        .index-item {
+            padding: 10px;
+            margin-bottom: 5px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.2s;
+            border-left: 3px solid transparent;
+        }
+
+        .index-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .index-item.active {
+            background: rgba(0, 188, 212, 0.2);
+            border-left-color: #00bcd4;
+        }
+
+        /* Main Content Area */
+        #main-content {
+            flex-grow: 1;
+            margin-left: 20px;
+            margin-right: 20px;
+            padding: 20px;
+            overflow-y: auto;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 20px;
+            margin-bottom: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .content-section {
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .content-section.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        h2 { color: #00bcd4; }
+
+        .media-container {
+            margin-top: 20px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .media-item {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 15px;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .media-item iframe, .media-item video, .media-item img {
+            width: 100%;
+            border-radius: 8px;
+            border: none;
+        }
+
+        .media-item p {
+            margin-top: 10px;
+            font-size: 0.9rem;
+            color: #ccc;
+        }
+
+        /* Collapsed state */
+        #indexer-panel.collapsed {
+            width: 50px;
+            height: 50px;
+        }
+        #indexer-panel.collapsed #indexer-content,
+        #indexer-panel.collapsed #indexer-header h3 {
+            display: none;
+        }
+
+        .back-btn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #ff8c00;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            z-index: 1000;
+            text-decoration: none;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .back-btn:hover {
+            background: #ffa733;
+        }
+
+        /* Badge and login styles overrides to match index */
+        .user-badge {
+            left: 65px;
+            top: 15px;
+            background: #161b22;
+            padding: 8px 14px;
+            border-radius: 12px;
+            border: 1px solid #2d333b;
+            z-index: 2001;
+            cursor: pointer;
+            transition: 0.25s;
+        }
+        .user-badge.expand { opacity: 1 !important; transform: scale(1); }
+        #badge-username { font-size: 15px; font-weight: 600; color: #e6edf3; }
+        #badge-role { font-size: 12px; color: #8b949e; }
+
+        #badge-menu {
+            position: fixed;
+            z-index: 9999;
+            transition: opacity .2s ease, transform .2s ease;
+        }
+        #badge-menu.show { opacity: 1; pointer-events: auto; transform: translateY(0); }
+        .logout-btn {
+            background: #ff8c00;
+            padding: 10px;
+            border: none;
+            color: white;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <menutech-navweb></menutech-navweb>
+    <menutech-drawer id="main-drawer" class="hidden"></menutech-drawer>
+    <menutech-themes></menutech-themes>
+    <menutech-chatbot></menutech-chatbot>
+    <menutech-tools></menutech-tools>
+
+    <div id="time-lock-overlay" class="time-lock-overlay" style="display:none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 10001; color: white; justify-content: center; align-items: center; text-align: center;">
+        <div>
+            <h2>Fuera de Horario Laboral</h2>
+            <p>El acceso está restringido a tu horario de trabajo. Por favor, vuelve más tarde.</p>
+        </div>
+    </div>
+
+    <img id="login-icon" class="login-icon" src="./assets/img/user.svg" style="position: fixed; top: 15px; left: 15px; width: 38px; height: 38px; cursor: pointer; z-index: 2000;">
+    <div id="user-badge" class="user-badge hidden" style="position: fixed;">
+        <div id="badge-username"></div>
+        <div id="badge-role"></div>
+    </div>
+    <div id="badge-menu" class="hidden">
+        <button id="logout-btn" class="logout-btn">Cerrar sesión</button>
+    </div>
+
+    <div id="manual-container">
+        <div id="indexer-panel">
+            <div id="indexer-header">
+                <h3>Manual Menutech</h3>
+                <button id="collapse-btn">−</button>
+            </div>
+            <div id="indexer-content">
+                <div class="index-item active" data-target="bienvenida">Bienvenida</div>
+                <div class="index-item" data-target="vender">¿Cómo vender?</div>
+                <div class="index-item" data-target="productos">Nuestros Productos</div>
+                <div class="index-item" data-target="tutoriales">Tutoriales Video</div>
+                <div class="index-item" data-target="descargas">PDFs y Recursos</div>
+            </div>
+        </div>
+
+        <div id="main-content">
+            <div id="bienvenida" class="content-section active">
+                <h2>Bienvenido al Manual de Menutech</h2>
+                <p>Aquí encontrarás toda la información necesaria para dominar nuestras herramientas y procesos.</p>
+                <div class="media-container">
+                    <div class="media-item">
+                        <img src="./assets/img/mks%20(9).png" alt="Menutech Logo" style="max-width: 200px; display: block; margin: 0 auto;">
+                        <p>Estamos comprometidos con tu éxito. Explora las secciones para comenzar.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div id="vender" class="content-section">
+                <h2>¿Cómo vender?</h2>
+                <p>Consejos y estrategias para cerrar más ventas con nuestros clientes de restaurantes.</p>
+                <ul>
+                    <li>Identifica el punto de dolor del cliente.</li>
+                    <li>Muestra demos en vivo de la plataforma.</li>
+                    <li>Resalta los beneficios del Menú Digital.</li>
+                </ul>
+                <div class="media-container">
+                    <div class="media-item">
+                        <video controls>
+                            <source src="./assets/demo.mp4" type="video/mp4">
+                            Tu navegador no soporta videos.
+                        </video>
+                        <p>Video Tutorial: Estrategias de Venta</p>
+                    </div>
+                </div>
+            </div>
+
+            <div id="productos" class="content-section">
+                <h2>Nuestros Productos</h2>
+                <p>Conoce a detalle todo lo que ofrecemos.</p>
+                <div class="media-container">
+                    <div class="media-item">
+                        <h3>POS System</h3>
+                        <p>Sistema de punto de venta optimizado.</p>
+                    </div>
+                    <div class="media-item">
+                        <h3>Digital Menus</h3>
+                        <p>Menús interactivos con QR.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div id="tutoriales" class="content-section">
+                <h2>Tutoriales Video</h2>
+                <div class="media-container">
+                    <div class="media-item">
+                        <iframe src="https://www.youtube.com/embed/dQw4w9WgXcQ" allowfullscreen></iframe>
+                        <p>Configuración Inicial</p>
+                    </div>
+                    <div class="media-item">
+                        <iframe src="https://www.youtube.com/embed/dQw4w9WgXcQ" allowfullscreen></iframe>
+                        <p>Gestión de Pedidos</p>
+                    </div>
+                </div>
+            </div>
+
+            <div id="descargas" class="content-section">
+                <h2>PDFs y Recursos</h2>
+                <div class="media-container">
+                    <div class="media-item">
+                        <h3>Brochure Comercial</h3>
+                        <a href="#" class="logout-btn" style="display:inline-block; text-decoration:none; margin-top:10px;">Descargar PDF</a>
+                    </div>
+                    <div class="media-item">
+                        <h3>Guía de Usuario</h3>
+                        <a href="#" class="logout-btn" style="display:inline-block; text-decoration:none; margin-top:10px;">Descargar PDF</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <a href="./index.html" class="back-btn">
+        ← Volver al Inicio
+    </a>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tiny-animate/1.1.0/tinyanimate.min.js"></script>
+    <script src="./assets/js/badge.js"></script>
+    <script src="https://menutech.xyz/menutechUI.min.js"></script>
+    <script src="./assets/js/renderer.js"></script>
+    <script>
+        // DRAGGABLE LOGIC
+        const panel = document.getElementById('indexer-panel');
+        const header = document.getElementById('indexer-header');
+        let isDragging = false;
+        let currentX;
+        let currentY;
+        let initialX;
+        let initialY;
+        let xOffset = 0;
+        let yOffset = 0;
+
+        header.addEventListener('mousedown', dragStart);
+        document.addEventListener('mousemove', drag);
+        document.addEventListener('mouseup', dragEnd);
+
+        function dragStart(e) {
+            initialX = e.clientX - xOffset;
+            initialY = e.clientY - yOffset;
+            if (e.target === header || header.contains(e.target)) {
+                isDragging = true;
+            }
+        }
+
+        function drag(e) {
+            if (isDragging) {
+                e.preventDefault();
+                currentX = e.clientX - initialX;
+                currentY = e.clientY - initialY;
+                xOffset = currentX;
+                yOffset = currentY;
+                setTranslate(currentX, currentY, panel);
+            }
+        }
+
+        function setTranslate(xPos, yPos, el) {
+            el.style.transform = "translate3d(" + xPos + "px, " + yPos + "px, 0)";
+        }
+
+        function dragEnd(e) {
+            isDragging = false;
+        }
+
+        // COLLAPSE LOGIC
+        const collapseBtn = document.getElementById('collapse-btn');
+        collapseBtn.addEventListener('click', () => {
+            panel.classList.toggle('collapsed');
+            collapseBtn.textContent = panel.classList.contains('collapsed') ? '+' : '−';
+        });
+
+        // CONTENT SWITCHING LOGIC
+        const items = document.querySelectorAll('.index-item');
+        const sections = document.querySelectorAll('.content-section');
+
+        items.forEach(item => {
+            item.addEventListener('click', () => {
+                const target = item.getAttribute('data-target');
+
+                items.forEach(i => i.classList.remove('active'));
+                item.classList.add('active');
+
+                sections.forEach(s => {
+                    s.classList.remove('active');
+                    if (s.id === target) {
+                        s.classList.add('active');
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>

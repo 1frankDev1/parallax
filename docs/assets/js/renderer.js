@@ -165,7 +165,8 @@
         "tile-9": { text: "Plataforma", url: "https://menutech.biz/pl555f9a/index.html" },
         "tile-10": { text: "Audios", url: "./audios.html" },
         "tile-11": { text: "Ender 2D", url: "./render2D.html" },
-        "tile-12": { text: "Render 3D", url: "./render3D.html" }
+        "tile-12": { text: "Render 3D", url: "./render3D.html" },
+        "tile-17": { text: "Manual Menutech", url: "./manual.html" }
       },
       "Closers": {
         "tile-1": { text: "Formularios", url: "./forms.html" },
@@ -179,7 +180,8 @@
         "tile-9": { text: "Plataforma", url: "https://menutech.biz/pl555f9a/index.html" },
         "tile-10": { text: "Audios", url: "./audios.html" },
         "tile-11": { text: "Ender 2D", url: "./render2D.html" },
-        "tile-12": { text: "Render 3D", url: "./render3D.html" }
+        "tile-12": { text: "Render 3D", url: "./render3D.html" },
+        "tile-17": { text: "Manual Menutech", url: "./manual.html" }
       },
       "Openers": {
         "tile-1": { text: "Formularios", url: "./forms.html" },
@@ -193,7 +195,8 @@
         "tile-9": { text: "Plataforma", url: "https://menutech.biz/pl555f9a/index.html" },
         "tile-10": { text: "Audios", url: "./audios.html" },
         "tile-11": { text: "Ender 2D", url: "./render2D.html" },
-        "tile-12": { text: "Render 3D", url: "./render3D.html" }
+        "tile-12": { text: "Render 3D", url: "./render3D.html" },
+        "tile-17": { text: "Manual Menutech", url: "./manual.html" }
       },
       "Design": {
         "tile-1": { text: "Formularios", url: "./forms.html" },
@@ -207,7 +210,8 @@
         "tile-9": { text: "Plataforma", url: "https://menutech.biz/pl555f9a/index.html" },
         "tile-10": { text: "Audios", url: "./audios.html" },
         "tile-11": { text: "Ender 2D", url: "./render2D.html" },
-        "tile-12": { text: "Render 3D", url: "./render3D.html" }
+        "tile-12": { text: "Render 3D", url: "./render3D.html" },
+        "tile-17": { text: "Manual Menutech", url: "./manual.html" }
       }
     };
 
