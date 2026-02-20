@@ -22,7 +22,7 @@
             width: 100%;
             max-width: 1200px;
             animation: fadeIn 0.5s ease-in-out;
-            padding-bottom: 100px;
+            padding-bottom: 150px;
         }
 
         @keyframes fadeIn {
@@ -157,7 +157,9 @@
 
         /* Drag and Drop Zone */
         .drop-zone {
-            width: 100%;
+            width: 80%;
+            max-width: 600px;
+            margin: 0 auto 20px auto;
             height: 150px;
             padding: 25px;
             display: flex;
@@ -171,7 +173,6 @@
             color: #ccc;
             border: 2px dashed #00bcd4;
             border-radius: 10px;
-            margin-bottom: 20px;
             transition: background 0.3s, border-color 0.3s;
         }
 
@@ -221,7 +222,7 @@
     </div>
 
     <div class="container">
-        <h1>Administración de Manual Menutech</h1>
+        <h1>Manual Menutech</h1>
 
         <div class="form-container">
             <h2>Agregar Nuevo Contenido</h2>
@@ -249,7 +250,7 @@
                     <label>Descripción / Texto Adicional</label>
                     <textarea id="description" placeholder="Escribe información adicional aquí..."></textarea>
                 </div>
-                <button type="submit" style="width: 100%;">Guardar Contenido</button>
+                <button type="submit" style="display: block; margin: 30px auto 10px auto; min-width: 200px;">Guardar Contenido</button>
             </form>
         </div>
 
