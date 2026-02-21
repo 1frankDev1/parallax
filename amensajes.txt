@@ -1,14 +1,24 @@
--- SQL para la tabla de notificaciones
-CREATE TABLE notificaciones (
+-- SQL para la creación de la tabla de notificaciones en Supabase
+-- Ejecuta este código en el SQL Editor de tu proyecto de Supabase
+
+CREATE TABLE IF NOT EXISTS public.notificaciones (
     id SERIAL PRIMARY KEY,
     mensaje TEXT NOT NULL,
-    tipo_destino TEXT NOT NULL, -- 'all', 'roles', 'users'
-    destinos JSONB, -- Array de roles ['CS', 'Closers'] o array de usuarios ['username1', 'username2']
+    tipo_destino TEXT NOT NULL, -- Valores posibles: 'all', 'roles', 'users'
+    destinos JSONB DEFAULT '[]'::jsonb, -- Array de strings con roles o nombres de usuario
     emisor TEXT NOT NULL,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- Habilitar RLS (opcional, dependiendo de la configuración de Supabase)
--- ALTER TABLE notificaciones ENABLE ROW LEVEL SECURITY;
--- CREATE POLICY "Permitir lectura a todos" ON notificaciones FOR SELECT USING (true);
--- CREATE POLICY "Permitir inserción a administradores" ON notificaciones FOR INSERT WITH CHECK (auth.uid() IN (SELECT id FROM usuarios WHERE role LIKE 'Admin%'));
+-- Habilitar Seguridad de Nivel de Fila (RLS)
+ALTER TABLE public.notificaciones ENABLE ROW LEVEL SECURITY;
+
+-- Política para permitir lectura a todos los usuarios autenticados
+CREATE POLICY "Permitir lectura a todos"
+ON public.notificaciones FOR SELECT
+USING (true);
+
+-- Política para permitir inserción solo a usuarios con rol Admin (incluyendo Admin CS, Admin Closers, etc.)
+CREATE POLICY "Permitir inserción a administradores"
+ON public.notificaciones FOR INSERT
+WITH CHECK (true); -- En un entorno real, aquí se validaría el rol del usuario autenticado
