@@ -734,10 +734,12 @@
     notifContainer.innerHTML = `
         <!-- ICONO DE NOTIFICACIONES -->
         <div id="notification-icon-container" class="hidden" style="position: fixed; top: 15px; right: 60px; z-index: 2000; cursor: pointer; display: flex; align-items: center;">
-            <span id="notification-badge" class="hidden" style="background: #ff4d4d; color: white; border-radius: 10px; padding: 2px 8px; font-size: 12px; font-weight: bold; margin-right: 5px; box-shadow: 0 0 5px rgba(0,0,0,0.3);">0</span>
-            <svg id="notification-icon" viewBox="0 0 24 24" style="width: 32px; height: 32px; fill: #e6edf3; filter: drop-shadow(0 0 5px rgba(0,0,0,0.3)); transition: 0.25s;">
-                <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/>
-            </svg>
+            <span id="notification-badge" class="hidden" style="background: #ff0000; color: white; border-radius: 10px; padding: 2px 8px; font-size: 12px; font-weight: bold; margin-right: 20px; box-shadow: 0 0 5px rgba(0,0,0,0.3); z-index: 2001;">0</span>
+            <div style="background: #ffffff !important; border-radius: 50%; width: 42px; height: 42px; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 10px rgba(0,0,0,0.3); transition: transform 0.25s;">
+                <svg id="notification-icon" viewBox="0 0 24 24" style="width: 26px; height: 26px; fill: #ff8c00 !important; display: block !important;">
+                    <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z" fill="#ff8c00"/>
+                </svg>
+            </div>
         </div>
 
         <!-- PANEL DE NOTIFICACIONES -->
