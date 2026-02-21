@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Notificaciones</title>
+    <link rel="stylesheet" href="./assets/css/badge.css">
+    <style>
+        body {
+            font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+            background: #2c2c2c;
+            color: #f0f0f0;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+        .container {
+            width: 100%;
+            max-width: 800px;
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        h1 { color: #00bcd4; text-align: center; }
+        .form-container {
+            background-color: #3d3d3d;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+        .form-container h2 { margin-top: 0; color: #00bcd4; text-align: center; }
+        .form-group { margin-bottom: 20px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; }
+        textarea, select, input {
+            width: 100%;
+            padding: 12px;
+            border-radius: 5px;
+            border: 1px solid #555;
+            background-color: #555;
+            color: #f0f0f0;
+            box-sizing: border-box;
+        }
+        .checkbox-group {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 10px;
+            margin-top: 10px;
+        }
+        .checkbox-item { display: flex; align-items: center; }
+        .checkbox-item input { width: auto; margin-right: 10px; }
+        button {
+            background-color: #ff8c00;
+            color: white;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            width: 100%;
+            transition: background 0.3s;
+        }
+        button:hover { background-color: #e67e00; }
+        .hidden { display: none !important; }
+        .popup {
+            position: fixed; top: 20px; right: -400px; width: 280px; padding: 20px;
+            background-color: #333; color: white; border-left: 5px solid #ff8c00;
+            border-radius: 5px; box-shadow: 0 2px 10px rgba(0,0,0,0.5);
+            transition: right 0.5s ease-in-out; z-index: 1000;
+        }
+        .popup.show { right: 20px; }
+        .popup.error { border-left-color: #f44336; }
+    </style>
+</head>
+<body>
+    <div id="popup" class="popup"></div>
+    <img id="login-icon" class="login-icon" src="./assets/img/user.svg">
+    <div id="user-badge" class="user-badge hidden">
+        <div id="badge-username"></div>
+        <div id="badge-role"></div>
+    </div>
+    <div id="badge-menu" class="hidden">
+        <button id="logout-btn" class="logout-btn">Cerrar sesión</button>
+    </div>
+
+    <div class="container">
+        <h1>Gestión de Notificaciones</h1>
+        <div class="form-container">
+            <h2>Enviar Nuevo Mensaje</h2>
+            <form id="notification-form">
+                <div class="form-group">
+                    <label for="mensaje">Mensaje:</label>
+                    <textarea id="mensaje" rows="4" required placeholder="Escribe tu mensaje aquí..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Destino:</label>
+                    <select id="tipo_destino">
+                        <option value="all">Todos</option>
+                        <option value="roles">Roles Específicos</option>
+                        <option value="users">Usuarios Específicos</option>
+                    </select>
+                </div>
+
+                <div id="roles-selection" class="form-group hidden">
+                    <label>Seleccionar Roles:</label>
+                    <div class="checkbox-group">
+                        <div class="checkbox-item"><input type="checkbox" name="roles" value="CS"> CS</div>
+                        <div class="checkbox-item"><input type="checkbox" name="roles" value="Closers"> Closers</div>
+                        <div class="checkbox-item"><input type="checkbox" name="roles" value="Openers"> Openers</div>
+                        <div class="checkbox-item"><input type="checkbox" name="roles" value="Design"> Design</div>
+                        <div class="checkbox-item"><input type="checkbox" name="roles" value="Admin"> Admin</div>
+                    </div>
+                </div>
+
+                <div id="users-selection" class="form-group hidden">
+                    <label>Seleccionar Usuarios (Ctrl+Click para selección múltiple):</label>
+                    <select id="usuarios-select" multiple size="10"></select>
+                </div>
+
+                <button type="submit">Enviar Notificación</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="neo-nav-container">
+        <button id="neoNavBack" class="neo-nav-btn">
+            <svg viewBox="0 0 24 24" class="neo-nav-icon"><path d="M15 18l-6-6 6-6" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <button id="neoNavHome" class="neo-nav-btn">
+            <svg viewBox="0 0 24 24" class="neo-nav-icon"><path d="M3 11l9-7 9 7v8a2 2 0 0 1-2 2h-4a2 2 0 0 1-2-2v-4H9v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tiny-animate/1.1.0/tinyanimate.min.js"></script>
+    <script src="./assets/js/badge.js"></script>
+    <script src="https://menutech.xyz/menutechUI.min.js"></script>
+    <script src="./assets/js/renderer.js"></script>
+    <script src="./assets/js/notificaciones.js" type="module"></script>
+</body>
+</html>
