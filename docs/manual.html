@@ -3,30 +3,29 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Manual Menutech</title>
+    <title>Manual Menutech - Manuscrito Ilustrado</title>
     <link rel="icon" type="image/png" sizes="192x192" href="./assets/img/Diseño%20sin%20título%20(8).png">
     <link rel="stylesheet" href="./assets/css/badge.css">
     <link rel="stylesheet" href="./assets/css/medieval.css">
+    <!-- PDF.js para extracción y renderizado -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
     <script>
         pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
     </script>
     <style>
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: #2a2a2a;
-            color: #fff;
+            font-family: 'Cormorant Garamond', serif;
             margin: 0;
             padding: 0;
             overflow: hidden;
             height: 100vh;
+            color: #fff;
         }
 
         #manual-container {
             display: flex;
             height: 100vh;
             width: 100vw;
-            padding-top: 60px; /* Space for nav if any */
             box-sizing: border-box;
         }
 
@@ -34,123 +33,86 @@
         #indexer-panel {
             user-select: none;
             position: absolute;
-            top: 80px;
-            left: 20px;
-            width: 250px;
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(15px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 15px;
-            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+            top: 100px;
+            left: 30px;
+            width: 280px;
+            background: rgba(15, 10, 7, 0.85);
+            backdrop-filter: blur(10px);
+            border: 2px solid #d4af37;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7);
             z-index: 1000;
-            transition: width 0.3s ease, transform 0.1s ease;
+            transition: width 0.3s ease, height 0.3s ease;
             overflow: hidden;
             display: flex;
             flex-direction: column;
         }
 
         #indexer-header {
-            padding: 10px;
-            background: rgba(255, 255, 255, 0.2);
+            padding: 12px;
+            background: #2c1e14;
             cursor: move;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            border-bottom: 2px solid #d4af37;
         }
 
         #indexer-header h3 {
             margin: 0;
-            font-size: 1rem;
-            color: #00bcd4;
+            font-family: 'Cinzel', serif;
+            font-size: 1.1rem;
+            color: #d4af37;
         }
 
         #collapse-btn {
             background: none;
             border: none;
-            color: white;
+            color: #d4af37;
             cursor: pointer;
-            font-size: 1.2rem;
+            font-size: 1.5rem;
+            font-family: 'Cinzel', serif;
         }
 
         #indexer-content {
             padding: 15px;
             overflow-y: auto;
             flex-grow: 1;
+            max-height: 70vh;
         }
 
         .index-item {
-            padding: 10px;
-            margin-bottom: 5px;
-            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 8px;
+            border-radius: 5px;
             cursor: pointer;
-            transition: background 0.2s;
-            border-left: 3px solid transparent;
+            transition: all 0.3s;
+            border-left: 4px solid transparent;
+            font-family: 'Cinzel', serif;
+            color: #ccc;
+            font-size: 0.9rem;
         }
 
         .index-item:hover {
-            background: rgba(255, 255, 255, 0.1);
+            background: rgba(212, 175, 55, 0.1);
+            color: #d4af37;
         }
 
         .index-item.active {
-            background: rgba(0, 188, 212, 0.2);
-            border-left-color: #00bcd4;
+            background: rgba(212, 175, 55, 0.2);
+            border-left-color: #d4af37;
+            color: #fff;
         }
 
         /* Main Content Area */
         #main-content {
             flex-grow: 1;
-            margin-left: 20px;
-            margin-right: 20px;
             padding: 20px;
             overflow-y: auto;
-            background: rgba(0, 0, 0, 0.2);
-            border-radius: 20px;
-            margin-bottom: 20px;
+            background: transparent;
             display: flex;
             flex-direction: column;
-        }
-
-        .content-section {
-            display: none;
-            animation: fadeIn 0.5s ease;
-        }
-
-        .content-section.active {
-            display: block;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        h2 { color: #00bcd4; }
-
-        .media-container {
-            margin-top: 20px;
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 20px;
-        }
-
-        .media-item {
-            background: rgba(255, 255, 255, 0.05);
-            padding: 15px;
-            border-radius: 12px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .media-item iframe, .media-item video, .media-item img {
-            width: 100%;
-            border-radius: 8px;
-            border: none;
-        }
-
-        .media-item p {
-            margin-top: 10px;
-            font-size: 0.9rem;
-            color: #ccc;
+            scroll-behavior: smooth;
         }
 
         /* Collapsed state */
@@ -163,29 +125,16 @@
             display: none;
         }
 
-        .back-btn {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            background: #ff8c00;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 50px;
-            cursor: pointer;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-            z-index: 1000;
-            text-decoration: none;
-            font-weight: bold;
+        /* Utils */
+        .loading-overlay {
             display: flex;
+            justify-content: center;
             align-items: center;
-            gap: 8px;
+            height: 100%;
+            font-family: 'Cinzel', serif;
+            color: #d4af37;
+            font-size: 2rem;
         }
-
-        .back-btn:hover {
-            background: #ffa733;
-        }
-
     </style>
 </head>
 <body>
@@ -204,26 +153,30 @@
 
     <img id="login-icon" class="login-icon" src="./assets/img/user.svg">
     <div id="user-badge" class="user-badge hidden" style="position: fixed;">
-        <div id="badge-username"></div>
-        <div id="badge-role"></div>
+        <div class="user-info">
+            <span id="user-name" class="user-name">Usuario</span>
+            <span id="user-role" class="user-role">Rol</span>
+        </div>
+        <div id="unread-badge" class="unread-badge hidden">0</div>
     </div>
+
     <div id="badge-menu" class="hidden">
-        <button id="logout-btn" class="logout-btn">Cerrar sesión</button>
+        <button id="logout-btn">Cerrar Sesión</button>
     </div>
 
     <div id="manual-container">
         <div id="indexer-panel">
             <div id="indexer-header">
-                <h3>Manual Menutech</h3>
+                <h3>📜 Manuscritos</h3>
                 <button id="collapse-btn">−</button>
             </div>
             <div id="indexer-content">
-                <!-- Titles will be loaded here -->
+                <!-- Titles loaded from Supabase -->
             </div>
         </div>
 
         <div id="main-content">
-            <!-- Content sections will be dynamically generated -->
+            <!-- Dynamic Medieval Content -->
         </div>
     </div>
 
@@ -231,17 +184,13 @@
     <div class="neo-nav-container">
         <button id="neoNavBack" class="neo-nav-btn">
             <svg viewBox="0 0 24 24" class="neo-nav-icon">
-                <path d="M15 18l-6-6 6-6" stroke="currentColor" stroke-width="2"
-                    fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M15 18l-6-6 6-6" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
         </button>
 
         <button id="neoNavHome" class="neo-nav-btn">
             <svg viewBox="0 0 24 24" class="neo-nav-icon">
-                <path d="M3 11l9-7 9 7v8a2 2 0 0 1-2 2h-4a2 2 0 0 1-2-2v-4H9v4a2
-                        2 0 0 1-2 2H5a2 2 0 0 1-2-2z"
-                    stroke="currentColor" stroke-width="2" fill="none"
-                    stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M3 11l9-7 9 7v8a2 2 0 0 1-2 2h-4a2 2 0 0 1-2-2v-4H9v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
         </button>
     </div>
@@ -252,38 +201,23 @@
     <script src="./assets/js/renderer.js"></script>
     <script>
         let supabase = null;
-        let isInitializing = false;
+        let manualData = [];
 
-        async function initSupabase(retries = 3) {
-            if (supabase) return supabase;
-            if (isInitializing) {
-                while (isInitializing) await new Promise(r => setTimeout(r, 100));
+        async function initSupabase() {
+            try {
+                const mod = await import("https://esm.sh/@supabase/supabase-js");
+                supabase = mod.createClient(
+                    "https://ojpyfjgkffmzwvukjagf.supabase.co",
+                    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9qcHlmamdrZmZtend2dWtqYWdmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQxNDIwMzYsImV4cCI6MjA3OTcxODAzNn0.dlVYmoMumBse_O1PLBx0FeNITqY4YktefD6l_uonSgo"
+                );
                 return supabase;
+            } catch (err) {
+                console.error("Error al inicializar Supabase:", err);
+                return null;
             }
-            isInitializing = true;
-
-            for (let i = 0; i < retries; i++) {
-                try {
-                    const mod = await import("https://esm.sh/@supabase/supabase-js");
-                    const createClient = mod.createClient;
-                    supabase = createClient(
-                        "https://ojpyfjgkffmzwvukjagf.supabase.co",
-                        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9qcHlmamdrZmZtend2dWtqYWdmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQxNDIwMzYsImV4cCI6MjA3OTcxODAzNn0.dlVYmoMumBse_O1PLBx0FeNITqY4YktefD6l_uonSgo"
-                    );
-                    console.log("Supabase inicializado en Manual");
-                    break;
-                } catch (err) {
-                    console.error(`Error cargando Supabase (intento ${i + 1}):`, err);
-                    if (i < retries - 1) await new Promise(r => setTimeout(r, 1000 * (i + 1)));
-                }
-            }
-            isInitializing = false;
-            return supabase;
         }
 
-        var manualData = [];
-
-        async function loadDynamicContent() {
+        async function loadContent() {
             const client = await initSupabase();
             if (!client) return;
 
@@ -293,7 +227,7 @@
                 .order('created_at', { ascending: true });
 
             if (error) {
-                console.error("Error cargando contenido de Supabase:", error);
+                console.error("Error cargando manual_content:", error);
                 return;
             }
 
@@ -302,7 +236,7 @@
             indexerContent.innerHTML = '';
 
             if (manualData.length === 0) {
-                indexerContent.innerHTML = '<div class="index-item">No hay contenido</div>';
+                indexerContent.innerHTML = '<div class="index-item">Sinfonía vacía</div>';
                 showWelcome();
                 return;
             }
@@ -315,22 +249,20 @@
                 indexerContent.appendChild(itemDiv);
             });
 
-            // Mostramos el primero por defecto
             selectItem(0);
         }
 
         function showWelcome() {
             const mainContent = document.getElementById('main-content');
             mainContent.innerHTML = `
-                <div class="content-section active">
-                    <h2>Bienvenido al Manual de Menutech</h2>
-                    <p>Aquí encontrarás toda la información necesaria para dominar nuestras herramientas y procesos.</p>
-                    <div class="media-container">
-                        <div class="media-item">
-                            <img src="./assets/img/mks%20(9).png" alt="Menutech Logo" style="max-width: 200px; display: block; margin: 0 auto;">
-                            <p>Estamos comprometidos con tu éxito. Explora las secciones en el panel lateral para comenzar.</p>
-                        </div>
+                <div class="medieval-container">
+                    <h1 class="medieval-header">Bienvenido al Archivo de Menutech</h1>
+                    <div class="medieval-text">
+                        <span class="capitular">E</span>n estas páginas yacen los secretos y guías para dominar el arte de nuestras herramientas.
+                        Explora los manuscritos en el panel izquierdo para comenzar tu aprendizaje.
                     </div>
+                    <div class="medieval-divider"><span>❦</span></div>
+                    <img src="./assets/img/mks%20(9).png" class="medieval-engraving" style="max-width: 300px;">
                 </div>
             `;
         }
@@ -340,128 +272,100 @@
             if (!item) return;
 
             document.querySelectorAll('.index-item').forEach((div, i) => {
-                if (i === index) div.classList.add('active');
-                else div.classList.remove('active');
+                div.classList.toggle('active', i === index);
             });
 
             const mainContent = document.getElementById('main-content');
-            mainContent.innerHTML = '<div class="medieval-container"><h1 class="medieval-header">Cargando Manuscrito...</h1></div>';
+            mainContent.innerHTML = '<div class="loading-overlay">Descifrando Pergamino...</div>';
 
-            if (item.type === 'image') {
-                renderMedievalImage(item);
-            } else if (item.type === 'pdf') {
-                await renderMedievalPDF(item);
-            } else if (item.type === 'text') {
-                await renderMedievalText(item);
-            } else if (item.type === 'video') {
-                renderVideo(item);
-            } else {
-                // Fallback
-                mainContent.innerHTML = `<div class="medieval-container"><h1 class="medieval-header">${item.title}</h1><p class="medieval-text">${item.description || ''}</p></div>`;
-            }
+            if (item.type === 'pdf') await renderPDF(item);
+            else if (item.type === 'image') renderImage(item);
+            else if (item.type === 'text') await renderText(item);
+            else if (item.type === 'video') renderVideo(item);
+            else showWelcome();
         }
 
-        function formatMedievalText(text) {
+        function formatMedieval(text) {
             if (!text) return '';
-            const paragraphs = text.split('\n').map(p => p.trim()).filter(p => p !== '');
+            const paragraphs = text.split('\n').map(p => p.trim()).filter(p => p.length > 0);
             return paragraphs.map((p, i) => {
                 if (i === 0) {
-                    const firstChar = p.charAt(0);
+                    const first = p.charAt(0);
                     const rest = p.slice(1);
-                    return `<p class="medieval-text"><span class="capitular">${firstChar}</span>${rest}</p>`;
+                    return `<p class="medieval-text"><span class="capitular">${first}</span>${rest}</p>`;
                 }
                 return `<p class="medieval-text">${p}</p>`;
             }).join('');
         }
 
-        function renderMedievalImage(item) {
-            const mainContent = document.getElementById('main-content');
-            mainContent.innerHTML = `
-                <div class="medieval-container">
-                    <h1 class="medieval-header">${item.title}</h1>
-                    <img src="${item.source_url}" class="medieval-engraving" alt="${item.title}">
-                    <div class="medieval-divider"><span>❦</span></div>
-                    <div class="medieval-text">
-                        ${item.description ? formatMedievalText(item.description) : ''}
-                    </div>
-                </div>
-            `;
-        }
-
-        async function renderMedievalText(item) {
-            const mainContent = document.getElementById('main-content');
+        async function renderText(item) {
             let content = item.description || '';
-
-            if (item.source_url && (item.source_url.endsWith('.txt') || item.source_url.includes('/storage/'))) {
+            if (item.source_url) {
                 try {
-                    const response = await fetch(item.source_url);
-                    if (response.ok) {
-                        const fetchedText = await response.text();
-                        if (fetchedText && fetchedText.length > 5) content = fetchedText;
+                    const res = await fetch(item.source_url);
+                    if (res.ok) {
+                        const txt = await res.text();
+                        if (txt.length > 5) content = txt;
                     }
-                } catch (e) {
-                    console.error("Error fetching text file:", e);
-                }
+                } catch (e) {}
             }
-
-            mainContent.innerHTML = `
+            document.getElementById('main-content').innerHTML = `
                 <div class="medieval-container">
                     <h1 class="medieval-header">${item.title}</h1>
-                    <div class="medieval-text">
-                        ${formatMedievalText(content)}
-                    </div>
+                    <div class="medieval-text">${formatMedieval(content)}</div>
                 </div>
             `;
         }
 
-        async function renderMedievalPDF(item) {
+        function renderImage(item) {
+            document.getElementById('main-content').innerHTML = `
+                <div class="medieval-container">
+                    <h1 class="medieval-header">${item.title}</h1>
+                    <img src="${item.source_url}" class="medieval-engraving">
+                    <div class="medieval-divider"><span>❦</span></div>
+                    <div class="medieval-text">${formatMedieval(item.description)}</div>
+                </div>
+            `;
+        }
+
+        async function renderPDF(item) {
             const mainContent = document.getElementById('main-content');
             mainContent.innerHTML = `
                 <div class="medieval-container">
                     <h1 class="medieval-header">${item.title}</h1>
-                    <div id="pdf-pages-container"></div>
-                    <div style="text-align:center; margin-top:20px;">
-                        <a href="${item.source_url}" target="_blank" class="logout-btn" style="display:inline-block; text-decoration:none; font-family:Cinzel, serif;">Descargar Pergamino Original (PDF)</a>
-                    </div>
+                    <div id="pdf-container"></div>
                 </div>
             `;
-
-            const container = document.getElementById('pdf-pages-container');
+            const container = document.getElementById('pdf-container');
 
             try {
-                const loadingTask = pdfjsLib.getDocument(item.source_url);
-                const pdf = await loadingTask.promise;
-
+                const pdf = await pdfjsLib.getDocument(item.source_url).promise;
                 for (let i = 1; i <= pdf.numPages; i++) {
                     const page = await pdf.getPage(i);
                     const textContent = await page.getTextContent();
 
                     const pageDiv = document.createElement('div');
                     pageDiv.className = 'medieval-page';
-                    pageDiv.innerHTML = `<div class="pdf-page-header">Folio ${i} de ${pdf.numPages}</div>`;
+                    pageDiv.innerHTML = `<div class="pdf-page-header">Folio ${i} / ${pdf.numPages}</div>`;
 
-                    let lastY;
-                    let pageText = '';
-                    textContent.items.forEach(textItem => {
-                        if (lastY !== undefined && Math.abs(lastY - textItem.transform[5]) > 5) {
-                            pageText += '\n';
-                        }
-                        pageText += textItem.str;
-                        lastY = textItem.transform[5];
+                    // Extraer texto
+                    let lastY, pageText = '';
+                    textContent.items.forEach(t => {
+                        if (lastY !== undefined && Math.abs(lastY - t.transform[5]) > 10) pageText += '\n';
+                        pageText += t.str;
+                        lastY = t.transform[5];
                     });
 
-                    const textContainer = document.createElement('div');
-                    textContainer.innerHTML = formatMedievalText(pageText);
-                    pageDiv.appendChild(textContainer);
+                    const textDiv = document.createElement('div');
+                    textDiv.innerHTML = formatMedieval(pageText);
+                    pageDiv.appendChild(textDiv);
 
-                    // Render page as engraving
+                    // Renderizar página como grabado
                     const viewport = page.getViewport({ scale: 1.5 });
                     const canvas = document.createElement('canvas');
-                    const context = canvas.getContext('2d');
                     canvas.height = viewport.height;
                     canvas.width = viewport.width;
-
-                    await page.render({ canvasContext: context, viewport: viewport }).promise;
+                    await page.render({ canvasContext: canvas.getContext('2d'), viewport }).promise;
 
                     const img = document.createElement('img');
                     img.src = canvas.toDataURL();
@@ -470,114 +374,63 @@
 
                     container.appendChild(pageDiv);
                     if (i < pdf.numPages) {
-                        const divider = document.createElement('div');
-                        divider.className = 'medieval-divider';
-                        divider.innerHTML = '<span>❦</span>';
-                        container.appendChild(divider);
+                        const div = document.createElement('div');
+                        div.className = 'medieval-divider';
+                        div.innerHTML = '<span>❦</span>';
+                        container.appendChild(div);
                     }
                 }
             } catch (e) {
-                console.error("Error al procesar PDF:", e);
                 container.innerHTML = `<p class="medieval-text">Error al descifrar el manuscrito: ${e.message}</p>`;
             }
         }
 
         function renderVideo(item) {
-            const mainContent = document.getElementById('main-content');
             let videoHTML = '';
-            if (item.source_url && (item.source_url.includes('youtube.com') || item.source_url.includes('youtu.be'))) {
-                let videoId = '';
-                if (item.source_url.includes('v=')) {
-                    videoId = item.source_url.split('v=')[1].split('&')[0];
-                } else {
-                    videoId = item.source_url.split('/').pop();
-                }
-                videoHTML = `<div style="position:relative; padding-bottom:56.25%; height:0; overflow:hidden; border: 8px double #8b4513;">
-                                <iframe src="https://www.youtube.com/embed/${videoId}"
-                                        style="position:absolute; top:0; left:0; width:100%; height:100%;"
-                                        allowfullscreen></iframe>
-                             </div>`;
-            } else if (item.source_url) {
-                videoHTML = `<video controls style="max-height: 70vh; width:100%; border: 8px double #8b4513;"><source src="${item.source_url}" type="video/mp4"></video>`;
+            if (item.source_url.includes('youtube.com') || item.source_url.includes('youtu.be')) {
+                const id = item.source_url.includes('v=') ? item.source_url.split('v=')[1].split('&')[0] : item.source_url.split('/').pop();
+                videoHTML = `<iframe src="https://www.youtube.com/embed/${id}" style="width:100%; aspect-ratio:16/9; border:10px double #8b4513;" allowfullscreen></iframe>`;
+            } else {
+                videoHTML = `<video controls style="width:100%; border:10px double #8b4513;"><source src="${item.source_url}"></video>`;
             }
-
-            mainContent.innerHTML = `
+            document.getElementById('main-content').innerHTML = `
                 <div class="medieval-container">
                     <h1 class="medieval-header">${item.title}</h1>
                     ${videoHTML}
                     <div class="medieval-divider"><span>❦</span></div>
-                    <div class="medieval-text">${item.description ? formatMedievalText(item.description) : ''}</div>
+                    <div class="medieval-text">${formatMedieval(item.description)}</div>
                 </div>
             `;
         }
 
-        loadDynamicContent();
-
-        // DRAGGABLE LOGIC
+        // DRAGGABLE Logic
         const panel = document.getElementById('indexer-panel');
         const header = document.getElementById('indexer-header');
-        let isDragging = false;
-        let currentX;
-        let currentY;
-        let initialX;
-        let initialY;
-        let xOffset = 0;
-        let yOffset = 0;
+        let isDragging = false, offX, offY;
 
-        header.addEventListener('mousedown', dragStart);
-        document.addEventListener('mousemove', drag);
-        document.addEventListener('mouseup', dragEnd);
-
-        function dragStart(e) {
-            initialX = e.clientX - xOffset;
-            initialY = e.clientY - yOffset;
-            if (e.target === header || header.contains(e.target)) {
-                isDragging = true;
-            }
-        }
-
-        function drag(e) {
+        header.onmousedown = (e) => {
+            isDragging = true;
+            offX = e.clientX - panel.offsetLeft;
+            offY = e.clientY - panel.offsetTop;
+        };
+        document.onmousemove = (e) => {
             if (isDragging) {
-                e.preventDefault();
-                currentX = e.clientX - initialX;
-                currentY = e.clientY - initialY;
-                xOffset = currentX;
-                yOffset = currentY;
-                setTranslate(currentX, currentY, panel);
+                panel.style.left = (e.clientX - offX) + 'px';
+                panel.style.top = (e.clientY - offY) + 'px';
             }
-        }
+        };
+        document.onmouseup = () => isDragging = false;
 
-        function setTranslate(xPos, yPos, el) {
-            el.style.transform = "translate3d(" + xPos + "px, " + yPos + "px, 0)";
-        }
-
-        function dragEnd(e) {
-            isDragging = false;
-        }
-
-        // COLLAPSE LOGIC
-        const collapseBtn = document.getElementById('collapse-btn');
-        collapseBtn.addEventListener('click', () => {
+        document.getElementById('collapse-btn').onclick = () => {
             panel.classList.toggle('collapsed');
-            collapseBtn.textContent = panel.classList.contains('collapsed') ? '+' : '−';
-        });
+            document.getElementById('collapse-btn').innerText = panel.classList.contains('collapsed') ? '+' : '−';
+        };
 
+        // NAV
+        document.getElementById("neoNavBack").onclick = () => window.history.back();
+        document.getElementById("neoNavHome").onclick = () => window.location.href = "index.html";
 
-        // NAVBAR NAVIGATION
-        const neoNavBack = document.getElementById("neoNavBack");
-        if (neoNavBack) {
-            neoNavBack.addEventListener("click", () => {
-                if (window.history.length > 1) window.history.back();
-                else window.location.href = "index.html";
-            });
-        }
-
-        const neoNavHome = document.getElementById("neoNavHome");
-        if (neoNavHome) {
-            neoNavHome.addEventListener("click", () => {
-                window.location.href = "index.html";
-            });
-        }
+        loadContent();
     </script>
 </body>
 </html>
