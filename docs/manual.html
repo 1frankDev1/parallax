@@ -6,6 +6,11 @@
     <title>Manual Menutech</title>
     <link rel="icon" type="image/png" sizes="192x192" href="./assets/img/Diseño%20sin%20título%20(8).png">
     <link rel="stylesheet" href="./assets/css/badge.css">
+    <link rel="stylesheet" href="./assets/css/medieval.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script>
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+    </script>
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -276,7 +281,7 @@
             return supabase;
         }
 
-        let manualData = [];
+        var manualData = [];
 
         async function loadDynamicContent() {
             const client = await initSupabase();
@@ -330,55 +335,177 @@
             `;
         }
 
-        function selectItem(index) {
+        async function selectItem(index) {
             const item = manualData[index];
             if (!item) return;
 
-            // Actualizar active en indexer
             document.querySelectorAll('.index-item').forEach((div, i) => {
                 if (i === index) div.classList.add('active');
                 else div.classList.remove('active');
             });
 
             const mainContent = document.getElementById('main-content');
+            mainContent.innerHTML = '<div class="medieval-container"><h1 class="medieval-header">Cargando Manuscrito...</h1></div>';
 
-            let mediaHTML = '';
-            if (item.type === 'video') {
-                if (item.source_url && (item.source_url.includes('youtube.com') || item.source_url.includes('youtu.be'))) {
-                    let videoId = '';
-                    if (item.source_url.includes('v=')) {
-                        videoId = item.source_url.split('v=')[1].split('&')[0];
-                    } else {
-                        videoId = item.source_url.split('/').pop();
-                    }
-                    mediaHTML = `<div style="position:relative; padding-bottom:56.25%; height:0; overflow:hidden;">
-                                    <iframe src="https://www.youtube.com/embed/${videoId}"
-                                            style="position:absolute; top:0; left:0; width:100%; height:100%;"
-                                            allowfullscreen></iframe>
-                                 </div>`;
-                } else if (item.source_url) {
-                    mediaHTML = `<video controls style="max-height: 70vh;"><source src="${item.source_url}" type="video/mp4"></video>`;
-                }
-            } else if (item.type === 'image') {
-                mediaHTML = `<img src="${item.source_url}" alt="${item.title}" style="max-height: 70vh; object-fit: contain;">`;
+            if (item.type === 'image') {
+                renderMedievalImage(item);
             } else if (item.type === 'pdf') {
-                mediaHTML = `<iframe src="${item.source_url}" style="height:70vh; width:100%;"></iframe>
-                             <div style="margin-top:15px; text-align:center;">
-                                <a href="${item.source_url}" target="_blank" class="logout-btn" style="display:inline-block; text-decoration:none;">Abrir PDF en pestaña nueva</a>
-                             </div>`;
+                await renderMedievalPDF(item);
+            } else if (item.type === 'text') {
+                await renderMedievalText(item);
+            } else if (item.type === 'video') {
+                renderVideo(item);
+            } else {
+                // Fallback
+                mainContent.innerHTML = `<div class="medieval-container"><h1 class="medieval-header">${item.title}</h1><p class="medieval-text">${item.description || ''}</p></div>`;
+            }
+        }
+
+        function formatMedievalText(text) {
+            if (!text) return '';
+            const paragraphs = text.split('\n').map(p => p.trim()).filter(p => p !== '');
+            return paragraphs.map((p, i) => {
+                if (i === 0) {
+                    const firstChar = p.charAt(0);
+                    const rest = p.slice(1);
+                    return `<p class="medieval-text"><span class="capitular">${firstChar}</span>${rest}</p>`;
+                }
+                return `<p class="medieval-text">${p}</p>`;
+            }).join('');
+        }
+
+        function renderMedievalImage(item) {
+            const mainContent = document.getElementById('main-content');
+            mainContent.innerHTML = `
+                <div class="medieval-container">
+                    <h1 class="medieval-header">${item.title}</h1>
+                    <img src="${item.source_url}" class="medieval-engraving" alt="${item.title}">
+                    <div class="medieval-divider"></div>
+                    <div class="medieval-text">
+                        ${item.description ? formatMedievalText(item.description) : ''}
+                    </div>
+                </div>
+            `;
+        }
+
+        async function renderMedievalText(item) {
+            const mainContent = document.getElementById('main-content');
+            let content = item.description || '';
+
+            if (item.source_url && (item.source_url.endsWith('.txt') || item.source_url.includes('/storage/'))) {
+                try {
+                    const response = await fetch(item.source_url);
+                    if (response.ok) {
+                        const fetchedText = await response.text();
+                        if (fetchedText && fetchedText.length > 5) content = fetchedText;
+                    }
+                } catch (e) {
+                    console.error("Error fetching text file:", e);
+                }
             }
 
             mainContent.innerHTML = `
-                <div class="content-section active">
-                    <h2>${item.title}</h2>
-                    <div class="media-container" style="display:block;">
-                        <div class="media-item" style="background:none; border:none; padding:0;">
-                            ${mediaHTML}
-                        </div>
-                        <div style="margin-top:20px; font-size:1.1rem; line-height:1.6; color:#e0e0e0; white-space: pre-wrap;">
-                            ${item.description || ''}
-                        </div>
+                <div class="medieval-container">
+                    <h1 class="medieval-header">${item.title}</h1>
+                    <div class="medieval-text">
+                        ${formatMedievalText(content)}
                     </div>
+                </div>
+            `;
+        }
+
+        async function renderMedievalPDF(item) {
+            const mainContent = document.getElementById('main-content');
+            mainContent.innerHTML = `
+                <div class="medieval-container">
+                    <h1 class="medieval-header">${item.title}</h1>
+                    <div id="pdf-pages-container"></div>
+                    <div style="text-align:center; margin-top:20px;">
+                        <a href="${item.source_url}" target="_blank" class="logout-btn" style="display:inline-block; text-decoration:none; font-family:Cinzel, serif;">Descargar Pergamino Original (PDF)</a>
+                    </div>
+                </div>
+            `;
+
+            const container = document.getElementById('pdf-pages-container');
+
+            try {
+                const loadingTask = pdfjsLib.getDocument(item.source_url);
+                const pdf = await loadingTask.promise;
+
+                for (let i = 1; i <= pdf.numPages; i++) {
+                    const page = await pdf.getPage(i);
+                    const textContent = await page.getTextContent();
+
+                    const pageDiv = document.createElement('div');
+                    pageDiv.className = 'medieval-page';
+                    pageDiv.innerHTML = `<div class="pdf-page-header">Folio ${i} de ${pdf.numPages}</div>`;
+
+                    let lastY;
+                    let pageText = '';
+                    textContent.items.forEach(textItem => {
+                        if (lastY !== undefined && Math.abs(lastY - textItem.transform[5]) > 5) {
+                            pageText += '\n';
+                        }
+                        pageText += textItem.str;
+                        lastY = textItem.transform[5];
+                    });
+
+                    const textContainer = document.createElement('div');
+                    textContainer.innerHTML = formatMedievalText(pageText);
+                    pageDiv.appendChild(textContainer);
+
+                    // Render page as engraving
+                    const viewport = page.getViewport({ scale: 1.5 });
+                    const canvas = document.createElement('canvas');
+                    const context = canvas.getContext('2d');
+                    canvas.height = viewport.height;
+                    canvas.width = viewport.width;
+
+                    await page.render({ canvasContext: context, viewport: viewport }).promise;
+
+                    const img = document.createElement('img');
+                    img.src = canvas.toDataURL();
+                    img.className = 'medieval-engraving';
+                    pageDiv.appendChild(img);
+
+                    container.appendChild(pageDiv);
+                    if (i < pdf.numPages) {
+                        const divider = document.createElement('div');
+                        divider.className = 'medieval-divider';
+                        container.appendChild(divider);
+                    }
+                }
+            } catch (e) {
+                console.error("Error al procesar PDF:", e);
+                container.innerHTML = `<p class="medieval-text">Error al descifrar el manuscrito: ${e.message}</p>`;
+            }
+        }
+
+        function renderVideo(item) {
+            const mainContent = document.getElementById('main-content');
+            let videoHTML = '';
+            if (item.source_url && (item.source_url.includes('youtube.com') || item.source_url.includes('youtu.be'))) {
+                let videoId = '';
+                if (item.source_url.includes('v=')) {
+                    videoId = item.source_url.split('v=')[1].split('&')[0];
+                } else {
+                    videoId = item.source_url.split('/').pop();
+                }
+                videoHTML = `<div style="position:relative; padding-bottom:56.25%; height:0; overflow:hidden; border: 8px double #8b4513;">
+                                <iframe src="https://www.youtube.com/embed/${videoId}"
+                                        style="position:absolute; top:0; left:0; width:100%; height:100%;"
+                                        allowfullscreen></iframe>
+                             </div>`;
+            } else if (item.source_url) {
+                videoHTML = `<video controls style="max-height: 70vh; width:100%; border: 8px double #8b4513;"><source src="${item.source_url}" type="video/mp4"></video>`;
+            }
+
+            mainContent.innerHTML = `
+                <div class="medieval-container">
+                    <h1 class="medieval-header">${item.title}</h1>
+                    ${videoHTML}
+                    <div class="medieval-divider"></div>
+                    <div class="medieval-text">${item.description ? formatMedievalText(item.description) : ''}</div>
                 </div>
             `;
         }

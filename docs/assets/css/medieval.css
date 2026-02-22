@@ -1,0 +1,143 @@
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Uncial+Antiqua&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,700;1,400&display=swap');
+
+/* Main Container - The Parchment */
+.medieval-container {
+    background-color: #f4e1d2;
+    background-image:
+        url("https://www.transparenttextures.com/patterns/parchment.png"),
+        radial-gradient(circle at center, rgba(244, 225, 210, 0.8) 0%, rgba(232, 209, 181, 0.9) 100%);
+    color: #2c1e16;
+    padding: 50px;
+    margin: 20px auto;
+    position: relative;
+    box-shadow: inset 0 0 80px rgba(0,0,0,0.15), 5px 15px 35px rgba(0,0,0,0.4);
+    border: 25px solid transparent;
+    border-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120"><rect x="10" y="10" width="100" height="100" fill="none" stroke="%238b4513" stroke-width="2"/><path d="M0,0 L40,0 L0,40 Z M80,0 L120,0 L120,40 Z M0,80 L0,120 L40,120 Z M80,120 L120,120 L120,80 Z" fill="%238b4513"/><circle cx="60" cy="10" r="4" fill="%23ffd700" stroke="%238b4513"/><circle cx="60" cy="110" r="4" fill="%23ffd700" stroke="%238b4513"/><circle cx="10" cy="60" r="4" fill="%23ffd700" stroke="%238b4513"/><circle cx="110" cy="60" r="4" fill="%23ffd700" stroke="%238b4513"/></svg>') 40 round;
+    font-family: 'Cormorant Garamond', serif;
+    line-height: 1.7;
+    max-width: 95%;
+    min-height: 80vh;
+    box-sizing: border-box;
+    overflow-x: hidden;
+}
+
+/* Page effect for long documents */
+.medieval-page {
+    margin-bottom: 40px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid rgba(139, 69, 19, 0.2);
+    position: relative;
+}
+
+.medieval-page:last-child {
+    border-bottom: none;
+}
+
+/* Headers */
+.medieval-header {
+    font-family: 'Uncial Antiqua', cursive;
+    text-align: center;
+    color: #8b0000; /* Deep Red */
+    margin-bottom: 40px;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    font-size: 2.2rem;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+    border-bottom: 2px double #ffd700;
+    padding-bottom: 15px;
+}
+
+.medieval-title {
+    font-family: 'Cinzel', serif;
+    font-weight: 700;
+    color: #00008b; /* Dark Blue */
+    margin-top: 30px;
+    margin-bottom: 15px;
+    font-size: 1.6rem;
+    border-left: 4px solid #8b0000;
+    padding-left: 15px;
+}
+
+/* Capitulares (Drop Caps) */
+.capitular {
+    float: left;
+    font-family: 'Uncial Antiqua', cursive;
+    font-size: 4.5rem;
+    line-height: 0.8;
+    padding-top: 10px;
+    padding-right: 12px;
+    padding-left: 5px;
+    color: #8b0000;
+    text-shadow: 3px 3px 0px #ffd700;
+    margin-bottom: -5px;
+}
+
+/* Body Text */
+.medieval-text {
+    font-size: 1.25rem;
+    text-align: justify;
+    margin-bottom: 20px;
+    color: #2c1e16;
+}
+
+/* Images - Ancient Engraving Style */
+.medieval-engraving {
+    filter: sepia(0.6) contrast(1.3) brightness(0.85) grayscale(0.3);
+    border: 8px double #8b4513;
+    box-shadow: 0 0 15px rgba(0,0,0,0.2);
+    display: block;
+    margin: 30px auto;
+    max-width: 85%;
+    background: #f4e1d2;
+    padding: 10px;
+}
+
+/* Decorative Dividers */
+.medieval-divider {
+    text-align: center;
+    margin: 40px 0;
+    user-select: none;
+}
+
+.medieval-divider::after {
+    content: "❦ ────────── ❧ ────────── ❦";
+    color: #8b4513;
+    font-size: 1.8rem;
+    opacity: 0.7;
+}
+
+/* PDF Section styling */
+.pdf-page-header {
+    font-family: 'Cinzel', serif;
+    font-size: 0.9rem;
+    color: #8b4513;
+    text-align: right;
+    margin-bottom: 10px;
+    font-style: italic;
+}
+
+/* Gold details */
+.gold-text {
+    color: #b8860b;
+    font-weight: bold;
+}
+
+/* Scrollbar medieval style */
+.medieval-container::-webkit-scrollbar {
+    width: 12px;
+}
+
+.medieval-container::-webkit-scrollbar-track {
+    background: #e8d1b5;
+    border-left: 1px solid #8b4513;
+}
+
+.medieval-container::-webkit-scrollbar-thumb {
+    background: #8b4513;
+    border: 2px solid #e8d1b5;
+    border-radius: 6px;
+}
+
+.medieval-container::-webkit-scrollbar-thumb:hover {
+    background: #a0522d;
+}
