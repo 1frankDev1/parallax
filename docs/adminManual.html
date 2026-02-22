@@ -233,6 +233,7 @@
         <div class="form-container">
             <h2>Agregar Nuevo Contenido</h2>
             <form id="content-form">
+                <input type="hidden" id="edit-id">
                 <div class="form-grid">
                     <div class="input-group">
                         <label>Título del Contenido</label>
@@ -406,6 +407,8 @@
             return supabase;
         }
 
+        let itemsData = [];
+
         async function loadItems() {
             const client = await initSupabase();
             if (!client) return;
@@ -420,6 +423,7 @@
                 return;
             }
 
+            itemsData = data;
             const tbody = document.getElementById('content-table-body');
             tbody.innerHTML = '';
 
@@ -429,11 +433,56 @@
                     <td>${item.title}</td>
                     <td><span class="type-badge type-${item.type}">${item.type}</span></td>
                     <td>
+                        <button class="action-btn" onclick="editItem('${item.id}')" style="background-color: #00bcd4;">Editar</button>
                         <button class="action-btn delete-btn" onclick="deleteItem('${item.id}', '${item.source_url}')">Eliminar</button>
                     </td>
                 `;
                 tbody.appendChild(tr);
             });
+        }
+
+        window.editItem = function(id) {
+            const item = itemsData.find(i => i.id === id);
+            if (!item) return;
+
+            document.getElementById('edit-id').value = item.id;
+            document.getElementById('title').value = item.title;
+            document.getElementById('source').value = item.source_url;
+            document.getElementById('description').value = item.description;
+
+            const formTitle = document.querySelector('.form-container h2');
+            formTitle.innerText = "Editar Contenido";
+
+            const submitBtn = document.querySelector('#content-form button[type="submit"]');
+            submitBtn.innerText = "Actualizar Contenido";
+
+            if (!document.getElementById('cancel-edit')) {
+                const cancelBtn = document.createElement('button');
+                cancelBtn.id = 'cancel-edit';
+                cancelBtn.type = 'button';
+                cancelBtn.innerText = "Cancelar";
+                cancelBtn.style.backgroundColor = "#666";
+                cancelBtn.style.marginLeft = "10px";
+                cancelBtn.onclick = resetForm;
+                submitBtn.parentNode.appendChild(cancelBtn);
+            }
+
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        };
+
+        function resetForm() {
+            document.getElementById('content-form').reset();
+            document.getElementById('edit-id').value = "";
+            resetDropZone();
+
+            const formTitle = document.querySelector('.form-container h2');
+            formTitle.innerText = "Agregar Nuevo Contenido";
+
+            const submitBtn = document.querySelector('#content-form button[type="submit"]');
+            submitBtn.innerText = "Guardar Contenido";
+
+            const cancelBtn = document.getElementById('cancel-edit');
+            if (cancelBtn) cancelBtn.remove();
         }
 
         window.deleteItem = async function(id, sourceUrl) {
@@ -475,9 +524,10 @@
         document.getElementById('content-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             const client = await initSupabase();
-            const btn = e.target.querySelector('button');
+            const btn = e.target.querySelector('button[type="submit"]');
+            const editId = document.getElementById('edit-id').value;
             btn.disabled = true;
-            btn.innerText = "Guardando...";
+            btn.innerText = editId ? "Actualizando..." : "Guardando...";
 
             let source_url = document.getElementById('source').value;
             const fileInput = document.getElementById('file-input');
@@ -508,28 +558,41 @@
             }
 
             const contentType = detectType(file, source_url);
-
-            const { error } = await client.from('manual_content').insert([{
+            const payload = {
                 title: document.getElementById('title').value,
                 type: contentType,
                 source_url: source_url,
                 description: document.getElementById('description').value
-            }]);
+            };
+
+            let error;
+            if (editId) {
+                const { error: updateError } = await client
+                    .from('manual_content')
+                    .update(payload)
+                    .eq('id', editId);
+                error = updateError;
+            } else {
+                const { error: insertError } = await client
+                    .from('manual_content')
+                    .insert([payload]);
+                error = insertError;
+            }
 
             if (error) {
                 console.error("Error al guardar metadata:", error);
                 alert("Error al guardar en base de datos: " + error.message);
             } else {
                 const popup = document.getElementById('popup');
+                popup.innerText = editId ? "Contenido actualizado exitosamente" : "Contenido guardado exitosamente";
                 popup.classList.add('show');
                 setTimeout(() => popup.classList.remove('show'), 3000);
-                e.target.reset();
-                resetDropZone();
+                resetForm();
                 loadItems();
             }
 
             btn.disabled = false;
-            btn.innerText = "Guardar Contenido";
+            btn.innerText = editId ? "Actualizar Contenido" : "Guardar Contenido";
         });
 
         loadItems();

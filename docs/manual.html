@@ -380,7 +380,7 @@
                 <div class="medieval-container">
                     <h1 class="medieval-header">${item.title}</h1>
                     <img src="${item.source_url}" class="medieval-engraving" alt="${item.title}">
-                    <div class="medieval-divider"></div>
+                    <div class="medieval-divider"><span>❦</span></div>
                     <div class="medieval-text">
                         ${item.description ? formatMedievalText(item.description) : ''}
                     </div>
@@ -472,6 +472,7 @@
                     if (i < pdf.numPages) {
                         const divider = document.createElement('div');
                         divider.className = 'medieval-divider';
+                        divider.innerHTML = '<span>❦</span>';
                         container.appendChild(divider);
                     }
                 }
@@ -504,7 +505,7 @@
                 <div class="medieval-container">
                     <h1 class="medieval-header">${item.title}</h1>
                     ${videoHTML}
-                    <div class="medieval-divider"></div>
+                    <div class="medieval-divider"><span>❦</span></div>
                     <div class="medieval-text">${item.description ? formatMedievalText(item.description) : ''}</div>
                 </div>
             `;
