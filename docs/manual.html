@@ -151,43 +151,31 @@
         </div>
     </div>
 
-    <img id="login-icon" class="login-icon" src="./assets/img/user.svg">
-    <div id="user-badge" class="user-badge hidden" style="position: fixed;">
-        <div class="user-info">
-            <span id="user-name" class="user-name">Usuario</span>
-            <span id="user-role" class="user-role">Rol</span>
-        </div>
-        <div id="unread-badge" class="unread-badge hidden">0</div>
-    </div>
-
-    <div id="badge-menu" class="hidden">
-        <button id="logout-btn">Cerrar Sesión</button>
-    </div>
-
     <div id="manual-container">
+        <!-- Indexer Sidebar -->
         <div id="indexer-panel">
             <div id="indexer-header">
-                <h3>📜 Manuscritos</h3>
+                <h3>Manuscritos</h3>
                 <button id="collapse-btn">−</button>
             </div>
             <div id="indexer-content">
-                <!-- Titles loaded from Supabase -->
+                <!-- Titles dynamically populated -->
             </div>
         </div>
 
-        <div id="main-content">
-            <!-- Dynamic Medieval Content -->
-        </div>
+        <!-- Main Content Area -->
+        <main id="main-content">
+            <!-- Content loaded here -->
+        </main>
     </div>
 
-    <!-- NAVBAR NEOMÓRFICO INFERIOR -->
+    <!-- Navigation Overlay -->
     <div class="neo-nav-container">
         <button id="neoNavBack" class="neo-nav-btn">
             <svg viewBox="0 0 24 24" class="neo-nav-icon">
-                <path d="M15 18l-6-6 6-6" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M19 12H5m7-7l-7 7 7 7" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
         </button>
-
         <button id="neoNavHome" class="neo-nav-btn">
             <svg viewBox="0 0 24 24" class="neo-nav-icon">
                 <path d="M3 11l9-7 9 7v8a2 2 0 0 1-2 2h-4a2 2 0 0 1-2-2v-4H9v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
@@ -223,7 +211,6 @@
 
             const { data, error } = await client
                 .from('manual_content')
-                .select('*')
                 .order('created_at', { ascending: true });
 
             if (error) {
@@ -258,10 +245,10 @@
                 <div class="medieval-container">
                     <h1 class="medieval-header">Bienvenido al Archivo de Menutech</h1>
                     <div class="medieval-text">
-                        <span class="capitular">E</span>n estas páginas yacen los secretos y guías para dominar el arte de nuestras herramientas.
+                        En estas páginas yacen los secretos y guías para dominar el arte de nuestras herramientas.
                         Explora los manuscritos en el panel izquierdo para comenzar tu aprendizaje.
                     </div>
-                    <div class="medieval-divider"><span>❦</span></div>
+                    <div class="medieval-divider"><span></span></div>
                     <img src="./assets/img/mks%20(9).png" class="medieval-engraving" style="max-width: 300px;">
                 </div>
             `;
@@ -289,11 +276,6 @@
             if (!text) return '';
             const paragraphs = text.split('\n').map(p => p.trim()).filter(p => p.length > 0);
             return paragraphs.map((p, i) => {
-                if (i === 0) {
-                    const first = p.charAt(0);
-                    const rest = p.slice(1);
-                    return `<p class="medieval-text"><span class="capitular">${first}</span>${rest}</p>`;
-                }
                 return `<p class="medieval-text">${p}</p>`;
             }).join('');
         }
@@ -309,6 +291,7 @@
                     }
                 } catch (e) {}
             }
+
             document.getElementById('main-content').innerHTML = `
                 <div class="medieval-container">
                     <h1 class="medieval-header">${item.title}</h1>
@@ -322,7 +305,7 @@
                 <div class="medieval-container">
                     <h1 class="medieval-header">${item.title}</h1>
                     <img src="${item.source_url}" class="medieval-engraving">
-                    <div class="medieval-divider"><span>❦</span></div>
+                    <div class="medieval-divider"><span></span></div>
                     <div class="medieval-text">${formatMedieval(item.description)}</div>
                 </div>
             `;
@@ -336,8 +319,8 @@
                     <div id="pdf-container"></div>
                 </div>
             `;
-            const container = document.getElementById('pdf-container');
 
+            const container = document.getElementById('pdf-container');
             try {
                 const pdf = await pdfjsLib.getDocument(item.source_url).promise;
                 for (let i = 1; i <= pdf.numPages; i++) {
@@ -365,6 +348,7 @@
                     const canvas = document.createElement('canvas');
                     canvas.height = viewport.height;
                     canvas.width = viewport.width;
+
                     await page.render({ canvasContext: canvas.getContext('2d'), viewport }).promise;
 
                     const img = document.createElement('img');
@@ -373,10 +357,11 @@
                     pageDiv.appendChild(img);
 
                     container.appendChild(pageDiv);
+
                     if (i < pdf.numPages) {
                         const div = document.createElement('div');
                         div.className = 'medieval-divider';
-                        div.innerHTML = '<span>❦</span>';
+                        div.innerHTML = '<span></span>';
                         container.appendChild(div);
                     }
                 }
@@ -389,15 +374,16 @@
             let videoHTML = '';
             if (item.source_url.includes('youtube.com') || item.source_url.includes('youtu.be')) {
                 const id = item.source_url.includes('v=') ? item.source_url.split('v=')[1].split('&')[0] : item.source_url.split('/').pop();
-                videoHTML = `<iframe src="https://www.youtube.com/embed/${id}" style="width:100%; aspect-ratio:16/9; border:10px double #8b4513;" allowfullscreen></iframe>`;
+                videoHTML = `<iframe src="https://www.youtube.com/embed/${id}" style="width:100%; aspect-ratio:16/9; border: none;" allowfullscreen></iframe>`;
             } else {
-                videoHTML = `<video controls style="width:100%; border:10px double #8b4513;"><source src="${item.source_url}"></video>`;
+                videoHTML = `<video controls style="width:100%; border: none;"><source src="${item.source_url}"></video>`;
             }
+
             document.getElementById('main-content').innerHTML = `
                 <div class="medieval-container">
                     <h1 class="medieval-header">${item.title}</h1>
                     ${videoHTML}
-                    <div class="medieval-divider"><span>❦</span></div>
+                    <div class="medieval-divider"><span></span></div>
                     <div class="medieval-text">${formatMedieval(item.description)}</div>
                 </div>
             `;
@@ -413,12 +399,14 @@
             offX = e.clientX - panel.offsetLeft;
             offY = e.clientY - panel.offsetTop;
         };
+
         document.onmousemove = (e) => {
             if (isDragging) {
                 panel.style.left = (e.clientX - offX) + 'px';
                 panel.style.top = (e.clientY - offY) + 'px';
             }
         };
+
         document.onmouseup = () => isDragging = false;
 
         document.getElementById('collapse-btn').onclick = () => {
