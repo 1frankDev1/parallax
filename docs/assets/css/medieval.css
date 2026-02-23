@@ -13,15 +13,15 @@ body {
         url("https://www.transparenttextures.com/patterns/natural-paper.png"),
         radial-gradient(circle at center, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0.4) 100%);
     color: #1a1a1a; /* Dark ink for readability */
-    padding: 80px;
+    padding: 40px;
     margin: 40px auto;
     position: relative;
     box-shadow:
-        inset 0 0 150px rgba(0, 0, 0, 0.5),
-        0 20px 50px rgba(0,0,0,0.8);
-    border: 50px solid transparent;
-    /* Intricate SVG Border with gold, red and blue details */
-    border-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="150" height="150" viewBox="0 0 150 150"><defs><linearGradient id="goldGradient" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:%23d4af37"/><stop offset="50%" style="stop-color:%23f9f295"/><stop offset="100%" style="stop-color:%23b8860b"/></linearGradient></defs><rect x="0" y="0" width="150" height="150" fill="%232c1e14"/><path d="M0,0 L50,0 L0,50 Z M100,0 L150,0 L150,50 Z M0,100 L0,150 L50,150 Z M100,150 L150,150 L150,100 Z" fill="url(%23goldGradient)"/><rect x="10" y="10" width="130" height="130" fill="none" stroke="%238b0000" stroke-width="2"/><circle cx="75" cy="15" r="8" fill="%238b0000" stroke="%23d4af37" stroke-width="2"/><circle cx="75" cy="135" r="8" fill="%238b0000" stroke="%23d4af37" stroke-width="2"/><circle cx="15" cy="75" r="8" fill="%2300008b" stroke="%23d4af37" stroke-width="2"/><circle cx="135" cy="75" r="8" fill="%2300008b" stroke="%23d4af37" stroke-width="2"/><path d="M20,20 L40,20 M20,20 L20,40" stroke="%23d4af37" stroke-width="3" fill="none"/><path d="M110,20 L130,20 M130,20 L130,40" stroke="%23d4af37" stroke-width="3" fill="none"/><path d="M20,110 L20,130 M20,130 L40,130" stroke="%23d4af37" stroke-width="3" fill="none"/><path d="M110,130 L130,130 M130,130 L130,110" stroke="%23d4af37" stroke-width="3" fill="none"/></svg>') 50 round;
+        inset 0 0 80px rgba(0, 0, 0, 0.4),
+        0 15px 40px rgba(0,0,0,0.6);
+    border: 30px solid transparent;
+    /* Intricate SVG Border with gold, red and blue details - Matching user's image */
+    border-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="150" height="150" viewBox="0 0 150 150"><rect x="0" y="0" width="150" height="150" fill="%230f0a07"/><line x1="50" y1="15" x2="100" y2="15" stroke="%238b0000" stroke-width="2"/><circle cx="75" cy="15" r="8" fill="%238b0000" stroke="%23d4af37" stroke-width="2"/><line x1="50" y1="135" x2="100" y2="135" stroke="%238b0000" stroke-width="2"/><circle cx="75" cy="135" r="8" fill="%238b0000" stroke="%23d4af37" stroke-width="2"/><line x1="15" y1="50" x2="15" y2="100" stroke="%238b0000" stroke-width="2"/><circle cx="15" cy="75" r="8" fill="%2300008b" stroke="%23d4af37" stroke-width="2"/><line x1="135" y1="50" x2="135" y2="100" stroke="%238b0000" stroke-width="2"/><circle cx="135" cy="75" r="8" fill="%2300008b" stroke="%23d4af37" stroke-width="2"/><path d="M0,0 L50,0 M0,0 L0,50" stroke="%23d4af37" stroke-width="10" fill="none"/><path d="M15,50 L15,15 L50,15" stroke="%238b0000" stroke-width="2" fill="none"/><path d="M150,0 L100,0 M150,0 L150,50" stroke="%23d4af37" stroke-width="10" fill="none"/><path d="M100,15 L135,15 L135,50" stroke="%238b0000" stroke-width="2" fill="none"/><path d="M0,150 L50,150 M0,150 L0,100" stroke="%23d4af37" stroke-width="10" fill="none"/><path d="M15,100 L15,135 L50,135" stroke="%238b0000" stroke-width="2" fill="none"/><path d="M150,150 L100,150 M150,150 L150,100" stroke="%23d4af37" stroke-width="10" fill="none"/><path d="M100,135 L135,135 L135,100" stroke="%238b0000" stroke-width="2" fill="none"/></svg>') 50 round;
     font-family: 'Cormorant Garamond', serif;
     line-height: 1.6;
     max-width: 1000px;
@@ -37,9 +37,9 @@ body {
     color: #8b0000; /* Deep Red */
     margin-bottom: 60px;
     text-transform: uppercase;
-    letter-spacing: 6px;
-    font-size: 3rem;
-    text-shadow: 1px 1px 0px #d4af37, 3px 3px 5px rgba(0,0,0,0.3);
+    letter-spacing: 4px;
+    font-size: 2.5rem;
+    text-shadow: 1px 1px 0px #d4af37, 2px 2px 4px rgba(0,0,0,0.3);
     position: relative;
     padding-bottom: 30px;
 }
@@ -47,7 +47,7 @@ body {
 .medieval-header::before {
     content: "❦";
     display: block;
-    font-size: 1.5rem;
+    font-size: 1.2rem;
     color: #d4af37;
     margin-bottom: 10px;
 }
@@ -56,9 +56,9 @@ body {
     content: "";
     position: absolute;
     bottom: 0;
-    left: 15%;
-    right: 15%;
-    height: 4px;
+    left: 20%;
+    right: 20%;
+    height: 3px;
     background: linear-gradient(90deg, transparent, #8b0000, #d4af37, #8b0000, transparent);
     border-radius: 2px;
 }
@@ -67,43 +67,40 @@ body {
 .capitular {
     float: left;
     font-family: 'Uncial Antiqua', cursive;
-    font-size: 6rem;
+    font-size: 5rem;
     line-height: 0.7;
     padding: 10px 15px 5px 5px;
     color: #8b0000;
-    background: linear-gradient(135deg, #8b0000 0%, #4a0000 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
     filter: drop-shadow(2px 2px 0px #d4af37);
-    margin-top: 10px;
+    margin-top: 5px;
 }
 
 /* Body Text */
 .medieval-text {
-    font-size: 1.4rem;
+    font-size: 1.3rem;
     text-align: justify;
-    margin-bottom: 30px;
+    margin-bottom: 25px;
     color: #1a1a1a;
     font-weight: 500;
 }
 
 /* Images - Ancient Engraving Style */
 .medieval-engraving {
-    filter: sepia(0.5) contrast(1.3) brightness(0.8) grayscale(0.3);
+    filter: sepia(0.4) contrast(1.2) brightness(0.9) grayscale(0.2);
     border: 15px solid transparent;
     border-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 30 30"><rect x="0" y="0" width="30" height="30" fill="%234a3728"/><rect x="5" y="5" width="20" height="20" fill="none" stroke="%23d4af37" stroke-width="1"/></svg>') 15 round;
     padding: 10px;
     background: #2c1e14;
-    box-shadow: 10px 10px 30px rgba(0,0,0,0.5);
+    box-shadow: 10px 10px 25px rgba(0,0,0,0.5);
     display: block;
-    margin: 50px auto;
-    max-width: 85%;
+    margin: 40px auto;
+    max-width: 90%;
 }
 
 /* Decorative Dividers */
 .medieval-divider {
     text-align: center;
-    margin: 80px 0;
+    margin: 60px 0;
     position: relative;
 }
 
@@ -111,8 +108,8 @@ body {
     content: "";
     position: absolute;
     top: 50%;
-    left: 10%;
-    right: 10%;
+    left: 15%;
+    right: 15%;
     height: 2px;
     background: linear-gradient(90deg, transparent, #8b4513, transparent);
     z-index: 0;
@@ -120,41 +117,41 @@ body {
 
 .medieval-divider span {
     background: #c4a484; /* Matches container bg */
-    padding: 0 30px;
+    padding: 0 20px;
     position: relative;
     z-index: 1;
     color: #8b0000;
-    font-size: 2.5rem;
+    font-size: 2rem;
     text-shadow: 1px 1px #d4af37;
 }
 
 /* Folio style for PDF pages */
 .medieval-page {
-    margin-bottom: 100px;
-    padding: 40px;
-    background: rgba(0,0,0,0.03);
-    border-radius: 10px;
+    margin-bottom: 80px;
+    padding: 30px;
+    background: rgba(0,0,0,0.02);
+    border-radius: 8px;
     position: relative;
 }
 
 .pdf-page-header {
     position: absolute;
-    top: -20px;
+    top: -15px;
     left: 50%;
     transform: translateX(-50%);
     background: #2c1e14;
     color: #d4af37;
-    padding: 8px 25px;
+    padding: 6px 20px;
     font-family: 'Cinzel', serif;
-    font-size: 0.9rem;
-    border: 2px solid #d4af37;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.4);
+    font-size: 0.8rem;
+    border: 1px solid #d4af37;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.4);
     z-index: 2;
 }
 
 /* Scrollbar medieval style */
 .medieval-container::-webkit-scrollbar {
-    width: 14px;
+    width: 12px;
 }
 
 .medieval-container::-webkit-scrollbar-track {
@@ -163,6 +160,6 @@ body {
 
 .medieval-container::-webkit-scrollbar-thumb {
     background: #8b0000;
-    border: 3px solid #2c1e14;
-    border-radius: 10px;
+    border: 2px solid #2c1e14;
+    border-radius: 8px;
 }
