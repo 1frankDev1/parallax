@@ -574,12 +574,14 @@
   // Lógica de Notificaciones
   // ------------------------------
   let currentMaxId = 0;
+  let currentNotifications = [];
 
   async function initNotifications() {
     injectNotificationUI();
     const iconContainer = document.getElementById("notification-icon-container");
     const panel = document.getElementById("notification-panel");
     const closeBtn = document.getElementById("close-notifications");
+    const deleteAllBtn = document.getElementById("delete-all-notifications");
 
     if (!iconContainer || !session) return;
 
@@ -602,6 +604,15 @@
         };
     }
 
+    if (deleteAllBtn) {
+        deleteAllBtn.onclick = (e) => {
+            e.stopPropagation();
+            if (confirm("¿Eliminar todas las notificaciones?")) {
+                deleteAllNotifications();
+            }
+        };
+    }
+
     // Cerrar panel al hacer clic fuera
     document.addEventListener("click", (e) => {
         if (panel && !panel.classList.contains("hidden") && !panel.contains(e.target) && !iconContainer.contains(e.target)) {
@@ -611,6 +622,35 @@
 
     loadNotifications();
     setInterval(loadNotifications, 60000); // Verificar cada minuto
+  }
+
+  function getDeletedNotifications() {
+    try {
+        const key = `deleted_notifications_${session?.user || 'anon'}`;
+        return JSON.parse(localStorage.getItem(key) || '[]');
+    } catch (e) {
+        return [];
+    }
+  }
+
+  function deleteNotification(id) {
+    const deleted = getDeletedNotifications();
+    if (!deleted.includes(id)) {
+        deleted.push(id);
+        const key = `deleted_notifications_${session?.user || 'anon'}`;
+        localStorage.setItem(key, JSON.stringify(deleted));
+    }
+    loadNotifications();
+  }
+
+  function deleteAllNotifications() {
+    const deleted = getDeletedNotifications();
+    currentNotifications.forEach(n => {
+        if (!deleted.includes(n.id)) deleted.push(n.id);
+    });
+    const key = `deleted_notifications_${session?.user || 'anon'}`;
+    localStorage.setItem(key, JSON.stringify(deleted));
+    loadNotifications();
   }
 
   function toggleNotificationPanel(show) {
@@ -645,16 +685,21 @@
             .from('notificaciones')
             .select('*')
             .order('created_at', { ascending: false })
-            .limit(20);
+            .limit(40);
 
         if (error) throw error;
 
+        const deletedIds = getDeletedNotifications();
+
         const filtered = data.filter(n => {
+            if (deletedIds.includes(n.id)) return false;
             if (n.tipo_destino === 'all') return true;
             if (n.tipo_destino === 'roles' && Array.isArray(n.destinos) && n.destinos.includes(session.role)) return true;
             if (n.tipo_destino === 'users' && Array.isArray(n.destinos) && n.destinos.includes(session.user)) return true;
             return false;
         });
+
+        currentNotifications = filtered;
 
         if (filtered.length > 0) {
             currentMaxId = Math.max(...filtered.map(n => n.id));
@@ -679,10 +724,10 @@
     list.innerHTML = '';
     notifications.forEach(n => {
         const item = document.createElement('div');
-        item.style.cssText = "padding: 12px; border-bottom: 1px solid #30363d; margin-bottom: 8px; background: #1c2128; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.2);";
+        item.style.cssText = "padding: 12px; border-bottom: 1px solid #30363d; margin-bottom: 8px; background: #1c2128; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.2); position: relative;";
 
         const meta = document.createElement('div');
-        meta.style.cssText = "font-size: 11px; color: #8b949e; margin-bottom: 5px; display: flex; justify-content: space-between;";
+        meta.style.cssText = "font-size: 11px; color: #8b949e; margin-bottom: 5px; display: flex; justify-content: space-between; align-items: center; padding-right: 20px;";
 
         const emisor = document.createElement('span');
         emisor.textContent = `De: ${n.emisor}`;
@@ -694,11 +739,22 @@
         meta.appendChild(emisor);
         meta.appendChild(fecha);
 
+        const deleteBtn = document.createElement('span');
+        deleteBtn.innerHTML = '✕';
+        deleteBtn.style.cssText = "position: absolute; top: 8px; right: 8px; cursor: pointer; color: #8b949e; font-size: 12px; font-weight: bold; transition: color 0.2s;";
+        deleteBtn.onclick = (e) => {
+            e.stopPropagation();
+            deleteNotification(n.id);
+        };
+        deleteBtn.onmouseover = () => deleteBtn.style.color = "#ff4d4d";
+        deleteBtn.onmouseout = () => deleteBtn.style.color = "#8b949e";
+
         const content = document.createElement('div');
-        content.style.cssText = "font-size: 14px; line-height: 1.4; color: #e6edf3; white-space: pre-wrap;";
+        content.style.cssText = "font-size: 14px; line-height: 1.4; color: #e6edf3; white-space: pre-wrap; padding-top: 5px;";
         content.textContent = n.mensaje;
 
         item.appendChild(meta);
+        item.appendChild(deleteBtn);
         item.appendChild(content);
         list.appendChild(item);
     });
@@ -734,18 +790,21 @@
     notifContainer.innerHTML = `
         <!-- ICONO DE NOTIFICACIONES -->
         <div id="notification-icon-container" class="hidden" style="position: fixed; top: 15px; right: 80px; z-index: 2000; cursor: pointer; display: flex; align-items: center;">
-            <span id="notification-badge" class="hidden" style="background: #ff0000; color: white; border-radius: 10px; padding: 2px 8px; font-size: 12px; font-weight: bold; margin-right: 20px; box-shadow: 0 0 5px rgba(0,0,0,0.3); z-index: 2001;">0</span>
-            <div style="background: #ffffff !important; border-radius: 50%; width: 42px; height: 42px; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 10px rgba(0,0,0,0.3); transition: transform 0.25s;">
+            <div style="background: #ffffff !important; border-radius: 50%; width: 42px; height: 42px; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 10px rgba(0,0,0,0.3); transition: transform 0.25s; position: relative;">
                 <svg id="notification-icon" viewBox="0 0 24 24" style="width: 26px; height: 26px; fill: #ff8c00 !important; display: block !important;">
                     <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z" fill="#ff8c00"/>
                 </svg>
+                <span id="notification-badge" class="hidden" style="position: absolute; top: -5px; right: -5px; background: #ff0000; color: white; border-radius: 10px; padding: 2px 8px; font-size: 10px; font-weight: bold; box-shadow: 0 0 5px rgba(0,0,0,0.3); z-index: 2001; min-width: 18px; text-align: center;">0</span>
             </div>
         </div>
 
         <!-- PANEL DE NOTIFICACIONES -->
         <div id="notification-panel" class="hidden" style="position: fixed; top: 60px; right: 20px; width: 320px; max-height: 450px; background: #161b22; border: 1px solid #30363d; border-radius: 12px; color: white; z-index: 2001; overflow-y: auto; padding: 0; box-shadow: 0 8px 24px rgba(0,0,0,0.5); font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; transition: opacity 0.3s, transform 0.3s; opacity: 0; transform: translateY(-10px);">
             <div style="padding: 15px; border-bottom: 1px solid #30363d; display: flex; justify-content: space-between; align-items: center; background: #0d1117; border-top-left-radius: 12px; border-top-right-radius: 12px;">
-                <h3 style="margin: 0; font-size: 16px;">Notificaciones</h3>
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <h3 style="margin: 0; font-size: 16px;">Notificaciones</h3>
+                    <button id="delete-all-notifications" style="background: transparent; border: 1px solid #30363d; color: #8b949e; border-radius: 4px; padding: 2px 6px; font-size: 10px; cursor: pointer; transition: all 0.2s;">Eliminar todo</button>
+                </div>
                 <span id="close-notifications" style="cursor: pointer; opacity: 0.7;">✕</span>
             </div>
             <div id="notification-list" style="padding: 10px;">
@@ -754,5 +813,16 @@
         </div>
     `;
     document.body.appendChild(notifContainer);
+
+    // CSS for hover effect on Delete All button
+    const style = document.createElement('style');
+    style.textContent = `
+        #delete-all-notifications:hover {
+            color: #ff4d4d !important;
+            border-color: #ff4d4d !important;
+            background: rgba(255, 77, 77, 0.1) !important;
+        }
+    `;
+    document.head.appendChild(style);
   }
 })();

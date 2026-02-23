@@ -265,13 +265,13 @@
 
             manualData.forEach((item, index) => {
                 const itemDiv = document.createElement('div');
-                itemDiv.className = 'index-item' + (index === 0 ? ' active' : '');
+                itemDiv.className = 'index-item';
                 itemDiv.innerText = cleanText(item.title);
                 itemDiv.onclick = () => selectItem(index);
                 indexerContent.appendChild(itemDiv);
             });
 
-            selectItem(0);
+            showWelcome();
         }
 
         function showWelcome() {
