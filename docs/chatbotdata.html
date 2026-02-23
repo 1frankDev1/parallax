@@ -14,223 +14,6 @@
 <!-- SweetAlert2 (popups profesionales) -->
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-<!--<style>
-  :root{
-    --bg: #f6f8fb;
-    --card: #ffffff;
-    --muted: #6b7280;
-    --primary: #ff7a00;
-    --accent: #ffb37a;
-    --border: #e6e9ef;
-    --shadow: 0 6px 20px rgba(21,30,45,0.06);
-  }
-
-  html,body{height:100%}
-  body{
-    margin:0;
-    font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
-    background: linear-gradient(180deg, #f8fafc 0%, #f2f6fb 100%);
-    color: #0f172a;
-    display:flex;
-    align-items:flex-start;
-    justify-content:center;
-    padding:28px;
-    box-sizing:border-box;
-  }
-
-  .container{
-    width:100%;
-    max-width:980px;
-  }
-
-  header{
-    display:flex;
-    align-items:center;
-    gap:16px;
-    margin-bottom:18px;
-  }
-  .logo{
-    width:56px;
-    height:56px;
-    border-radius:12px;
-    background:linear-gradient(135deg,var(--primary),#ff9a3d);
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    color:white;
-    font-weight:700;
-    box-shadow: 0 6px 18px rgba(255,122,0,0.18);
-    flex-shrink:0;
-  }
-  header h1{
-    margin:0;
-    font-size:20px;
-    letter-spacing: -0.2px;
-  }
-  header p{
-    margin:0;
-    color:var(--muted);
-    font-size:13px;
-  }
-
-  .grid{
-    display:grid;
-    grid-template-columns: 1fr;
-    gap:18px;
-  }
-
-  /* Card */
-  .card{
-    background:var(--card);
-    border-radius:12px;
-    padding:18px;
-    box-shadow:var(--shadow);
-    border:1px solid var(--border);
-  }
-
-  /* Form */
-  .form-grid{
-    display:grid;
-    grid-template-columns: 1fr 1fr;
-    gap:12px;
-    align-items:start;
-  }
-  .field{
-    display:flex;
-    flex-direction:column;
-    gap:8px;
-  }
-  label{
-    font-size:13px;
-    color:var(--muted);
-  }
-  input[type="text"], textarea{
-    font-size:14px;
-    padding:12px;
-    border-radius:9px;
-    border:1px solid #e6e9ef;
-    background:linear-gradient(180deg, #ffffff, #fcfdff);
-    box-shadow: inset 0 1px 0 rgba(255,255,255,0.6);
-    transition: box-shadow 160ms ease, border-color 160ms ease, transform 120ms;
-    outline:none;
-    resize:vertical;
-  }
-  input[type="text"]:focus, textarea:focus{
-    box-shadow: 0 6px 18px rgba(34, 197, 94, 0.06);
-    border-color: #c7f59a;
-    transform: translateY(-1px);
-  }
-
-  .controls{
-    display:flex;
-    gap:10px;
-    align-items:center;
-    margin-top:6px;
-  }
-  .btn{
-    display:inline-flex;
-    align-items:center;
-    gap:10px;
-    padding:10px 14px;
-    border-radius:10px;
-    border:none;
-    cursor:pointer;
-    font-weight:600;
-    font-size:14px;
-  }
-  .btn-primary{
-    background: linear-gradient(90deg,var(--primary),#ff9a3d);
-    color:white;
-    box-shadow: 0 10px 30px rgba(255,122,0,0.14);
-  }
-  .btn-ghost{
-    background:transparent;
-    border:1px solid var(--border);
-    color:var(--muted);
-  }
-
-  /* Table */
-  .table-wrap{
-    overflow:auto;
-  }
-  table{
-    width:100%;
-    border-collapse:separate;
-    border-spacing:0 8px;
-    font-size:14px;
-  }
-  thead th{
-    text-align:left;
-    padding:12px 14px;
-    color:var(--muted);
-    font-size:13px;
-  }
-  tbody tr{
-    background:linear-gradient(180deg,#ffffff,#fbfdff);
-    border-radius:10px;
-    transition: transform 160ms ease, box-shadow 160ms;
-    box-shadow: 0 4px 18px rgba(10,20,40,0.03);
-  }
-  tbody tr:hover{
-    transform: translateY(-4px);
-    box-shadow: 0 18px 40px rgba(15,25,45,0.06);
-  }
-  td{
-    padding:12px 14px;
-    border-bottom: none;
-    vertical-align:top;
-    color:#0f172a;
-  }
-  .empty{
-    text-align:center;
-    padding:30px 12px;
-    color:var(--muted);
-  }
-
-  /* small helper */
-  .meta{
-    font-size:12px;
-    color:var(--muted);
-  }
-
-  /* loading overlay */
-  .overlay{
-    position:fixed;
-    inset:0;
-    display:none;
-    align-items:center;
-    justify-content:center;
-    background: rgba(6,11,20,0.4);
-    z-index:9999;
-  }
-  .loader-card{
-    background:var(--card);
-    padding:22px;
-    border-radius:12px;
-    display:flex;
-    gap:14px;
-    align-items:center;
-    box-shadow: 0 18px 40px rgba(0,0,0,0.25);
-    border:1px solid rgba(255,255,255,0.02);
-  }
-
-  /* spinner */
-  .spinner {
-    width:48px;
-    height:48px;
-    border-radius:50%;
-    border:5px solid rgba(0,0,0,0.06);
-    border-top-color:var(--primary);
-    animation: spin 0.9s linear infinite;
-  }
-  @keyframes spin { to { transform: rotate(360deg); } }
-
-  /* responsive */
-  @media (max-width:720px){
-    .form-grid{ grid-template-columns: 1fr; }
-    header{ align-items:flex-start; gap:12px; }
-  }
-</style>-->
 <style>
   :root{
     --bg: #0c0f15;
@@ -268,7 +51,7 @@
   }
   .logo img{
     width:160px;
-    
+
   }
   header h1{
     margin:0;
@@ -439,6 +222,21 @@
     .form-grid{ grid-template-columns: 1fr; }
     header{ align-items:flex-start; gap:12px; }
   }
+
+  /* Action buttons */
+  .action-btn {
+    padding: 6px 10px;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 600;
+    margin-right: 5px;
+    transition: opacity 0.2s;
+  }
+  .edit-btn { background-color: #00bcd4; color: white; }
+  .delete-btn { background-color: #f44336; color: white; }
+  .action-btn:hover { opacity: 0.8; }
 </style>
 
 </head>
@@ -487,7 +285,7 @@
 
     <button id="neoNavHome" class="neo-nav-btn">
         <svg viewBox="0 0 24 24" class="neo-nav-icon">
-            <path d="M3 11l9-7 9 7v8a2 2 0 0 1-2 2h-4a2 2 0 0 1-2-2v-4H9v4a2 
+            <path d="M3 11l9-7 9 7v8a2 2 0 0 1-2 2h-4a2 2 0 0 1-2-2v-4H9v4a2
                      2 0 0 1-2 2H5a2 2 0 0 1-2-2z"
                   stroke="currentColor" stroke-width="2" fill="none"
                   stroke-linecap="round" stroke-linejoin="round"/>
@@ -517,6 +315,7 @@
       </div>
 
       <div class="form-grid">
+        <input type="hidden" id="edit-id">
         <div class="field">
           <label for="newQ">Pregunta</label>
           <input id="newQ" type="text" placeholder="Escribe la pregunta..." maxlength="250" />
@@ -557,10 +356,10 @@
       <div class="table-wrap">
         <table aria-live="polite">
           <thead>
-            <tr><th style="width:30%;">Pregunta</th><th>Respuesta</th></tr>
+            <tr><th style="width:30%;">Pregunta</th><th>Respuesta</th><th style="width:150px;">Acciones</th></tr>
           </thead>
           <tbody id="kbBody">
-            <tr><td class="empty" colspan="2">Cargando...</td></tr>
+            <tr><td class="empty" colspan="3">Cargando...</td></tr>
           </tbody>
         </table>
       </div>
@@ -574,7 +373,7 @@
   <div class="loader-card" role="status" aria-live="assertive">
     <div class="spinner" aria-hidden="true"></div>
     <div>
-      <div style="font-weight:600">Guardando entrada…</div>
+      <div id="loader-title" style="font-weight:600">Guardando entrada…</div>
       <div class="meta" style="margin-top:6px">No cierres la ventana hasta que finalice.</div>
     </div>
   </div>
@@ -583,20 +382,53 @@
 
 <script>
 /* -------------------------
-  CONFIGURACIÓN: Cambia esto
-   - API_URL debe apuntar a tu WebApp
+  CONFIGURACIÓN: Supabase
 --------------------------*/
-const API_URL = "https://script.google.com/macros/s/AKfycbyCPz710krQ7-9AzNO9u-AS5yjH7EJ3X8Lo-S73r_JBrpaf8_tJUFQadh5uenV5u-8F/exec";
+let supabase = null;
+let isInitializing = false;
+
+async function initSupabase(retries = 3) {
+  if (supabase) return supabase;
+  if (isInitializing) {
+    while (isInitializing) await new Promise(r => setTimeout(r, 100));
+    return supabase;
+  }
+  isInitializing = true;
+
+  for (let i = 0; i < retries; i++) {
+    try {
+      const mod = await import("https://esm.sh/@supabase/supabase-js");
+      const createClient = mod.createClient;
+      supabase = createClient(
+        "https://ojpyfjgkffmzwvukjagf.supabase.co",
+        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9qcHlmamdrZmZtend2dWtqYWdmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQxNDIwMzYsImV4cCI6MjA3OTcxODAzNn0.dlVYmoMumBse_O1PLBx0FeNITqY4YktefD6l_uonSgo"
+      );
+      console.log("Supabase inicializado correctamente");
+      break;
+    } catch (err) {
+      console.error(`Error cargando Supabase (intento ${i + 1}):`, err);
+      if (i < retries - 1) await new Promise(r => setTimeout(r, 1000 * (i + 1)));
+    }
+  }
+  isInitializing = false;
+  return supabase;
+}
 
 /* Helpers UI */
 const overlay = document.getElementById('overlay');
+const loaderTitle = document.getElementById('loader-title');
 const btnSave = document.getElementById('btnSave');
 const btnClear = document.getElementById('btnClear');
 const btnReload = document.getElementById('btnReload');
 const statusSmall = document.getElementById('statusSmall');
 const lastLoaded = document.getElementById('lastLoaded');
+const formTitle = document.getElementById('form-title');
 
-function showOverlay() { overlay.style.display = 'flex'; overlay.setAttribute('aria-hidden','false'); }
+function showOverlay(title) {
+    if(title) loaderTitle.textContent = title;
+    overlay.style.display = 'flex';
+    overlay.setAttribute('aria-hidden','false');
+}
 function hideOverlay(){ overlay.style.display = 'none'; overlay.setAttribute('aria-hidden','true'); }
 
 /* Inicializa */
@@ -608,37 +440,67 @@ document.addEventListener('DOMContentLoaded', () => {
 /* Enlazar botones */
 function bindActions(){
   btnSave.addEventListener('click', handleSave);
-  btnClear.addEventListener('click', () => {
-    document.getElementById('newQ').value = '';
-    document.getElementById('newA').value = '';
-  });
+  btnClear.addEventListener('click', resetForm);
   btnReload.addEventListener('click', loadKB);
+}
+
+function resetForm() {
+  document.getElementById('edit-id').value = '';
+  document.getElementById('newQ').value = '';
+  document.getElementById('newA').value = '';
+  formTitle.textContent = 'Agregar nueva entrada';
+  btnSave.innerHTML = `<svg id="saveIcon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24"><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.6" d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.6" d="M17 21v-8H7v8"/></svg> Guardar`;
 }
 
 /* Carga base de conocimiento */
 async function loadKB(){
   const body = document.getElementById('kbBody');
-  body.innerHTML = `<tr><td class="empty" colspan="2">Cargando...</td></tr>`;
+  body.innerHTML = `<tr><td class="empty" colspan="3">Cargando...</td></tr>`;
   statusSmall.textContent = 'Conectando…';
 
   try {
-    const res = await fetch(`${API_URL}?t=${Date.now()}`);
-    if(!res.ok) throw new Error('HTTP ' + res.status);
-    const data = await res.json();
+    const client = await initSupabase();
+    if(!client) throw new Error('No se pudo inicializar Supabase');
+
+    const { data, error } = await client
+        .from('chatbot_kb')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+    if (error) throw error;
 
     // render
     if(!Array.isArray(data) || data.length === 0){
-      body.innerHTML = `<tr><td class="empty" colspan="2">No hay entradas aún.</td></tr>`;
+      body.innerHTML = `<tr><td class="empty" colspan="3">No hay entradas aún.</td></tr>`;
     } else {
       body.innerHTML = '';
       data.forEach(row => {
         const tr = document.createElement('tr');
+
         const tdQ = document.createElement('td');
-        const tdA = document.createElement('td');
         tdQ.textContent = row.q || '';
+
+        const tdA = document.createElement('td');
         tdA.textContent = row.a || '';
+
+        const tdActions = document.createElement('td');
+
+        const btnEdit = document.createElement('button');
+        btnEdit.className = 'action-btn edit-btn';
+        btnEdit.textContent = 'Editar';
+        btnEdit.onclick = () => editEntry(row.id, row.q, row.a);
+
+        const btnDel = document.createElement('button');
+        btnDel.className = 'action-btn delete-btn';
+        btnDel.textContent = 'Eliminar';
+        btnDel.onclick = () => deleteEntry(row.id);
+
+        tdActions.appendChild(btnEdit);
+        tdActions.appendChild(btnDel);
+
         tr.appendChild(tdQ);
         tr.appendChild(tdA);
+        tr.appendChild(tdActions);
         body.appendChild(tr);
       });
     }
@@ -648,24 +510,23 @@ async function loadKB(){
     statusSmall.textContent = 'Conectado';
   } catch(err){
     console.error(err);
-    body.innerHTML = `<tr><td class="empty" colspan="2">Error al conectar: ${err.message}</td></tr>`;
+    body.innerHTML = `<tr><td class="empty" colspan="3">Error al conectar: ${err.message}</td></tr>`;
     statusSmall.textContent = 'Error';
-    // Mensaje bonito
     Swal.fire({
       icon: 'error',
       title: 'No se pudo cargar',
-      text: 'Hubo un problema al conectar con la WebApp. Revisa la URL o permisos.',
-      footer: 'Revisa la consola para más detalles'
+      text: 'Hubo un problema al conectar con Supabase.',
+      footer: err.message
     });
   }
 }
 
 /* Guardar entrada */
 async function handleSave(){
+  const editId = document.getElementById('edit-id').value;
   const q = document.getElementById('newQ').value.trim();
   const a = document.getElementById('newA').value.trim();
 
-  // Validación elegante con SweetAlert2
   if(!q || !a){
     await Swal.fire({
       icon: 'warning',
@@ -676,12 +537,11 @@ async function handleSave(){
     return;
   }
 
-  // Confirmación previa (opcional, pequeña)
   const confirmed = await Swal.fire({
-    title: '¿Guardar entrada?',
+    title: editId ? '¿Actualizar entrada?' : '¿Guardar entrada?',
     html: `<strong>Pregunta:</strong><br>${escapeHtml(q)}<hr style="margin:8px 0"><strong>Respuesta:</strong><br>${escapeHtml(a)}`,
     showCancelButton: true,
-    confirmButtonText: 'Sí, guardar',
+    confirmButtonText: editId ? 'Sí, actualizar' : 'Sí, guardar',
     cancelButtonText: 'Cancelar',
     confirmButtonColor: '#ff7a00',
     width: 600
@@ -689,32 +549,39 @@ async function handleSave(){
 
   if(!confirmed.isConfirmed) return;
 
-  // Mostrar loader
-  showOverlay();
+  showOverlay(editId ? 'Actualizando entrada…' : 'Guardando entrada…');
 
   try {
-    // Evitar cache; también puedes cambiar a POST si decides actualizar AppScript
-    const url = `${API_URL}?add=1&q=${encodeURIComponent(q)}&a=${encodeURIComponent(a)}&t=${Date.now()}`;
-    const res = await fetch(url);
-    // intenta leer respuesta JSON (si tu WebApp devuelve JSON)
-    let json;
-    try { json = await res.json(); } catch(e) { json = null; }
+    const client = await initSupabase();
+    let error;
+
+    if (editId) {
+        const { error: err } = await client
+            .from('chatbot_kb')
+            .update({ q, a })
+            .eq('id', editId);
+        error = err;
+    } else {
+        const { error: err } = await client
+            .from('chatbot_kb')
+            .insert([{ q, a }]);
+        error = err;
+    }
+
+    if (error) throw error;
 
     hideOverlay();
 
-    // Confirmación de éxito
     await Swal.fire({
       icon: 'success',
-      title: 'Guardado',
-      text: 'La entrada se agregó correctamente a la base de datos.',
+      title: editId ? 'Actualizado' : 'Guardado',
+      text: `La entrada se ${editId ? 'actualizó' : 'agregó'} correctamente.`,
       confirmButtonColor: '#ff7a00',
       timer: 1600,
       showConfirmButton: true
     });
 
-    // Limpiar campos y recargar lista
-    document.getElementById('newQ').value = '';
-    document.getElementById('newA').value = '';
+    resetForm();
     loadKB();
   } catch(err){
     hideOverlay();
@@ -722,10 +589,68 @@ async function handleSave(){
     await Swal.fire({
       icon: 'error',
       title: 'Error al guardar',
-      text: 'Ocurrió un error al intentar guardar. Revisa la consola y los permisos de la WebApp.',
+      text: 'Ocurrió un error al intentar guardar en Supabase.',
+      footer: err.message,
       confirmButtonColor: '#ff7a00'
     });
   }
+}
+
+/* Editar entrada */
+function editEntry(id, q, a) {
+    document.getElementById('edit-id').value = id;
+    document.getElementById('newQ').value = q;
+    document.getElementById('newA').value = a;
+    formTitle.textContent = 'Editar entrada';
+    btnSave.innerHTML = `<svg id="saveIcon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24"><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.6" d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.6" d="M17 21v-8H7v8"/></svg> Actualizar`;
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+/* Eliminar entrada */
+async function deleteEntry(id) {
+    const confirmed = await Swal.fire({
+        title: '¿Estás seguro?',
+        text: "Esta acción no se puede deshacer.",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#f44336',
+        cancelButtonColor: '#9aa2b2',
+        confirmButtonText: 'Sí, eliminar',
+        cancelButtonText: 'Cancelar'
+    });
+
+    if (!confirmed.isConfirmed) return;
+
+    showOverlay('Eliminando entrada…');
+
+    try {
+        const client = await initSupabase();
+        const { error } = await client
+            .from('chatbot_kb')
+            .delete()
+            .eq('id', id);
+
+        if (error) throw error;
+
+        hideOverlay();
+        await Swal.fire({
+            icon: 'success',
+            title: 'Eliminado',
+            text: 'La entrada ha sido eliminada.',
+            timer: 1500,
+            showConfirmButton: false
+        });
+        loadKB();
+    } catch (err) {
+        hideOverlay();
+        console.error(err);
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'No se pudo eliminar la entrada.',
+            footer: err.message
+        });
+    }
 }
 
 /* función de escape para mostrar en HTML dentro de Swal */
