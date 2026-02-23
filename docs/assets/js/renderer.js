@@ -318,8 +318,8 @@
     function toggleBadgeMenu() {
       if (!menu || !badge) return;
       const rect = badge.getBoundingClientRect();
-      const top = rect.bottom + 6 + window.scrollY;
-      const left = rect.left + window.scrollX;
+      const top = rect.bottom + 6;
+      const left = rect.left;
       menu.style.position = 'fixed';
       menu.style.top = `${top}px`;
       menu.style.left = `${left}px`;
