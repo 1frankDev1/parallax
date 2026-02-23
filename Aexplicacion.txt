@@ -1,0 +1,10 @@
+El problema ocurre debido a una "condición de carrera" (race condition) entre la inicialización de la base de datos y la carga de la página.
+
+Cuando entras a `users.html`, el navegador ejecuta el script `users.js`. Este script inicia la conexión con Supabase de forma asíncrona mediante la función `initSupabase()`. Sin embargo, el código también escucha el evento `DOMContentLoaded` para empezar a mostrar los usuarios inmediatamente.
+
+Como la conexión a Supabase tarda unos milisegundos en completarse, el evento `DOMContentLoaded` ocurre ANTES de que la variable global `supabase` esté lista. Cuando la función `loadUsers` intenta realizar la consulta, encuentra que `supabase` es todavía `null`, lo que provoca que la función falle silenciosamente y la tabla se quede mostrando perpetuamente el mensaje "Cargando...".
+
+¿Por qué funciona cuando agregas un usuario?
+Porque para cuando terminas de escribir los datos del nuevo usuario y haces clic en "Añadir Usuario", la conexión a Supabase ya ha tenido tiempo de sobra para completarse. Al añadir el usuario con éxito, el código vuelve a llamar a `loadUsers`, y esta vez, como la conexión ya está lista, la tabla se carga correctamente.
+
+He solucionado esto asegurando que el código espere explícitamente a que Supabase esté inicializado antes de intentar cargar los usuarios o realizar cualquier otra acción en la base de datos.
