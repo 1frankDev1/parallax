@@ -6,20 +6,22 @@ body {
     background-image: url("https://www.transparenttextures.com/patterns/asfalt-dark.png");
 }
 
-/* Main Container - The Darkened Parchment / Ancient Stone */
+/* Main Container - The Parchment Background */
 .medieval-container {
-    background-color: #c4a484; /* Darker parchment/stone base */
-    background-image:
-        url("https://www.transparenttextures.com/patterns/natural-paper.png");
+    background-color: #c4a484; /* Old parchment base */
+    background-image: url("https://www.transparenttextures.com/patterns/natural-paper.png");
+    background-repeat: repeat;
     color: #1a1a1a; /* Dark ink for readability */
-    padding: 40px;
+    padding: 60px;
     margin: 40px auto;
     position: relative;
     font-family: 'Cormorant Garamond', serif;
     line-height: 1.6;
-    max-width: 1000px;
-    min-height: auto;
+    max-width: 900px;
+    min-height: auto; /* Adapts to content height */
     box-sizing: border-box;
+    border: none !important; /* Remove any border/frame */
+    box-shadow: none !important; /* Remove any outer shadow */
 }
 
 /* Headers - Illuminated Style */
@@ -28,13 +30,13 @@ body {
     font-weight: 700;
     text-align: center;
     color: #d4af37; /* Gold */
-    margin-bottom: 60px;
+    margin-bottom: 40px;
     text-transform: uppercase;
     letter-spacing: 4px;
     font-size: 2.5rem;
     text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
     position: relative;
-    padding-bottom: 30px;
+    padding-bottom: 20px;
 }
 
 .medieval-header::after {
@@ -48,90 +50,75 @@ body {
     border-radius: 2px;
 }
 
-/* Capitulares (Drop Caps) - Disabled */
-.capitular {
-}
-
 /* Body Text */
 .medieval-text {
-    font-size: 1.3rem;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.35rem;
     text-align: justify;
     margin-bottom: 25px;
-    color: #1a1a1a;
+    color: #2c1e11;
     font-weight: 500;
 }
 
 /* Images - Ancient Engraving Style */
 .medieval-engraving {
-    filter: sepia(0.2) contrast(1.1);
+    filter: sepia(0.3) contrast(1.1) brightness(0.9); /* Soft filter */
     display: block;
-    margin: 40px auto;
-    max-width: 90%;
+    margin: 30px auto;
+    max-width: 100%;
+    height: auto;
 }
 
 /* Decorative Dividers */
 .medieval-divider {
     text-align: center;
-    margin: 60px 0;
+    margin: 40px 0;
     position: relative;
+    height: 2px;
 }
 
 .medieval-divider::before {
     content: "";
     position: absolute;
     top: 50%;
-    left: 15%;
-    right: 15%;
-    height: 2px;
-    background: linear-gradient(90deg, transparent, #8b4513, transparent);
-    z-index: 0;
+    left: 25%;
+    right: 25%;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(139, 69, 19, 0.4), transparent);
 }
 
 .medieval-divider span {
-    background: #c4a484; /* Matches container bg */
-    padding: 0 20px;
-    position: relative;
-    z-index: 1;
-    color: #d4af37;
-    font-size: 2rem;
-    display: none; /* Quitar emoji */
+    display: none; /* Hide any decorative characters */
 }
 
 /* Folio style for PDF pages */
 .medieval-page {
-    margin-bottom: 80px;
-    padding: 30px;
-    background: rgba(0,0,0,0.02);
-    border-radius: 8px;
-    position: relative;
+    margin-bottom: 60px;
+    padding: 20px;
+    background: rgba(0,0,0,0.03);
+    border-radius: 4px;
 }
 
 .pdf-page-header {
-    position: absolute;
-    top: -15px;
-    left: 50%;
-    transform: translateX(-50%);
     background: #2c1e14;
     color: #d4af37;
-    padding: 6px 20px;
+    padding: 4px 15px;
     font-family: 'Cinzel', serif;
     font-size: 0.8rem;
-    border: 1px solid #d4af37;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.4);
-    z-index: 2;
+    display: inline-block;
+    margin-bottom: 15px;
 }
 
 /* Scrollbar medieval style */
-.medieval-container::-webkit-scrollbar {
-    width: 12px;
+#main-content::-webkit-scrollbar {
+    width: 10px;
 }
 
-.medieval-container::-webkit-scrollbar-track {
-    background: #2c1e14;
+#main-content::-webkit-scrollbar-track {
+    background: #0a0a0a;
 }
 
-.medieval-container::-webkit-scrollbar-thumb {
+#main-content::-webkit-scrollbar-thumb {
     background: #d4af37;
-    border: 2px solid #2c1e14;
-    border-radius: 8px;
+    border-radius: 5px;
 }
