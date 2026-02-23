@@ -10,22 +10,15 @@ body {
 .medieval-container {
     background-color: #c4a484; /* Darker parchment/stone base */
     background-image:
-        url("https://www.transparenttextures.com/patterns/natural-paper.png"),
-        radial-gradient(circle at center, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0.4) 100%);
+        url("https://www.transparenttextures.com/patterns/natural-paper.png");
     color: #1a1a1a; /* Dark ink for readability */
     padding: 40px;
     margin: 40px auto;
     position: relative;
-    box-shadow:
-        inset 0 0 80px rgba(0, 0, 0, 0.4),
-        0 15px 40px rgba(0,0,0,0.6);
-    border: 30px solid transparent;
-    /* Intricate SVG Border with gold, red and blue details - Matching user's image */
-    border-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="150" height="150" viewBox="0 0 150 150"><rect x="0" y="0" width="150" height="150" fill="%230f0a07"/><line x1="50" y1="15" x2="100" y2="15" stroke="%238b0000" stroke-width="2"/><circle cx="75" cy="15" r="8" fill="%238b0000" stroke="%23d4af37" stroke-width="2"/><line x1="50" y1="135" x2="100" y2="135" stroke="%238b0000" stroke-width="2"/><circle cx="75" cy="135" r="8" fill="%238b0000" stroke="%23d4af37" stroke-width="2"/><line x1="15" y1="50" x2="15" y2="100" stroke="%238b0000" stroke-width="2"/><circle cx="15" cy="75" r="8" fill="%2300008b" stroke="%23d4af37" stroke-width="2"/><line x1="135" y1="50" x2="135" y2="100" stroke="%238b0000" stroke-width="2"/><circle cx="135" cy="75" r="8" fill="%2300008b" stroke="%23d4af37" stroke-width="2"/><path d="M0,0 L50,0 M0,0 L0,50" stroke="%23d4af37" stroke-width="10" fill="none"/><path d="M15,50 L15,15 L50,15" stroke="%238b0000" stroke-width="2" fill="none"/><path d="M150,0 L100,0 M150,0 L150,50" stroke="%23d4af37" stroke-width="10" fill="none"/><path d="M100,15 L135,15 L135,50" stroke="%238b0000" stroke-width="2" fill="none"/><path d="M0,150 L50,150 M0,150 L0,100" stroke="%23d4af37" stroke-width="10" fill="none"/><path d="M15,100 L15,135 L50,135" stroke="%238b0000" stroke-width="2" fill="none"/><path d="M150,150 L100,150 M150,150 L150,100" stroke="%23d4af37" stroke-width="10" fill="none"/><path d="M100,135 L135,135 L135,100" stroke="%238b0000" stroke-width="2" fill="none"/></svg>') 50 round;
     font-family: 'Cormorant Garamond', serif;
     line-height: 1.6;
     max-width: 1000px;
-    min-height: 90vh;
+    min-height: auto;
     box-sizing: border-box;
 }
 
@@ -34,22 +27,14 @@ body {
     font-family: 'Cinzel', serif;
     font-weight: 700;
     text-align: center;
-    color: #8b0000; /* Deep Red */
+    color: #d4af37; /* Gold */
     margin-bottom: 60px;
     text-transform: uppercase;
     letter-spacing: 4px;
     font-size: 2.5rem;
-    text-shadow: 1px 1px 0px #d4af37, 2px 2px 4px rgba(0,0,0,0.3);
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
     position: relative;
     padding-bottom: 30px;
-}
-
-.medieval-header::before {
-    content: "❦";
-    display: block;
-    font-size: 1.2rem;
-    color: #d4af37;
-    margin-bottom: 10px;
 }
 
 .medieval-header::after {
@@ -59,20 +44,12 @@ body {
     left: 20%;
     right: 20%;
     height: 3px;
-    background: linear-gradient(90deg, transparent, #8b0000, #d4af37, #8b0000, transparent);
+    background: linear-gradient(90deg, transparent, #d4af37, #d4af37, transparent);
     border-radius: 2px;
 }
 
-/* Capitulares (Drop Caps) - More ornate */
+/* Capitulares (Drop Caps) - Disabled */
 .capitular {
-    float: left;
-    font-family: 'Uncial Antiqua', cursive;
-    font-size: 5rem;
-    line-height: 0.7;
-    padding: 10px 15px 5px 5px;
-    color: #8b0000;
-    filter: drop-shadow(2px 2px 0px #d4af37);
-    margin-top: 5px;
 }
 
 /* Body Text */
@@ -86,12 +63,7 @@ body {
 
 /* Images - Ancient Engraving Style */
 .medieval-engraving {
-    filter: sepia(0.4) contrast(1.2) brightness(0.9) grayscale(0.2);
-    border: 15px solid transparent;
-    border-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 30 30"><rect x="0" y="0" width="30" height="30" fill="%234a3728"/><rect x="5" y="5" width="20" height="20" fill="none" stroke="%23d4af37" stroke-width="1"/></svg>') 15 round;
-    padding: 10px;
-    background: #2c1e14;
-    box-shadow: 10px 10px 25px rgba(0,0,0,0.5);
+    filter: sepia(0.2) contrast(1.1);
     display: block;
     margin: 40px auto;
     max-width: 90%;
@@ -120,9 +92,9 @@ body {
     padding: 0 20px;
     position: relative;
     z-index: 1;
-    color: #8b0000;
+    color: #d4af37;
     font-size: 2rem;
-    text-shadow: 1px 1px #d4af37;
+    display: none; /* Quitar emoji */
 }
 
 /* Folio style for PDF pages */
@@ -159,7 +131,7 @@ body {
 }
 
 .medieval-container::-webkit-scrollbar-thumb {
-    background: #8b0000;
+    background: #d4af37;
     border: 2px solid #2c1e14;
     border-radius: 8px;
 }
