@@ -18,7 +18,7 @@ if (savedX && savedY) {
 }
 
 // Mostrar hint solo primera vez
-if (!localStorage.getItem("seenNavDragHint")) {
+if (!localStorage.getItem("seenNavDragHint") && hint) {
     setTimeout(() => {
         hint.style.opacity = "1";
         hint.classList.add("pulsing");
@@ -42,8 +42,10 @@ nav.addEventListener('mousedown', (e) => {
 
     // Ocultar hint en cuanto empiece a mover
     if (!localStorage.getItem("seenNavDragHint")) {
-        hint.style.opacity = "0";
-        hint.classList.remove("pulsing");
+        if (hint) {
+            hint.style.opacity = "0";
+            hint.classList.remove("pulsing");
+        }
         localStorage.setItem("seenNavDragHint", "true");
     }
 });
