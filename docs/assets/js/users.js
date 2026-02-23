@@ -53,7 +53,8 @@ function showPopup(message, isError = false) {
 // ----------------------------------------------------------- 
 // INICIALIZACIÓN 
 // ----------------------------------------------------------- 
-document.addEventListener("DOMContentLoaded", () => { 
+document.addEventListener("DOMContentLoaded", async () => {
+    await initSupabase();
     const savedSession = localStorage.getItem("session"); 
     if (savedSession) { 
         session = JSON.parse(savedSession); 
@@ -221,6 +222,7 @@ function populateRoles(selectElement, adminRole) {
 } 
  
 async function loadUsers(session) { 
+    if (!supabase) await initSupabase();
     const tableBody = document.getElementById("user-table-body"); 
     tableBody.innerHTML = '<tr><td colspan="4" style="text-align:center;">Cargando...</td></tr>'; 
  
@@ -278,6 +280,7 @@ async function loadUsers(session) {
 } 
  
 async function addUser(session) { 
+    if (!supabase) await initSupabase();
     const newUser = { 
         username: document.getElementById("new-username").value.trim(), 
         password: document.getElementById("new-password").value.trim(), 
@@ -329,6 +332,7 @@ function openEditModal(user, session) {
 }
  
 async function updateUser(session) { 
+    if (!supabase) await initSupabase();
     const updatedUser = { 
         username: document.getElementById("modal-username").value.trim(), 
         password: document.getElementById("modal-password").value.trim(), 
@@ -377,6 +381,7 @@ function openDeleteModal(username, session) {
  
  
 async function deleteUser(username, session) { 
+    if (!supabase) await initSupabase();
     const { error } = await supabase.from("usuarios").delete().eq("username", username); 
     if (error) { 
         showPopup(`Error: ${error.message}`, true); 
