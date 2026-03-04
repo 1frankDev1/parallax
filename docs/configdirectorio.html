@@ -235,6 +235,59 @@
         #confirm-cancel-btn:hover {
             opacity: 0.8;
         }
+
+        /* Drag and Drop Zone */
+        .drop-zone {
+            width: 100%;
+            height: 150px;
+            padding: 25px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            font-weight: 500;
+            font-size: 1.1rem;
+            cursor: pointer;
+            color: #ccc;
+            border: 2px dashed var(--primary-color);
+            border-radius: 10px;
+            transition: background 0.3s, border-color 0.3s;
+            background-color: #3c3c3c;
+        }
+
+        .drop-zone--over {
+            border-style: solid;
+            background-color: rgba(255, 162, 0, 0.1);
+        }
+
+        .drop-zone__input {
+            display: none;
+        }
+
+        .drop-zone__thumb {
+            width: 100%;
+            height: 100%;
+            border-radius: 10px;
+            overflow: hidden;
+            background-color: #444;
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            position: relative;
+        }
+
+        .drop-zone__thumb::after {
+            content: attr(data-label);
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            padding: 5px 0;
+            color: #ffffff;
+            background: rgba(0, 0, 0, 0.75);
+            font-size: 14px;
+            text-align: center;
+        }
     </style> 
 </head> 
 <body> 
@@ -338,14 +391,13 @@
                             <label for="website">Website</label> 
                             <input type="text" id="website"> 
                         </div> 
-                        <div class="form-group logo-preview-container full-width"> 
-                            <div class="logo-input-field form-group"> 
-                                <label for="logo">Logo (URL)</label> 
-                                <input type="text" id="logo"> 
-                            </div> 
-                            <div class="logo-preview"> 
-                                <img id="logo-preview-img" src="https://via.placeholder.com/100" alt="Logo Preview"> 
-                            </div> 
+                        <div class="form-group full-width">
+                            <label>Logo del Restaurante (Drag & Drop)</label>
+                            <div class="drop-zone" id="logo-drop-zone">
+                                <span class="drop-zone__prompt">Suelta el logo aquí o haz clic para subir</span>
+                                <input type="file" id="logo-file" class="drop-zone__input" accept="image/*">
+                            </div>
+                            <input type="hidden" id="logo">
                         </div> 
                         <div class="form-group"> 
                             <label for="google_business">Google Business</label> 
@@ -399,7 +451,8 @@
             const modalTitle = document.getElementById('modal-title');
             const form = document.getElementById('restaurant-form');
             const logoInput = document.getElementById('logo');
-            const logoPreview = document.getElementById('logo-preview-img');
+            const logoDropZone = document.getElementById('logo-drop-zone');
+            const logoFileInput = document.getElementById('logo-file');
             const newBtn = document.getElementById('new-btn');
             const closeBtn = modalContainer.querySelector('.close-btn');
             const modalHeader = document.getElementById('modal-header');
@@ -433,8 +486,101 @@
             function resetForm() {
                 form.reset();
                 form.querySelector('#restaurant-id').value = '';
-                logoPreview.src = 'https://via.placeholder.com/100';
+                resetDropZone(logoDropZone);
             }
+
+            function resetDropZone(dropZoneElement) {
+                const thumbnailElement = dropZoneElement.querySelector(".drop-zone__thumb");
+                if (thumbnailElement) thumbnailElement.remove();
+                if (!dropZoneElement.querySelector(".drop-zone__prompt")) {
+                    const prompt = document.createElement("span");
+                    prompt.classList.add("drop-zone__prompt");
+                    prompt.innerText = "Suelta el logo aquí o haz clic para subir";
+                    dropZoneElement.appendChild(prompt);
+                }
+                logoFileInput.value = "";
+                logoInput.value = "";
+            }
+
+            async function uploadToCloudinary(file) {
+                const cloudName = 'dbbjxhvz5';
+                const uploadPreset = '4x4661tTevWcpscPpH8wOaYDhrI';
+                const url = `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`;
+
+                const formData = new FormData();
+                formData.append('file', file);
+                formData.append('upload_preset', uploadPreset);
+
+                try {
+                    const response = await fetch(url, {
+                        method: 'POST',
+                        body: formData
+                    });
+                    if (!response.ok) throw new Error('Error al subir a Cloudinary');
+                    const data = await response.json();
+                    return data.secure_url;
+                } catch (error) {
+                    console.error('Cloudinary Error:', error);
+                    throw error;
+                }
+            }
+
+            function updateThumbnail(dropZoneElement, file) {
+                let thumbnailElement = dropZoneElement.querySelector(".drop-zone__thumb");
+
+                if (dropZoneElement.querySelector(".drop-zone__prompt")) {
+                    dropZoneElement.querySelector(".drop-zone__prompt").remove();
+                }
+
+                if (!thumbnailElement) {
+                    thumbnailElement = document.createElement("div");
+                    thumbnailElement.classList.add("drop-zone__thumb");
+                    dropZoneElement.appendChild(thumbnailElement);
+                }
+
+                thumbnailElement.dataset.label = file.name;
+
+                if (file.type.startsWith("image/")) {
+                    const reader = new FileReader();
+                    reader.readAsDataURL(file);
+                    reader.onload = () => {
+                        thumbnailElement.style.backgroundImage = `url('${reader.result}')`;
+                    };
+                } else {
+                    thumbnailElement.style.backgroundImage = null;
+                }
+            }
+
+            // --- Drag and Drop Event Listeners ---
+            logoDropZone.addEventListener("click", () => {
+                logoFileInput.click();
+            });
+
+            logoFileInput.addEventListener("change", () => {
+                if (logoFileInput.files.length) {
+                    updateThumbnail(logoDropZone, logoFileInput.files[0]);
+                }
+            });
+
+            logoDropZone.addEventListener("dragover", (e) => {
+                e.preventDefault();
+                logoDropZone.classList.add("drop-zone--over");
+            });
+
+            ["dragleave", "dragend"].forEach((type) => {
+                logoDropZone.addEventListener(type, () => {
+                    logoDropZone.classList.remove("drop-zone--over");
+                });
+            });
+
+            logoDropZone.addEventListener("drop", (e) => {
+                e.preventDefault();
+                if (e.dataTransfer.files.length) {
+                    logoFileInput.files = e.dataTransfer.files;
+                    updateThumbnail(logoDropZone, e.dataTransfer.files[0]);
+                }
+                logoDropZone.classList.remove("drop-zone--over");
+            });
 
             newBtn.addEventListener('click', () => {
                 modalTitle.textContent = 'Nuevo Restaurante';
@@ -447,9 +593,6 @@
                 if (e.target === modalOverlay) closeModal();
             });
 
-            logoInput.addEventListener('input', () => {
-                logoPreview.src = logoInput.value || 'https://via.placeholder.com/100';
-            });
 
             // Eventos del Popup de Confirmación
             confirmCancelBtn.addEventListener('click', closeConfirmModal);
@@ -526,19 +669,31 @@
                     e.preventDefault();
                     if (!supabase) return;
 
-                    const restaurantData = {
-                        nombre: form.querySelector('#nombre').value,
-                        direccion: form.querySelector('#direccion').value,
-                        telefono: form.querySelector('#telefono').value,
-                        website: form.querySelector('#website').value,
-                        logo: form.querySelector('#logo').value,
-                        google_business: form.querySelector('#google_business').value,
-                        facebook: form.querySelector('#facebook').value,
-                        instagram: form.querySelector('#instagram').value,
-                        marketing_kit: form.querySelector('#marketing_kit').value,
-                    };
+                    const saveBtn = document.getElementById('save-btn');
+                    const originalBtnText = saveBtn.textContent;
+                    saveBtn.disabled = true;
+                    saveBtn.textContent = 'Guardando...';
 
-                    const id = form.querySelector('#restaurant-id').value;
+                    try {
+                        let logoUrl = form.querySelector('#logo').value;
+                        if (logoFileInput.files.length > 0) {
+                            showNotification('Subiendo logo...', 'info');
+                            logoUrl = await uploadToCloudinary(logoFileInput.files[0]);
+                        }
+
+                        const restaurantData = {
+                            nombre: form.querySelector('#nombre').value,
+                            direccion: form.querySelector('#direccion').value,
+                            telefono: form.querySelector('#telefono').value,
+                            website: form.querySelector('#website').value,
+                            logo: logoUrl,
+                            google_business: form.querySelector('#google_business').value,
+                            facebook: form.querySelector('#facebook').value,
+                            instagram: form.querySelector('#instagram').value,
+                            marketing_kit: form.querySelector('#marketing_kit').value,
+                        };
+
+                        const id = form.querySelector('#restaurant-id').value;
                     let error;
                     if (id) {
                         const { error: updateError } = await supabase.from('restaurantes').update(restaurantData).eq('id', id);
@@ -548,12 +703,19 @@
                         error = insertError;
                     }
 
-                    if (error) {
-                        showNotification(`Error: ${error.message}`, 'error');
-                    } else {
-                        showNotification('Restaurante guardado con éxito.', 'success');
-                        closeModal();
-                        fetchRestaurants();
+                        if (error) {
+                            showNotification(`Error: ${error.message}`, 'error');
+                        } else {
+                            showNotification('Restaurante guardado con éxito.', 'success');
+                            closeModal();
+                            fetchRestaurants();
+                        }
+                    } catch (err) {
+                        showNotification('Error al procesar la solicitud.', 'error');
+                        console.error(err);
+                    } finally {
+                        saveBtn.disabled = false;
+                        saveBtn.textContent = originalBtnText;
                     }
                 });
 
@@ -580,7 +742,24 @@
                         form.querySelector('#facebook').value = data.facebook || '';
                         form.querySelector('#instagram').value = data.instagram || '';
                         form.querySelector('#marketing_kit').value = data.marketing_kit || '';
-                        logoPreview.src = data.logo || 'https://via.placeholder.com/100';
+
+                        // Cargar preview del logo si existe
+                        if (data.logo) {
+                            let thumbnailElement = logoDropZone.querySelector(".drop-zone__thumb");
+                            if (logoDropZone.querySelector(".drop-zone__prompt")) {
+                                logoDropZone.querySelector(".drop-zone__prompt").remove();
+                            }
+                            if (!thumbnailElement) {
+                                thumbnailElement = document.createElement("div");
+                                thumbnailElement.classList.add("drop-zone__thumb");
+                                logoDropZone.appendChild(thumbnailElement);
+                            }
+                            thumbnailElement.style.backgroundImage = `url('${data.logo}')`;
+                            thumbnailElement.dataset.label = "Logo actual";
+                        } else {
+                            resetDropZone(logoDropZone);
+                        }
+
                         openModal();
                     }
 
