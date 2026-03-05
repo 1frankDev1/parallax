@@ -1,0 +1,2 @@
+INSERT INTO public.usuarios (username, password, role)
+VALUES ('IT', 'MT_IT_2024', 'Admin IT');

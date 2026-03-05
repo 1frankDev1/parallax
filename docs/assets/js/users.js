@@ -209,8 +209,8 @@ function populateRoles(selectElement, adminRole) {
     selectElement.innerHTML = ""; 
      
     const availableRoles = { 
-        "Admin": ["Admin", "Admin CS", "Admin Openers", "Admin Closers", "Admin Design", "CS", "Openers", "Closers", "Design"], 
-        "Admin CS": ["CS"], "Admin Openers": ["Openers"], "Admin Closers": ["Closers"], "Admin Design": ["Design"] 
+        "Admin": ["Admin", "Admin CS", "Admin Openers", "Admin Closers", "Admin Design", "Admin IT", "CS", "Openers", "Closers", "Design", "IT"],
+        "Admin CS": ["CS"], "Admin Openers": ["Openers"], "Admin Closers": ["Closers"], "Admin Design": ["Design"], "Admin IT": ["IT"]
     }; 
  
     const roles = availableRoles[adminRole] || []; 
