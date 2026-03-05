@@ -213,6 +213,36 @@
         "tile-11": { text: "Ender 2D", url: "./render2D.html" },
         "tile-12": { text: "Render 3D", url: "./render3D.html" },
         "tile-17": { text: "Manual Menutech", url: "./manual.html" }
+      },
+      "IT": {
+        "tile-1": { text: "Formularios", url: "./forms.html" },
+        "tile-2": { text: "POS", url: "https://menutech.biz/p40o7s/index.html" },
+        "tile-3": { text: "Website", url: "https://menutech.biz/w111/website.html" },
+        "tile-4": { text: "Apps", url: "https://menutech.biz/p104/phone.html" },
+        "tile-5": { text: "Directorio", url: "./directorio.html" },
+        "tile-6": { text: "T-Shirt", url: "https://menutech.biz/s04/shirt.html" },
+        "tile-7": { text: "Menus", url: "https://menutech.biz/m10/index.html" },
+        "tile-8": { text: "Flyers", url: "https://menutech.biz/f32/index.html" },
+        "tile-9": { text: "Plataforma", url: "https://menutech.biz/pl555f9a/index.html" },
+        "tile-10": { text: "Audios", url: "./audios.html" },
+        "tile-11": { text: "Ender 2D", url: "./render2D.html" },
+        "tile-12": { text: "Render 3D", url: "./render3D.html" },
+        "tile-17": { text: "Manual Menutech", url: "./manual.html" }
+      },
+      "Admin IT": {
+        "tile-1": { text: "Formularios", url: "./forms.html" },
+        "tile-2": { text: "POS", url: "https://menutech.biz/p40o7s/index.html" },
+        "tile-3": { text: "Website", url: "https://menutech.biz/w111/website.html" },
+        "tile-4": { text: "Apps", url: "https://menutech.biz/p104/phone.html" },
+        "tile-5": { text: "Directorio", url: "./directorio.html" },
+        "tile-6": { text: "T-Shirt", url: "https://menutech.biz/s04/shirt.html" },
+        "tile-7": { text: "Menus", url: "https://menutech.biz/m10/index.html" },
+        "tile-8": { text: "Flyers", url: "https://menutech.biz/f32/index.html" },
+        "tile-9": { text: "Plataforma", url: "https://menutech.biz/pl555f9a/index.html" },
+        "tile-10": { text: "Audios", url: "./audios.html" },
+        "tile-11": { text: "Ender 2D", url: "./render2D.html" },
+        "tile-12": { text: "Render 3D", url: "./render3D.html" },
+        "tile-17": { text: "Manual Menutech", url: "./manual.html" }
       }
     };
 
