@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D Viewer - Test 2</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="./assets/css/badge.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* --- Global Styles & Variables --- */
+:root {
+    --primary-color: #ff6600;
+    --primary-color-dark: #e65c00;
+    --dark-blue: #0a192f;
+    --light-slate: #ccd6f6;
+    --slate: #8892b0;
+    --white: #ffffff;
+    --background-color: #f0f2f5;
+    --card-background: #ffffff;
+    --font-family: 'Poppins', sans-serif;
+}
+
+body, html {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    font-family: var(--font-family);
+    background-color: var(--background-color);
+    color: var(--dark-blue);
+    line-height: 1.6;
+}
+
+/* --- Layout --- */
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+/* --- Header & Footer --- */
+.main-header {
+    padding: 20px 0;
+    background-color: var(--card-background);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+}
+
+.main-header .container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.logo {
+    width: 150px;
+    height: auto;
+}
+
+/* --- Showcase Section --- */
+.showcase-section {
+    padding: 40px 0;
+}
+
+.showcase-section h2 {
+    text-align: center;
+    font-size: 2.5em;
+    font-weight: 700;
+    margin-bottom: 60px;
+}
+
+/* --- Chessboard Grid --- */
+.chessboard-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 30px;
+    align-items: center;
+}
+
+.text-cell {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 400px;
+    background-color: var(--card-background);
+    border-radius: 20px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+    transition: transform 0.6s ease-out, box-shadow 0.3s ease;
+}
+
+.model-cell {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    min-height: 450px;
+    background-color: var(--card-background);
+    border-radius: 20px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+    overflow: hidden;
+    transition: transform 0.6s ease-out, box-shadow 0.3s ease;
+    padding-bottom: 20px;
+}
+
+.text-cell:hover, .model-cell:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 12px 35px rgba(0, 0, 0, 0.1);
+}
+
+.text-content {
+    padding: 40px;
+    text-align: center;
+}
+
+.text-content h2 {
+    font-size: 1.8em;
+    margin-bottom: 15px;
+    color: var(--primary-color);
+    font-weight: 600;
+}
+
+.text-content p {
+    color: var(--slate);
+    font-size: 1em;
+}
+
+model-viewer {
+    width: 100%;
+    height: 350px;
+    --progress-bar-color: var(--primary-color);
+}
+
+/* --- Texture Switcher --- */
+.texture-switcher {
+    width: 90%;
+    display: flex;
+    gap: 10px;
+    overflow-x: auto;
+    padding: 10px;
+    scrollbar-width: thin;
+    scrollbar-color: var(--primary-color) #eee;
+}
+
+.texture-switcher::-webkit-scrollbar {
+    height: 6px;
+}
+
+.texture-switcher::-webkit-scrollbar-thumb {
+    background: var(--primary-color);
+    border-radius: 3px;
+}
+
+.texture-option {
+    flex: 0 0 60px;
+    height: 60px;
+    border-radius: 8px;
+    border: 2px solid transparent;
+    cursor: pointer;
+    background-size: cover;
+    background-position: center;
+    transition: transform 0.2s, border-color 0.2s;
+}
+
+.texture-option:hover {
+    transform: scale(1.1);
+}
+
+.texture-option.active {
+    border-color: var(--primary-color);
+}
+
+/* --- Zoom Toggle Button --- */
+.zoom-toggle {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    width: 40px;
+    height: 40px;
+    background-color: rgba(255, 255, 255, 0.8);
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23333"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/><path d="M12 10h-2v2H9v-2H7V9h2V7h1v2h2v1z"/></svg>');
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: 24px;
+    transition: background-color 0.3s, transform 0.3s;
+    z-index: 10;
+}
+
+.zoom-toggle:hover {
+    background-color: rgba(255, 255, 255, 1);
+    transform: scale(1.1);
+}
+
+.zoom-toggle.active {
+    background-color: var(--primary-color);
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/><path d="M7 9h5v1H7z"/></svg>');
+}
+
+/* --- Responsive Design --- */
+@media (max-width: 992px) {
+    .chessboard-grid {
+        grid-template-columns: 1fr;
+    }
+}
+    </style>
+</head>
+<body>
+    <img id="login-icon" class="login-icon" src="./assets/img/user.svg">
+    <div id="user-badge" class="user-badge hidden" style="position: fixed;">
+        <div id="badge-username"></div>
+        <div id="badge-role"></div>
+    </div>
+    <div id="badge-menu" class="hidden">
+        <button id="logout-btn" class="logout-btn">Cerrar sesión</button>
+    </div>
+
+    <div class="neo-nav-container">
+        <button id="neoNavBack" class="neo-nav-btn">
+            <svg viewBox="0 0 24 24" class="neo-nav-icon">
+                <path d="M15 18l-6-6 6-6" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+        </button>
+        <button id="neoNavHome" class="neo-nav-btn">
+            <svg viewBox="0 0 24 24" class="neo-nav-icon">
+                <path d="M3 11l9-7 9 7v8a2 2 0 0 1-2 2h-4a2 2 0 0 1-2-2v-4H9v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+        </button>
+    </div>
+
+    <menutech-themes></menutech-themes>
+    <menutech-chatbot></menutech-chatbot>
+
+    <header class="main-header">
+        <div class="container">
+            <img src="https://menutech.services/assets/img/logomt.png" alt="Logo MenuTech" class="logo">
+        </div>
+    </header>
+
+    <main>
+        <section class="showcase-section">
+            <div class="container">
+                <h2 style="color: #e65c00;">Personalizador de Productos 3D</h2>
+                <div class="chessboard-grid">
+                    <!-- Flyer -->
+                    <div class="text-cell">
+                        <div class="text-content">
+                            <h2>Flyers</h2>
+                            <p>Comunica promociones y eventos de forma directa.</p>
+                        </div>
+                    </div>
+                    <div class="model-cell" data-key="flyer">
+                        <model-viewer id="flyer-viewer" src="./assets/img/flyer.gltf" alt="Flyer" camera-controls disable-zoom></model-viewer>
+                        <button class="zoom-toggle" data-viewer-id="flyer-viewer"></button>
+                        <div class="texture-switcher" id="flyer-switcher"></div>
+                    </div>
+
+                    <!-- Poster -->
+                    <div class="model-cell" data-key="poster">
+                        <model-viewer id="poster-viewer" src="./assets/img/poster.gltf" alt="Poster" camera-controls disable-zoom></model-viewer>
+                        <button class="zoom-toggle" data-viewer-id="poster-viewer"></button>
+                        <div class="texture-switcher" id="poster-switcher"></div>
+                    </div>
+                    <div class="text-cell">
+                        <div class="text-content">
+                            <h2>Pósters</h2>
+                            <p>Destaca ofertas clave e influye en la compra.</p>
+                        </div>
+                    </div>
+
+                    <!-- Camisa -->
+                    <div class="text-cell">
+                        <div class="text-content">
+                            <h2>Camisas</h2>
+                            <p>Proyecta una imagen profesional de tu personal.</p>
+                        </div>
+                    </div>
+                    <div class="model-cell" data-key="shirt">
+                        <model-viewer id="shirt-viewer" src="./assets/img/shirt.gltf" alt="Camisa" camera-controls disable-zoom></model-viewer>
+                        <button class="zoom-toggle" data-viewer-id="shirt-viewer"></button>
+                        <div class="texture-switcher" id="shirt-switcher"></div>
+                    </div>
+
+                    <!-- Sticker -->
+                    <div class="model-cell" data-key="sticker">
+                        <model-viewer id="sticker-viewer" src="./assets/img/sticker.gltf" alt="Sticker" camera-controls disable-zoom></model-viewer>
+                        <button class="zoom-toggle" data-viewer-id="sticker-viewer"></button>
+                        <div class="texture-switcher" id="sticker-switcher"></div>
+                    </div>
+                    <div class="text-cell">
+                        <div class="text-content">
+                            <h2>Stickers</h2>
+                            <p>Mantiene tu marca presente en cada pedido.</p>
+                        </div>
+                    </div>
+
+                    <!-- QR Mesa -->
+                    <div class="text-cell">
+                        <div class="text-content">
+                            <h2>QR de Mesa</h2>
+                            <p>Facilita el acceso al menú y promociones.</p>
+                        </div>
+                    </div>
+                    <div class="model-cell" data-key="tableqr">
+                        <model-viewer id="tableqr-viewer" src="./assets/img/tableQR.gltf" alt="QR Mesa" camera-controls disable-zoom></model-viewer>
+                        <button class="zoom-toggle" data-viewer-id="tableqr-viewer"></button>
+                        <div class="texture-switcher" id="tableqr-switcher"></div>
+                    </div>
+
+                    <!-- XBanner -->
+                    <div class="model-cell" data-key="xbanner">
+                        <model-viewer id="xbanner-viewer" src="./assets/img/xbanner.gltf" alt="XBanner" camera-controls disable-zoom></model-viewer>
+                        <button class="zoom-toggle" data-viewer-id="xbanner-viewer"></button>
+                        <div class="texture-switcher" id="xbanner-switcher"></div>
+                    </div>
+                    <div class="text-cell">
+                        <div class="text-content">
+                            <h2>Banners en X</h2>
+                            <p>Ideales para espacios estratégicos.</p>
+                        </div>
+                    </div>
+
+                    <!-- Bandera -->
+                    <div class="text-cell">
+                        <div class="text-content">
+                            <h2>Banderas Publicitarias</h2>
+                            <p>Aumentan visibilidad desde la distancia.</p>
+                        </div>
+                    </div>
+                    <div class="model-cell" data-key="flag">
+                        <model-viewer id="flag-viewer" src="./assets/img/flag.gltf" alt="Bandera" camera-controls disable-zoom></model-viewer>
+                        <button class="zoom-toggle" data-viewer-id="flag-viewer"></button>
+                        <div class="texture-switcher" id="flag-switcher"></div>
+                    </div>
+
+                    <!-- Banner -->
+                    <div class="model-cell" data-key="banner">
+                        <model-viewer id="banner-viewer" src="./assets/img/banner.gltf" alt="Banner" camera-controls disable-zoom></model-viewer>
+                        <button class="zoom-toggle" data-viewer-id="banner-viewer"></button>
+                        <div class="texture-switcher" id="banner-switcher"></div>
+                    </div>
+                    <div class="text-cell">
+                        <div class="text-content">
+                            <h2>Banners</h2>
+                            <p>Captan clientes desde el exterior.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.5.0/model-viewer.min.js"></script>
+    <script src="./assets/js/badge.js"></script>
+    <script src="https://menutech.xyz/menutechUI.min.js"></script>
+    <script src="./assets/js/renderer.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Zoom Toggle Logic
+            const zoomToggles = document.querySelectorAll('.zoom-toggle');
+            zoomToggles.forEach(button => {
+                button.addEventListener('click', () => {
+                    const viewerId = button.dataset.viewerId;
+                    const viewer = document.getElementById(viewerId);
+                    if (viewer) {
+                        const zoomEnabled = !viewer.hasAttribute('disable-zoom');
+                        if (zoomEnabled) viewer.setAttribute('disable-zoom', '');
+                        else viewer.removeAttribute('disable-zoom');
+                        button.classList.toggle('active', !zoomEnabled);
+                    }
+                });
+            });
+
+            let supabase = null;
+
+            async function initSupabase() {
+                if (window.supabase) {
+                    supabase = window.supabase;
+                } else {
+                    const SUPABASE_URL = 'https://ojpyfjgkffmzwvukjagf.supabase.co';
+                    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9qcHlmamdrZmZtend2dWtqYWdmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQxNDIwMzYsImV4cCI6MjA3OTcxODAzNn0.dlVYmoMumBse_O1PLBx0FeNITqY4YktefD6l_uonSgo';
+                    const { createClient } = await import('https://esm.sh/@supabase/supabase-js');
+                    supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+                }
+            }
+
+            async function loadTextures() {
+                await initSupabase();
+                const { data, error } = await supabase.from('render3d_textures').select('*').order('created_at', { ascending: true });
+                if (error) {
+                    console.error('Error loading textures:', error);
+                    return;
+                }
+
+                const organized = data.reduce((acc, texture) => {
+                    if (!acc[texture.gltf_key]) acc[texture.gltf_key] = [];
+                    acc[texture.gltf_key].push(texture);
+                    return acc;
+                }, {});
+
+                Object.keys(organized).forEach(key => {
+                    renderSwitcher(key, organized[key]);
+                });
+            }
+
+            function renderSwitcher(gltf_key, textures) {
+                const switcher = document.getElementById(`${gltf_key}-switcher`);
+                if (!switcher) return;
+
+                textures.forEach(t => {
+                    const option = document.createElement('div');
+                    option.className = 'texture-option';
+                    option.style.backgroundImage = `url('${t.texture_url}')`;
+                    option.title = t.label;
+                    option.onclick = () => {
+                        switcher.querySelectorAll('.texture-option').forEach(el => el.classList.remove('active'));
+                        option.classList.add('active');
+                        applyTexture(gltf_key, t.texture_url);
+                    };
+                    switcher.appendChild(option);
+                });
+            }
+
+            async function applyTexture(gltf_key, url) {
+                const viewer = document.getElementById(`${gltf_key}-viewer`);
+                if (!viewer) return;
+
+                const model = viewer.model;
+                if (!model) {
+                    viewer.addEventListener('load', () => applyTexture(gltf_key, url), { once: true });
+                    return;
+                }
+
+                try {
+                    const texture = await viewer.createTexture(url);
+                    let material;
+
+                    // Lógica de mapeo de materiales (basada en render3D.html)
+                    if (gltf_key === 'sticker') material = model.materials.find(m => m.name === 'texturaCircle');
+                    else if (gltf_key === 'xbanner') material = model.materials.find(m => m.name === 'Poster');
+                    else if (gltf_key === 'flag') material = model.materials.find(m => m.name === 'flag');
+                    else if (gltf_key === 'banner') material = model.materials.find(m => m.name === 'Ad_16_Promo');
+                    else {
+                        // Fallback: buscar por textura base (simplificado para Cloudinary)
+                        material = model.materials.find(m => m.pbrMetallicRoughness.baseColorTexture);
+                    }
+
+                    if (material && material.pbrMetallicRoughness.baseColorTexture) {
+                        material.pbrMetallicRoughness.baseColorTexture.setTexture(texture);
+                    }
+                } catch (err) {
+                    console.error('Error applying texture:', err);
+                }
+            }
+
+            loadTextures();
+        });
+    </script>
+</body>
+</html>

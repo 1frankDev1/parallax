@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Texturas 3D</title>
+    <link rel="stylesheet" href="./assets/css/badge.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+        :root {
+            --bg-color: #1a1a1a;
+            --card-bg: #2b2b2b;
+            --text-color: #e0e0e0;
+            --primary-color: #ffa200;
+            --border-color: #444;
+            --shadow-color: rgba(0, 0, 0, 0.2);
+            --success-color: #28a745;
+            --danger-color: #dc3545;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 40px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            color: white;
+            text-align: center;
+            font-size: 2.5rem;
+            margin-bottom: 40px;
+        }
+
+        .form-container {
+            background-color: var(--card-bg);
+            padding: 30px;
+            border-radius: 15px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 4px 15px var(--shadow-color);
+            margin-bottom: 40px;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .form-group { display: flex; flex-direction: column; }
+        .full-width { grid-column: 1 / -1; }
+        label { margin-bottom: 8px; font-weight: 500; color: white; }
+
+        input[type="text"], select {
+            padding: 12px;
+            font-size: 1rem;
+            background-color: #3c3c3c;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            color: var(--text-color);
+        }
+
+        button {
+            padding: 12px 25px;
+            font-size: 1rem;
+            font-weight: 600;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .primary-btn {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .primary-btn:hover {
+            opacity: 0.9;
+        }
+
+        /* Drag and Drop Zone */
+        .drop-zone {
+            width: 100%;
+            height: 150px;
+            padding: 25px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            font-weight: 500;
+            font-size: 1.1rem;
+            cursor: pointer;
+            color: #ccc;
+            border: 2px dashed var(--primary-color);
+            border-radius: 10px;
+            transition: background 0.3s, border-color 0.3s;
+            background-color: #3c3c3c;
+        }
+
+        .drop-zone--over {
+            border-style: solid;
+            background-color: rgba(255, 162, 0, 0.1);
+        }
+
+        .drop-zone__input {
+            display: none;
+        }
+
+        .drop-zone__thumb {
+            width: 100%;
+            height: 100%;
+            border-radius: 10px;
+            overflow: hidden;
+            background-color: #444;
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            position: relative;
+        }
+
+        .table-container {
+            background-color: var(--card-bg);
+            border-radius: 15px;
+            padding: 20px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 4px 15px var(--shadow-color);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        th { color: white; }
+
+        .delete-btn {
+            background-color: var(--danger-color);
+            color: white;
+            padding: 8px 12px;
+            font-size: 0.9rem;
+        }
+
+        .notification {
+            position: fixed; bottom: 20px; left: 50%;
+            transform: translateX(-50%); padding: 15px 25px;
+            border-radius: 8px; color: white; font-size: 1rem;
+            opacity: 0; visibility: hidden;
+            transition: opacity 0.3s, visibility 0.3s, transform 0.3s;
+            z-index: 1001;
+        }
+        .notification.show { opacity: 1; visibility: visible; transform: translate(-50%, -10px); }
+        .notification.success { background-color: var(--success-color); }
+        .notification.error { background-color: var(--danger-color); }
+        .notification.info { background-color: var(--primary-color); }
+    </style>
+</head>
+<body>
+    <!-- ICONO Y BADGE -->
+    <img id="login-icon" class="login-icon" src="./assets/img/user.svg">
+    <div id="user-badge" class="user-badge hidden" style="position: fixed;">
+        <div id="badge-username"></div>
+        <div id="badge-role"></div>
+    </div>
+    <div id="badge-menu" class="hidden">
+        <button id="logout-btn" class="logout-btn">Cerrar sesión</button>
+    </div>
+
+    <!-- NAVBAR NEOMÓRFICO -->
+    <div class="neo-nav-container">
+        <button id="neoNavBack" class="neo-nav-btn">
+            <svg viewBox="0 0 24 24" class="neo-nav-icon">
+                <path d="M15 18l-6-6 6-6" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+        </button>
+        <button id="neoNavHome" class="neo-nav-btn">
+            <svg viewBox="0 0 24 24" class="neo-nav-icon">
+                <path d="M3 11l9-7 9 7v8a2 2 0 0 1-2 2h-4a2 2 0 0 1-2-2v-4H9v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+        </button>
+    </div>
+
+    <menutech-themes></menutech-themes>
+    <menutech-chatbot></menutech-chatbot>
+
+    <div class="container">
+        <h1>Administración de Texturas 3D</h1>
+
+        <div class="form-container">
+            <h2>Subir Nueva Textura</h2>
+            <form id="texture-form">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="gltf_key">Producto (GLTF)</label>
+                        <select id="gltf_key" required>
+                            <option value="flyer">Flyer</option>
+                            <option value="poster">Poster</option>
+                            <option value="shirt">Camisa</option>
+                            <option value="sticker">Sticker</option>
+                            <option value="tableqr">QR de Mesa</option>
+                            <option value="xbanner">X-Banner</option>
+                            <option value="flag">Bandera</option>
+                            <option value="banner">Banner</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="label">Nombre/Etiqueta</label>
+                        <input type="text" id="label" placeholder="Ej: Diseño Verano" required>
+                    </div>
+                    <div class="form-group full-width">
+                        <label>Imagen de Textura (Drag & Drop)</label>
+                        <div class="drop-zone" id="texture-drop-zone">
+                            <span class="drop-zone__prompt">Suelta la imagen aquí o haz clic para subir</span>
+                            <input type="file" id="texture-file" class="drop-zone__input" accept="image/*">
+                        </div>
+                    </div>
+                </div>
+                <div style="margin-top: 20px; text-align: center;">
+                    <button type="submit" class="primary-btn" id="save-btn">Guardar Textura</button>
+                </div>
+            </form>
+        </div>
+
+        <div class="table-container">
+            <h2>Texturas Registradas</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Producto</th>
+                        <th>Etiqueta</th>
+                        <th>Vista Previa</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody id="texture-table-body">
+                    <!-- Se cargará dinámicamente -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div id="notification" class="notification"></div>
+
+    <script src="./assets/js/badge.js"></script>
+    <script src="https://menutech.xyz/menutechUI.min.js"></script>
+    <script src="./assets/js/renderer.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            // RBAC: Solo Admin
+            const savedSession = localStorage.getItem("session");
+            if (!savedSession) {
+                window.location.href = "index.html";
+                return;
+            }
+            const session = JSON.parse(savedSession);
+            if (session.role !== 'Admin') {
+                alert('Acceso denegado. Solo administradores pueden entrar aquí.');
+                window.location.href = "index.html";
+                return;
+            }
+
+            let supabase = null;
+
+            // --- Lógica de Notificación ---
+            function showNotification(message, type) {
+                const notification = document.getElementById('notification');
+                notification.textContent = message;
+                notification.className = `notification ${type} show`;
+                setTimeout(() => { notification.classList.remove('show'); }, 3000);
+            }
+
+            // --- Drag and Drop Logic ---
+            const dropZone = document.getElementById('texture-drop-zone');
+            const fileInput = document.getElementById('texture-file');
+
+            dropZone.addEventListener("click", () => fileInput.click());
+
+            fileInput.addEventListener("change", () => {
+                if (fileInput.files.length) updateThumbnail(dropZone, fileInput.files[0]);
+            });
+
+            dropZone.addEventListener("dragover", (e) => {
+                e.preventDefault();
+                dropZone.classList.add("drop-zone--over");
+            });
+
+            ["dragleave", "dragend"].forEach((type) => {
+                dropZone.addEventListener(type, () => dropZone.classList.remove("drop-zone--over"));
+            });
+
+            dropZone.addEventListener("drop", (e) => {
+                e.preventDefault();
+                if (e.dataTransfer.files.length) {
+                    fileInput.files = e.dataTransfer.files;
+                    updateThumbnail(dropZone, e.dataTransfer.files[0]);
+                }
+                dropZone.classList.remove("drop-zone--over");
+            });
+
+            function updateThumbnail(dropZoneElement, file) {
+                let thumbnailElement = dropZoneElement.querySelector(".drop-zone__thumb");
+                if (dropZoneElement.querySelector(".drop-zone__prompt")) {
+                    dropZoneElement.querySelector(".drop-zone__prompt").remove();
+                }
+                if (!thumbnailElement) {
+                    thumbnailElement = document.createElement("div");
+                    thumbnailElement.classList.add("drop-zone__thumb");
+                    dropZoneElement.appendChild(thumbnailElement);
+                }
+                thumbnailElement.dataset.label = file.name;
+                if (file.type.startsWith("image/")) {
+                    const reader = new FileReader();
+                    reader.readAsDataURL(file);
+                    reader.onload = () => {
+                        thumbnailElement.style.backgroundImage = `url('${reader.result}')`;
+                    };
+                }
+            }
+
+            function resetDropZone() {
+                const thumbnailElement = dropZone.querySelector(".drop-zone__thumb");
+                if (thumbnailElement) thumbnailElement.remove();
+                if (!dropZone.querySelector(".drop-zone__prompt")) {
+                    const prompt = document.createElement("span");
+                    prompt.classList.add("drop-zone__prompt");
+                    prompt.innerText = "Suelta la imagen aquí o haz clic para subir";
+                    dropZone.appendChild(prompt);
+                }
+                fileInput.value = "";
+            }
+
+            // --- Cloudinary ---
+            async function uploadToCloudinary(file) {
+                const cloudName = 'dbbjxhvz5';
+                const uploadPreset = '4x4661tTevWcpscPpH8wOaYDhrI';
+                const url = `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`;
+                const formData = new FormData();
+                formData.append('file', file);
+                formData.append('upload_preset', uploadPreset);
+                const response = await fetch(url, { method: 'POST', body: formData });
+                if (!response.ok) throw new Error('Error al subir a Cloudinary');
+                const data = await response.json();
+                return data.secure_url;
+            }
+
+            // --- Supabase ---
+            async function initSupabase() {
+                if (window.supabase) {
+                    supabase = window.supabase;
+                } else {
+                    const SUPABASE_URL = 'https://ojpyfjgkffmzwvukjagf.supabase.co';
+                    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9qcHlmamdrZmZtend2dWtqYWdmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQxNDIwMzYsImV4cCI6MjA3OTcxODAzNn0.dlVYmoMumBse_O1PLBx0FeNITqY4YktefD6l_uonSgo';
+                    const { createClient } = await import('https://esm.sh/@supabase/supabase-js');
+                    supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+                }
+            }
+
+            const form = document.getElementById('texture-form');
+            form.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                if (!supabase) await initSupabase();
+
+                const saveBtn = document.getElementById('save-btn');
+                const originalBtnText = saveBtn.textContent;
+
+                if (fileInput.files.length === 0) {
+                    showNotification('Por favor selecciona una imagen', 'error');
+                    return;
+                }
+
+                saveBtn.disabled = true;
+                saveBtn.textContent = 'Subiendo...';
+
+                try {
+                    showNotification('Subiendo a Cloudinary...', 'info');
+                    const imageUrl = await uploadToCloudinary(fileInput.files[0]);
+
+                    const textureData = {
+                        gltf_key: document.getElementById('gltf_key').value,
+                        label: document.getElementById('label').value,
+                        texture_url: imageUrl
+                    };
+
+                    const { error } = await supabase.from('render3d_textures').insert([textureData]);
+
+                    if (error) {
+                        showNotification(`Error: ${error.message}`, 'error');
+                    } else {
+                        showNotification('Textura guardada con éxito', 'success');
+                        form.reset();
+                        resetDropZone();
+                        fetchTextures();
+                    }
+                } catch (err) {
+                    showNotification('Error al procesar la solicitud', 'error');
+                    console.error(err);
+                } finally {
+                    saveBtn.disabled = false;
+                    saveBtn.textContent = originalBtnText;
+                }
+            });
+
+            async function fetchTextures() {
+                if (!supabase) await initSupabase();
+                const { data, error } = await supabase.from('render3d_textures').select('*').order('created_at', { ascending: false });
+                if (error) {
+                    showNotification('Error al cargar texturas', 'error');
+                } else {
+                    renderTable(data);
+                }
+            }
+
+            function renderTable(textures) {
+                const tbody = document.getElementById('texture-table-body');
+                tbody.innerHTML = '';
+                if (textures.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="4" style="text-align: center;">No hay texturas registradas.</td></tr>';
+                } else {
+                    textures.forEach(t => {
+                        const tr = document.createElement('tr');
+                        tr.innerHTML = `
+                            <td>${t.gltf_key}</td>
+                            <td>${t.label}</td>
+                            <td><img src="${t.texture_url}" style="width: 50px; height: 50px; object-fit: cover; border-radius: 5px;"></td>
+                            <td>
+                                <button class="delete-btn" data-id="${t.id}">Eliminar</button>
+                            </td>
+                        `;
+                        tbody.appendChild(tr);
+                    });
+                }
+            }
+
+            document.getElementById('texture-table-body').addEventListener('click', async (e) => {
+                if (e.target.classList.contains('delete-btn')) {
+                    const id = e.target.dataset.id;
+                    if (confirm('¿Estás seguro de que quieres eliminar esta textura?')) {
+                        const { error } = await supabase.from('render3d_textures').delete().eq('id', id);
+                        if (error) {
+                            showNotification('Error al eliminar', 'error');
+                        } else {
+                            showNotification('Textura eliminada', 'success');
+                            fetchTextures();
+                        }
+                    }
+                }
+            });
+
+            fetchTextures();
+        });
+    </script>
+</body>
+</html>
