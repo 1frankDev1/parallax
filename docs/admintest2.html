@@ -408,7 +408,7 @@
                         fetchTextures();
                     }
                 } catch (err) {
-                    showNotification('Error al procesar la solicitud', 'error');
+                    showNotification(`Error: ${err.message || 'Error al procesar la solicitud'}`, 'error');
                     console.error(err);
                 } finally {
                     saveBtn.disabled = false;
