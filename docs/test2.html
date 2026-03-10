@@ -252,6 +252,128 @@ model-viewer {
     font-weight: 400;
 }
 
+/* Modal Styles */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(15, 17, 26, 0.85);
+    backdrop-filter: blur(8px);
+    z-index: 9999;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.modal-overlay.active {
+    display: flex;
+    opacity: 1;
+}
+
+.modal-content {
+    background: #fff;
+    width: 90%;
+    max-width: 1200px;
+    height: 85vh;
+    border-radius: 30px;
+    position: relative;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    transform: scale(0.95);
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.modal-overlay.active .modal-content {
+    transform: scale(1);
+}
+
+.modal-close {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    background: #f1f5f9;
+    border: none;
+    font-size: 24px;
+    color: #64748b;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+    transition: all 0.2s;
+}
+
+.modal-close:hover {
+    background: #ef4444;
+    color: white;
+    transform: rotate(90deg);
+}
+
+.modal-body {
+    display: grid;
+    grid-template-columns: 1.5fr 1fr;
+    height: 100%;
+}
+
+.modal-viewer-container {
+    background: #ffffff;
+    border-right: 1px solid #e2e8f0;
+    position: relative;
+}
+
+#modal-viewer {
+    width: 100%;
+    height: 100%;
+    --poster-color: transparent;
+}
+
+.modal-controls {
+    padding: 40px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    background: white;
+}
+
+.modal-switcher-wrapper {
+    margin-top: 20px;
+    padding: 15px;
+    background: #f8fafc;
+    border-radius: 20px;
+}
+
+#modal-label {
+    margin-top: 15px;
+    font-weight: 600;
+    color: #1e293b;
+    font-size: 1.1rem;
+}
+
+@media (max-width: 992px) {
+    .modal-body {
+        grid-template-columns: 1fr;
+        grid-template-rows: 1fr auto;
+        overflow-y: auto;
+    }
+    .modal-content {
+        height: 95vh;
+    }
+    .modal-viewer-container {
+        height: 50vh;
+        border-right: none;
+        border-bottom: 1px solid #e2e8f0;
+    }
+}
+
 /* --- Zoom Toggle Button --- */
 .zoom-toggle {
     position: absolute;
@@ -516,24 +638,141 @@ model-viewer {
         </section>
     </main>
 
+    <!-- 3D Preview Modal -->
+    <div id="preview-modal" class="modal-overlay">
+        <div class="modal-content">
+            <button class="modal-close" id="close-modal">&times;</button>
+            <div class="modal-body">
+                <div class="modal-viewer-container">
+                    <model-viewer id="modal-viewer" camera-controls shadow-intensity="1" environment-image="neutral" exposure="1" auto-rotate></model-viewer>
+                </div>
+                <div class="modal-controls">
+                    <h2 id="modal-title" style="margin: 0; color: var(--primary-color);">Producto</h2>
+                    <p id="modal-description" style="margin: 5px 0 20px; color: var(--slate);">Descripción del producto</p>
+
+                    <div class="switcher-wrapper modal-switcher-wrapper">
+                        <button class="nav-btn modal-prev-btn">❮</button>
+                        <div class="texture-switcher" id="modal-switcher"></div>
+                        <button class="nav-btn modal-next-btn">❯</button>
+                    </div>
+                    <div class="current-label" id="modal-label" style="text-align: center; width: 100%;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.5.0/model-viewer.min.js"></script>
     <script src="./assets/js/badge.js"></script>
     <script src="https://menutech.xyz/menutechUI.min.js"></script>
     <script src="./assets/js/renderer.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', async () => {
-            // Zoom Toggle Logic
+            // Modal Elements
+            const modal = document.getElementById('preview-modal');
+            const modalViewer = document.getElementById('modal-viewer');
+            const modalTitle = document.getElementById('modal-title');
+            const modalDescription = document.getElementById('modal-description');
+            const modalSwitcher = document.getElementById('modal-switcher');
+            const modalLabel = document.getElementById('modal-label');
+            const closeModal = document.getElementById('close-modal');
+            const modalPrev = document.querySelector('.modal-prev-btn');
+            const modalNext = document.querySelector('.modal-next-btn');
+
+            let activeModalKey = null;
+
+            function openPreviewModal(key) {
+                activeModalKey = key;
+                const cell = document.querySelector(`.model-cell[data-key="${key}"]`);
+                const viewer = cell.querySelector('model-viewer');
+
+                // Index pairing logic
+                const parent = cell.parentElement;
+                const index = Array.from(parent.children).indexOf(cell);
+                const isLeftModel = (key === 'poster' || key === 'sticker' || key === 'xbanner' || key === 'banner' || key === 'slideshow');
+                const textCellIndex = isLeftModel ? index + 1 : index - 1;
+                const textCell = parent.children[textCellIndex];
+
+                const title = textCell.querySelector('h2').textContent;
+                const desc = textCell.querySelector('p').textContent;
+
+                modalTitle.textContent = title;
+                modalDescription.textContent = desc;
+                modalViewer.src = viewer.src;
+
+                modal.classList.add('active');
+                updateModalUI();
+            }
+
+            function updateModalUI() {
+                if (!activeModalKey) return;
+                const textures = filteredTexturesByGltf[activeModalKey] || [];
+                const currentIndex = currentIndices[activeModalKey] || 0;
+                const current = textures[currentIndex];
+
+                modalSwitcher.innerHTML = '';
+                textures.forEach((t, index) => {
+                    const option = document.createElement('div');
+                    option.className = 'texture-option';
+                    if (index === currentIndex) option.classList.add('active');
+                    option.style.backgroundImage = `url('${t.texture_url}')`;
+                    option.title = t.label;
+                    option.onclick = () => {
+                        currentIndices[activeModalKey] = index;
+                        updateModelUI(activeModalKey, textures);
+                    };
+                    modalSwitcher.appendChild(option);
+                });
+
+                if (current) {
+                    modalLabel.textContent = current.label;
+                    applyTexture(modalViewer, activeModalKey, current.texture_url);
+
+                    // Center active option
+                    const activeOption = modalSwitcher.children[currentIndex];
+                    if (activeOption) {
+                        modalSwitcher.scrollTo({
+                            left: activeOption.offsetLeft - modalSwitcher.offsetWidth / 2 + activeOption.offsetWidth / 2,
+                            behavior: 'smooth'
+                        });
+                    }
+                } else {
+                    modalLabel.textContent = "Sin diseños";
+                }
+            }
+
+            closeModal.onclick = () => {
+                modal.classList.remove('active');
+                activeModalKey = null;
+            };
+
+            modal.onclick = (e) => {
+                if (e.target === modal) closeModal.onclick();
+            };
+
+            modalPrev.onclick = () => {
+                if (!activeModalKey) return;
+                const textures = filteredTexturesByGltf[activeModalKey] || [];
+                if (textures.length > 0) {
+                    currentIndices[activeModalKey] = (currentIndices[activeModalKey] - 1 + textures.length) % textures.length;
+                    updateModelUI(activeModalKey, textures);
+                }
+            };
+
+            modalNext.onclick = () => {
+                if (!activeModalKey) return;
+                const textures = filteredTexturesByGltf[activeModalKey] || [];
+                if (textures.length > 0) {
+                    currentIndices[activeModalKey] = (currentIndices[activeModalKey] + 1) % textures.length;
+                    updateModelUI(activeModalKey, textures);
+                }
+            };
+
+            // Replace Zoom Toggle Logic with Modal Logic
             const zoomToggles = document.querySelectorAll('.zoom-toggle');
             zoomToggles.forEach(button => {
                 button.addEventListener('click', () => {
-                    const viewerId = button.dataset.viewerId;
-                    const viewer = document.getElementById(viewerId);
-                    if (viewer) {
-                        const zoomEnabled = !viewer.hasAttribute('disable-zoom');
-                        if (zoomEnabled) viewer.setAttribute('disable-zoom', '');
-                        else viewer.removeAttribute('disable-zoom');
-                        button.classList.toggle('active', !zoomEnabled);
-                    }
+                    const cell = button.closest('.model-cell');
+                    openPreviewModal(cell.dataset.key);
                 });
             });
 
@@ -585,12 +824,9 @@ model-viewer {
                     const hasTextures = filteredTexturesByGltf[key] && filteredTexturesByGltf[key].length > 0;
 
                     const indexInParent = Array.from(cell.parentElement.children).indexOf(cell);
-                    // Since #no-results is outside, Flyer (text) is index 0, Flyer (model) is index 1.
-                    // Evens (0, 2, 4...) are text-cells, Odds (1, 3, 5...) are model-cells.
                     const pairedIndex = indexInParent % 2 === 0 ? indexInParent + 1 : indexInParent - 1;
                     const pairedCell = cell.parentElement.children[pairedIndex];
 
-                    // In search mode, hide if no textures match. In normal mode, show all.
                     if (isSearchActive) {
                         if (hasTextures) {
                             cell.classList.remove('hidden-search');
@@ -624,7 +860,7 @@ model-viewer {
                     renderSwitcher(key, filteredTexturesByGltf[key]);
                     if (filteredTexturesByGltf[key].length > 0) {
                         const current = filteredTexturesByGltf[key][currentIndices[key]];
-                        applyTexture(key, current.texture_url);
+                        applyTexture(document.getElementById(`${key}-viewer`), key, current.texture_url);
                         const labelEl = document.getElementById(`${key}-label`);
                         if (labelEl) labelEl.textContent = current.label;
                     }
@@ -659,7 +895,7 @@ model-viewer {
 
                 const current = textures[currentIndices[gltf_key]];
                 if (current) {
-                    applyTexture(gltf_key, current.texture_url);
+                    applyTexture(document.getElementById(`${gltf_key}-viewer`), gltf_key, current.texture_url);
                     document.getElementById(`${gltf_key}-label`).textContent = current.label;
 
                     // Center active option in switcher
@@ -670,16 +906,20 @@ model-viewer {
                             behavior: 'smooth'
                         });
                     }
+
+                    // Sync modal if open
+                    if (activeModalKey === gltf_key) {
+                        updateModalUI();
+                    }
                 }
             }
 
-            async function applyTexture(gltf_key, url) {
-                const viewer = document.getElementById(`${gltf_key}-viewer`);
+            async function applyTexture(viewer, gltf_key, url) {
                 if (!viewer) return;
 
                 const model = viewer.model;
                 if (!model) {
-                    viewer.addEventListener('load', () => applyTexture(gltf_key, url), { once: true });
+                    viewer.addEventListener('load', () => applyTexture(viewer, gltf_key, url), { once: true });
                     return;
                 }
 
@@ -687,7 +927,6 @@ model-viewer {
                     const texture = await viewer.createTexture(url);
                     let material;
 
-                    // Lógica de mapeo de materiales (basada en render3D.html)
                     if (gltf_key === 'sticker') material = model.materials.find(m => m.name === 'texturaCircle');
                     else if (gltf_key === 'astickers') material = model.materials.find(m => m.name === 'sticker_textures');
                     else if (gltf_key === 'xbanner') material = model.materials.find(m => m.name === 'Poster');
@@ -695,7 +934,6 @@ model-viewer {
                     else if (gltf_key === 'banner') material = model.materials.find(m => m.name === 'Ad_16_Promo');
                     else if (gltf_key === 'slideshow') material = model.materials.find(m => m.name === 'Screen_Texture');
                     else {
-                        // Fallback: buscar por textura base (simplificado para Cloudinary)
                         material = model.materials.find(m => m.pbrMetallicRoughness.baseColorTexture);
                     }
 
