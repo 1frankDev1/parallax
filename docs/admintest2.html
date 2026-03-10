@@ -353,21 +353,44 @@
                 const formData = new FormData();
                 formData.append('file', file);
                 formData.append('upload_preset', uploadPreset);
-                const response = await fetch(url, { method: 'POST', body: formData });
-                if (!response.ok) throw new Error('Error al subir a Cloudinary');
-                const data = await response.json();
-                return data.secure_url;
+
+                try {
+                    const response = await fetch(url, { method: 'POST', body: formData });
+                    const text = await response.text();
+                    let data;
+                    try { data = JSON.parse(text); } catch (e) { data = { error: { message: text } }; }
+
+                    if (!response.ok) {
+                        const errorMsg = data.error?.message || `HTTP ${response.status}: ${text.substring(0, 100)}`;
+                        throw new Error(`Cloudinary Error: ${errorMsg}`);
+                    }
+                    return data.secure_url;
+                } catch (e) {
+                    console.error('Fetch error:', e);
+                    throw e;
+                }
             }
 
             // --- Supabase ---
             async function initSupabase() {
-                if (window.supabase) {
+                if (window.supabase && typeof window.supabase.from === 'function') {
                     supabase = window.supabase;
                 } else {
-                    const SUPABASE_URL = 'https://ojpyfjgkffmzwvukjagf.supabase.co';
-                    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9qcHlmamdrZmZtend2dWtqYWdmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQxNDIwMzYsImV4cCI6MjA3OTcxODAzNn0.dlVYmoMumBse_O1PLBx0FeNITqY4YktefD6l_uonSgo';
-                    const { createClient } = await import('https://esm.sh/@supabase/supabase-js');
-                    supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+                    // Try to wait for renderer.js to initialize it
+                    let retries = 0;
+                    while (!window.supabase && retries < 10) {
+                        await new Promise(r => setTimeout(r, 100));
+                        retries++;
+                    }
+                    if (window.supabase && typeof window.supabase.from === 'function') {
+                        supabase = window.supabase;
+                    } else {
+                        const SUPABASE_URL = 'https://ojpyfjgkffmzwvukjagf.supabase.co';
+                        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9qcHlmamdrZmZtend2dWtqYWdmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQxNDIwMzYsImV4cCI6MjA3OTcxODAzNn0.dlVYmoMumBse_O1PLBx0FeNITqY4YktefD6l_uonSgo';
+                        const { createClient } = await import('https://esm.sh/@supabase/supabase-js');
+                        supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+                        window.supabase = supabase;
+                    }
                 }
             }
 
