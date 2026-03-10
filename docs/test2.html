@@ -57,6 +57,30 @@ body, html {
     height: auto;
 }
 
+.search-container {
+    flex-grow: 1;
+    display: flex;
+    justify-content: flex-end;
+    margin-left: 20px;
+}
+
+.search-input {
+    padding: 10px 20px;
+    border-radius: 25px;
+    border: 1px solid #ddd;
+    width: 100%;
+    max-width: 300px;
+    font-family: inherit;
+    font-size: 0.9em;
+    outline: none;
+    transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+.search-input:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 8px rgba(255, 102, 0, 0.2);
+}
+
 /* --- Showcase Section --- */
 .showcase-section {
     padding: 40px 0;
@@ -132,23 +156,51 @@ model-viewer {
 }
 
 /* --- Texture Switcher --- */
+.switcher-wrapper {
+    width: 95%;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    margin-top: 15px;
+    position: relative;
+}
+
+.nav-btn {
+    background-color: var(--white);
+    border: 1px solid #ddd;
+    border-radius: 50%;
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background-color 0.2s, color 0.2s;
+    color: var(--dark-blue);
+    flex-shrink: 0;
+    z-index: 5;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    padding: 0;
+}
+
+.nav-btn:hover {
+    background-color: var(--primary-color);
+    color: var(--white);
+    border-color: var(--primary-color);
+}
+
 .texture-switcher {
-    width: 90%;
+    flex-grow: 1;
     display: flex;
     gap: 10px;
     overflow-x: auto;
-    padding: 10px;
-    scrollbar-width: thin;
-    scrollbar-color: var(--primary-color) #eee;
+    padding: 5px;
+    scroll-behavior: smooth;
+    scrollbar-width: none; /* Firefox */
 }
 
 .texture-switcher::-webkit-scrollbar {
-    height: 6px;
-}
-
-.texture-switcher::-webkit-scrollbar-thumb {
-    background: var(--primary-color);
-    border-radius: 3px;
+    display: none; /* Chrome, Safari, Opera */
 }
 
 .texture-option {
@@ -168,6 +220,36 @@ model-viewer {
 
 .texture-option.active {
     border-color: var(--primary-color);
+}
+
+.current-label {
+    font-size: 0.9em;
+    color: var(--primary-color);
+    margin-top: 5px;
+    height: 1.5em;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.model-cell.hidden-search {
+    display: none !important;
+}
+
+.text-cell.hidden-search {
+    display: none !important;
+}
+
+#no-results {
+    width: 100%;
+    text-align: center;
+    padding: 50px;
+    display: none;
+}
+
+#no-results h3 {
+    color: var(--slate);
+    font-weight: 400;
 }
 
 /* --- Zoom Toggle Button --- */
@@ -236,6 +318,9 @@ model-viewer {
     <header class="main-header">
         <div class="container">
             <img src="https://menutech.services/assets/img/logomt.png" alt="Logo MenuTech" class="logo">
+            <div class="search-container">
+                <input type="text" id="texture-search" placeholder="Buscar diseño..." class="search-input">
+            </div>
         </div>
     </header>
 
@@ -243,7 +328,10 @@ model-viewer {
         <section class="showcase-section">
             <div class="container">
                 <h2 style="color: #e65c00;">Personalizador de Productos 3D</h2>
-                <div class="chessboard-grid">
+                <div id="no-results">
+                    <h3>No se encontraron diseños que coincidan con tu búsqueda.</h3>
+                </div>
+                <div class="chessboard-grid" id="main-grid">
                     <!-- Flyer -->
                     <div class="text-cell">
                         <div class="text-content">
@@ -254,14 +342,24 @@ model-viewer {
                     <div class="model-cell" data-key="flyer">
                         <model-viewer id="flyer-viewer" src="./assets/img/flyer.gltf" alt="Flyer" camera-controls disable-zoom></model-viewer>
                         <button class="zoom-toggle" data-viewer-id="flyer-viewer"></button>
-                        <div class="texture-switcher" id="flyer-switcher"></div>
+                        <div class="switcher-wrapper">
+                            <button class="nav-btn prev-btn" data-key="flyer">❮</button>
+                            <div class="texture-switcher" id="flyer-switcher"></div>
+                            <button class="nav-btn next-btn" data-key="flyer">❯</button>
+                        </div>
+                        <div class="current-label" id="flyer-label"></div>
                     </div>
 
                     <!-- Poster -->
                     <div class="model-cell" data-key="poster">
                         <model-viewer id="poster-viewer" src="./assets/img/poster.gltf" alt="Poster" camera-controls disable-zoom></model-viewer>
                         <button class="zoom-toggle" data-viewer-id="poster-viewer"></button>
-                        <div class="texture-switcher" id="poster-switcher"></div>
+                        <div class="switcher-wrapper">
+                            <button class="nav-btn prev-btn" data-key="poster">❮</button>
+                            <div class="texture-switcher" id="poster-switcher"></div>
+                            <button class="nav-btn next-btn" data-key="poster">❯</button>
+                        </div>
+                        <div class="current-label" id="poster-label"></div>
                     </div>
                     <div class="text-cell">
                         <div class="text-content">
@@ -280,14 +378,24 @@ model-viewer {
                     <div class="model-cell" data-key="shirt">
                         <model-viewer id="shirt-viewer" src="./assets/img/shirt.gltf" alt="Camisa" camera-controls disable-zoom></model-viewer>
                         <button class="zoom-toggle" data-viewer-id="shirt-viewer"></button>
-                        <div class="texture-switcher" id="shirt-switcher"></div>
+                        <div class="switcher-wrapper">
+                            <button class="nav-btn prev-btn" data-key="shirt">❮</button>
+                            <div class="texture-switcher" id="shirt-switcher"></div>
+                            <button class="nav-btn next-btn" data-key="shirt">❯</button>
+                        </div>
+                        <div class="current-label" id="shirt-label"></div>
                     </div>
 
                     <!-- Sticker -->
                     <div class="model-cell" data-key="sticker">
                         <model-viewer id="sticker-viewer" src="./assets/img/sticker.gltf" alt="Sticker" camera-controls disable-zoom></model-viewer>
                         <button class="zoom-toggle" data-viewer-id="sticker-viewer"></button>
-                        <div class="texture-switcher" id="sticker-switcher"></div>
+                        <div class="switcher-wrapper">
+                            <button class="nav-btn prev-btn" data-key="sticker">❮</button>
+                            <div class="texture-switcher" id="sticker-switcher"></div>
+                            <button class="nav-btn next-btn" data-key="sticker">❯</button>
+                        </div>
+                        <div class="current-label" id="sticker-label"></div>
                     </div>
                     <div class="text-cell">
                         <div class="text-content">
@@ -306,14 +414,24 @@ model-viewer {
                     <div class="model-cell" data-key="tableqr">
                         <model-viewer id="tableqr-viewer" src="./assets/img/tableQR.gltf" alt="QR Mesa" camera-controls disable-zoom></model-viewer>
                         <button class="zoom-toggle" data-viewer-id="tableqr-viewer"></button>
-                        <div class="texture-switcher" id="tableqr-switcher"></div>
+                        <div class="switcher-wrapper">
+                            <button class="nav-btn prev-btn" data-key="tableqr">❮</button>
+                            <div class="texture-switcher" id="tableqr-switcher"></div>
+                            <button class="nav-btn next-btn" data-key="tableqr">❯</button>
+                        </div>
+                        <div class="current-label" id="tableqr-label"></div>
                     </div>
 
                     <!-- XBanner -->
                     <div class="model-cell" data-key="xbanner">
                         <model-viewer id="xbanner-viewer" src="./assets/img/xbanner.gltf" alt="XBanner" camera-controls disable-zoom></model-viewer>
                         <button class="zoom-toggle" data-viewer-id="xbanner-viewer"></button>
-                        <div class="texture-switcher" id="xbanner-switcher"></div>
+                        <div class="switcher-wrapper">
+                            <button class="nav-btn prev-btn" data-key="xbanner">❮</button>
+                            <div class="texture-switcher" id="xbanner-switcher"></div>
+                            <button class="nav-btn next-btn" data-key="xbanner">❯</button>
+                        </div>
+                        <div class="current-label" id="xbanner-label"></div>
                     </div>
                     <div class="text-cell">
                         <div class="text-content">
@@ -332,19 +450,65 @@ model-viewer {
                     <div class="model-cell" data-key="flag">
                         <model-viewer id="flag-viewer" src="./assets/img/flag.gltf" alt="Bandera" camera-controls disable-zoom></model-viewer>
                         <button class="zoom-toggle" data-viewer-id="flag-viewer"></button>
-                        <div class="texture-switcher" id="flag-switcher"></div>
+                        <div class="switcher-wrapper">
+                            <button class="nav-btn prev-btn" data-key="flag">❮</button>
+                            <div class="texture-switcher" id="flag-switcher"></div>
+                            <button class="nav-btn next-btn" data-key="flag">❯</button>
+                        </div>
+                        <div class="current-label" id="flag-label"></div>
                     </div>
 
                     <!-- Banner -->
                     <div class="model-cell" data-key="banner">
                         <model-viewer id="banner-viewer" src="./assets/img/banner.gltf" alt="Banner" camera-controls disable-zoom></model-viewer>
                         <button class="zoom-toggle" data-viewer-id="banner-viewer"></button>
-                        <div class="texture-switcher" id="banner-switcher"></div>
+                        <div class="switcher-wrapper">
+                            <button class="nav-btn prev-btn" data-key="banner">❮</button>
+                            <div class="texture-switcher" id="banner-switcher"></div>
+                            <button class="nav-btn next-btn" data-key="banner">❯</button>
+                        </div>
+                        <div class="current-label" id="banner-label"></div>
                     </div>
                     <div class="text-cell">
                         <div class="text-content">
                             <h2>Banners</h2>
                             <p>Captan clientes desde el exterior.</p>
+                        </div>
+                    </div>
+
+                    <!-- Stickers Alternativos -->
+                    <div class="text-cell">
+                        <div class="text-content">
+                            <h2>Stickers Premium</h2>
+                            <p>Variedad de formas y acabados para tu marca.</p>
+                        </div>
+                    </div>
+                    <div class="model-cell" data-key="astickers">
+                        <model-viewer id="astickers-viewer" src="./assets/img/Astickers.gltf" alt="Stickers Premium" camera-controls disable-zoom></model-viewer>
+                        <button class="zoom-toggle" data-viewer-id="astickers-viewer"></button>
+                        <div class="switcher-wrapper">
+                            <button class="nav-btn prev-btn" data-key="astickers">❮</button>
+                            <div class="texture-switcher" id="astickers-switcher"></div>
+                            <button class="nav-btn next-btn" data-key="astickers">❯</button>
+                        </div>
+                        <div class="current-label" id="astickers-label"></div>
+                    </div>
+
+                    <!-- Slideshow -->
+                    <div class="model-cell" data-key="slideshow">
+                        <model-viewer id="slideshow-viewer" src="./assets/img/slideshow.gltf" alt="Slideshow" camera-controls disable-zoom></model-viewer>
+                        <button class="zoom-toggle" data-viewer-id="slideshow-viewer"></button>
+                        <div class="switcher-wrapper">
+                            <button class="nav-btn prev-btn" data-key="slideshow">❮</button>
+                            <div class="texture-switcher" id="slideshow-switcher"></div>
+                            <button class="nav-btn next-btn" data-key="slideshow">❯</button>
+                        </div>
+                        <div class="current-label" id="slideshow-label"></div>
+                    </div>
+                    <div class="text-cell">
+                        <div class="text-content">
+                            <h2>Presentaciones</h2>
+                            <p>Visualiza tus diseños en formato de diapositivas 3D.</p>
                         </div>
                     </div>
                 </div>
@@ -374,6 +538,9 @@ model-viewer {
             });
 
             let supabase = null;
+            let allTextures = [];
+            let filteredTexturesByGltf = {};
+            let currentIndices = {}; // Track current texture index for each model
 
             async function initSupabase() {
                 if (window.supabase) {
@@ -394,14 +561,73 @@ model-viewer {
                     return;
                 }
 
-                const organized = data.reduce((acc, texture) => {
+                allTextures = data;
+                updateDisplay();
+            }
+
+            function updateDisplay(filter = '') {
+                const isSearchActive = filter.trim() !== '';
+                const filtered = allTextures.filter(t =>
+                    t.label.toLowerCase().includes(filter.toLowerCase()) ||
+                    t.gltf_key.toLowerCase().includes(filter.toLowerCase())
+                );
+
+                filteredTexturesByGltf = filtered.reduce((acc, texture) => {
                     if (!acc[texture.gltf_key]) acc[texture.gltf_key] = [];
                     acc[texture.gltf_key].push(texture);
                     return acc;
                 }, {});
 
-                Object.keys(organized).forEach(key => {
-                    renderSwitcher(key, organized[key]);
+                let totalVisible = 0;
+                // Reset all visibility
+                document.querySelectorAll('.model-cell').forEach(cell => {
+                    const key = cell.dataset.key;
+                    const hasTextures = filteredTexturesByGltf[key] && filteredTexturesByGltf[key].length > 0;
+
+                    const indexInParent = Array.from(cell.parentElement.children).indexOf(cell);
+                    // Since #no-results is outside, Flyer (text) is index 0, Flyer (model) is index 1.
+                    // Evens (0, 2, 4...) are text-cells, Odds (1, 3, 5...) are model-cells.
+                    const pairedIndex = indexInParent % 2 === 0 ? indexInParent + 1 : indexInParent - 1;
+                    const pairedCell = cell.parentElement.children[pairedIndex];
+
+                    // In search mode, hide if no textures match. In normal mode, show all.
+                    if (isSearchActive) {
+                        if (hasTextures) {
+                            cell.classList.remove('hidden-search');
+                            if (pairedCell) pairedCell.classList.remove('hidden-search');
+                            totalVisible++;
+                        } else {
+                            cell.classList.add('hidden-search');
+                            if (pairedCell) pairedCell.classList.add('hidden-search');
+                        }
+                    } else {
+                        cell.classList.remove('hidden-search');
+                        if (pairedCell) pairedCell.classList.remove('hidden-search');
+                        totalVisible++;
+                    }
+                });
+
+                const noResults = document.getElementById('no-results');
+                if (noResults) {
+                    noResults.style.display = (isSearchActive && totalVisible === 0) ? 'block' : 'none';
+                }
+
+                // Reset switchers
+                document.querySelectorAll('.texture-switcher').forEach(s => s.innerHTML = '');
+                document.querySelectorAll('.current-label').forEach(l => l.textContent = '');
+
+                // Update models that have textures
+                Object.keys(filteredTexturesByGltf).forEach(key => {
+                    if (currentIndices[key] === undefined) currentIndices[key] = 0;
+                    if (currentIndices[key] >= filteredTexturesByGltf[key].length) currentIndices[key] = 0;
+
+                    renderSwitcher(key, filteredTexturesByGltf[key]);
+                    if (filteredTexturesByGltf[key].length > 0) {
+                        const current = filteredTexturesByGltf[key][currentIndices[key]];
+                        applyTexture(key, current.texture_url);
+                        const labelEl = document.getElementById(`${key}-label`);
+                        if (labelEl) labelEl.textContent = current.label;
+                    }
                 });
             }
 
@@ -409,18 +635,42 @@ model-viewer {
                 const switcher = document.getElementById(`${gltf_key}-switcher`);
                 if (!switcher) return;
 
-                textures.forEach(t => {
+                textures.forEach((t, index) => {
                     const option = document.createElement('div');
                     option.className = 'texture-option';
+                    if (index === currentIndices[gltf_key]) option.classList.add('active');
                     option.style.backgroundImage = `url('${t.texture_url}')`;
                     option.title = t.label;
                     option.onclick = () => {
-                        switcher.querySelectorAll('.texture-option').forEach(el => el.classList.remove('active'));
-                        option.classList.add('active');
-                        applyTexture(gltf_key, t.texture_url);
+                        currentIndices[gltf_key] = index;
+                        updateModelUI(gltf_key, textures);
                     };
                     switcher.appendChild(option);
                 });
+            }
+
+            function updateModelUI(gltf_key, textures) {
+                const switcher = document.getElementById(`${gltf_key}-switcher`);
+                const options = switcher.querySelectorAll('.texture-option');
+                options.forEach((el, i) => {
+                    if (i === currentIndices[gltf_key]) el.classList.add('active');
+                    else el.classList.remove('active');
+                });
+
+                const current = textures[currentIndices[gltf_key]];
+                if (current) {
+                    applyTexture(gltf_key, current.texture_url);
+                    document.getElementById(`${gltf_key}-label`).textContent = current.label;
+
+                    // Center active option in switcher
+                    const activeOption = options[currentIndices[gltf_key]];
+                    if (activeOption) {
+                        switcher.scrollTo({
+                            left: activeOption.offsetLeft - switcher.offsetWidth / 2 + activeOption.offsetWidth / 2,
+                            behavior: 'smooth'
+                        });
+                    }
+                }
             }
 
             async function applyTexture(gltf_key, url) {
@@ -439,9 +689,11 @@ model-viewer {
 
                     // Lógica de mapeo de materiales (basada en render3D.html)
                     if (gltf_key === 'sticker') material = model.materials.find(m => m.name === 'texturaCircle');
+                    else if (gltf_key === 'astickers') material = model.materials.find(m => m.name === 'sticker_textures');
                     else if (gltf_key === 'xbanner') material = model.materials.find(m => m.name === 'Poster');
                     else if (gltf_key === 'flag') material = model.materials.find(m => m.name === 'flag');
                     else if (gltf_key === 'banner') material = model.materials.find(m => m.name === 'Ad_16_Promo');
+                    else if (gltf_key === 'slideshow') material = model.materials.find(m => m.name === 'Screen_Texture');
                     else {
                         // Fallback: buscar por textura base (simplificado para Cloudinary)
                         material = model.materials.find(m => m.pbrMetallicRoughness.baseColorTexture);
@@ -454,6 +706,34 @@ model-viewer {
                     console.error('Error applying texture:', err);
                 }
             }
+
+            // Search filter
+            document.getElementById('texture-search').addEventListener('input', (e) => {
+                updateDisplay(e.target.value);
+            });
+
+            // Navigation buttons
+            document.querySelectorAll('.prev-btn').forEach(btn => {
+                btn.onclick = () => {
+                    const key = btn.dataset.key;
+                    const textures = filteredTexturesByGltf[key] || [];
+                    if (textures.length > 0) {
+                        currentIndices[key] = (currentIndices[key] - 1 + textures.length) % textures.length;
+                        updateModelUI(key, textures);
+                    }
+                };
+            });
+
+            document.querySelectorAll('.next-btn').forEach(btn => {
+                btn.onclick = () => {
+                    const key = btn.dataset.key;
+                    const textures = filteredTexturesByGltf[key] || [];
+                    if (textures.length > 0) {
+                        currentIndices[key] = (currentIndices[key] + 1) % textures.length;
+                        updateModelUI(key, textures);
+                    }
+                };
+            });
 
             loadTextures();
         });

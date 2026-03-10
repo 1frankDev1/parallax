@@ -1,17 +1,36 @@
--- SQL para la creación de la tabla de texturas para Render 3D
-CREATE TABLE IF NOT EXISTS public.render3d_textures (
+-- Tabla para almacenar las texturas personalizadas vinculadas a los modelos GLTF
+CREATE TABLE render3d_textures (
     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-    gltf_key TEXT NOT NULL, -- 'flyer', 'poster', 'shirt', 'sticker', 'tableqr', 'xbanner', 'flag', 'banner'
-    texture_url TEXT NOT NULL,
-    label TEXT,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+    gltf_key TEXT NOT NULL,         -- Clave del modelo (p. ej. 'flyer', 'poster', 'sticker', etc.)
+    label TEXT NOT NULL,            -- Nombre descriptivo del diseño
+    texture_url TEXT NOT NULL,      -- URL de la imagen en Cloudinary
+    created_at TIMESTAMPTZ DEFAULT now()
 );
 
--- Habilitar RLS (Row Level Security)
-ALTER TABLE public.render3d_textures ENABLE ROW LEVEL SECURITY;
+-- Habilitar Row Level Security
+ALTER TABLE render3d_textures ENABLE ROW LEVEL SECURITY;
 
--- Políticas para la tabla (Permitir lectura a todos, cambios a todos por simplicidad en este entorno)
-CREATE POLICY "Permitir lectura pública" ON public.render3d_textures FOR SELECT USING (true);
-CREATE POLICY "Permitir inserción pública" ON public.render3d_textures FOR INSERT WITH CHECK (true);
-CREATE POLICY "Permitir eliminación pública" ON public.render3d_textures FOR DELETE USING (true);
-CREATE POLICY "Permitir actualización pública" ON public.render3d_textures FOR UPDATE USING (true);
+-- Sugerencia de Políticas RLS (Ajustar según necesidad real):
+
+-- 1. Permitir lectura pública (para que todos vean las texturas en test2.html)
+CREATE POLICY "Permitir lectura pública"
+ON public.render3d_textures FOR SELECT
+USING (true);
+
+-- 2. Permitir cambios solo a usuarios autenticados con rol Admin
+-- Nota: Esta política asume que usas Supabase Auth y tienes el rol en 'raw_app_meta_data'
+-- Si manejas los roles en una tabla aparte, deberás usar una función de base de datos.
+-- EJEMPLO SI USAS auth.uid():
+/*
+CREATE POLICY "Solo admins pueden insertar"
+ON public.render3d_textures FOR INSERT
+WITH CHECK ( auth.jwt() -> 'app_metadata' ->> 'role' = 'Admin' );
+
+CREATE POLICY "Solo admins pueden borrar"
+ON public.render3d_textures FOR DELETE
+USING ( auth.jwt() -> 'app_metadata' ->> 'role' = 'Admin' );
+*/
+
+-- IMPORTANTE: Para una implementación rápida sin Supabase Auth completo,
+-- podrías usar una Service Role Key en el admin, pero NO es recomendable para producción.
+-- Se recomienda encarecidamente configurar Supabase Auth correctamente.
