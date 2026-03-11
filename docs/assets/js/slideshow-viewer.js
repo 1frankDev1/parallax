@@ -183,9 +183,10 @@ document.addEventListener('DOMContentLoaded', () => {
             if (savedSession) window.updatePopupSlideshowTexture(savedSession);
         });
 
+        let popupAnimateId;
         function popupAnimate() {
             if (!popupRenderer) return;
-            requestAnimationFrame(popupAnimate);
+            popupAnimateId = requestAnimationFrame(popupAnimate);
 
             const w = canvas.clientWidth;
             const h = canvas.clientHeight;
@@ -199,6 +200,22 @@ document.addEventListener('DOMContentLoaded', () => {
             popupRenderer.render(popupScene, popupCamera);
         }
         popupAnimate();
+
+        // Expose cleanup function
+        window.cleanupPopupSlideshow = function() {
+            if (popupAnimateId) {
+                cancelAnimationFrame(popupAnimateId);
+                popupAnimateId = null;
+            }
+            if (popupRenderer) {
+                popupRenderer.dispose();
+                popupRenderer = null;
+            }
+            popupScene = null;
+            popupCamera = null;
+            popupControls = null;
+            popupModel = null;
+        };
     };
 
     window.updatePopupSlideshowTexture = function(url) {
