@@ -26,7 +26,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const zoomToggle = document.getElementById('slideshow-zoom-toggle');
         if (zoomToggle) {
             zoomToggle.addEventListener('click', () => {
-                // Toggle only the zoom functionality to match other viewers
                 const zoomEnabled = controls.enableZoom;
                 controls.enableZoom = !zoomEnabled;
                 zoomToggle.classList.toggle('active', !zoomEnabled);
@@ -40,9 +39,8 @@ document.addEventListener('DOMContentLoaded', () => {
         scene.add(directionalLight);
 
         const video = document.getElementById('video-texture');
-        // --- Video settings ---
-        video.playbackRate = 2.0; // Set to 2.0 for double speed, 1.0 for normal
-        video.loop = true; // Ensure the video loops
+        video.playbackRate = 2.0;
+        video.loop = true;
 
         const videoTexture = new THREE.VideoTexture(video);
         videoTexture.colorSpace = THREE.SRGBColorSpace;
@@ -71,15 +69,28 @@ document.addEventListener('DOMContentLoaded', () => {
                 const size = box.getSize(new THREE.Vector3());
                 model.position.sub(center);
                 const maxDim = Math.max(size.x, size.y, size.z);
-                
-                // --- Model size settings ---
-                // You can change this value to make the model larger or smaller
-                // 2.0 is a good starting point, > 2.0 is larger, < 2.0 is smaller
-                const desiredSize = 2.5; 
+                const desiredSize = 2.5;
                 const scale = desiredSize / maxDim;
-                
+
                 model.scale.multiplyScalar(scale);
                 scene.add(model);
+
+                // Expose function to update texture from external script
+                window.updateSlideshowTexture = async function(url) {
+                    const textureLoader = new THREE.TextureLoader();
+                    textureLoader.load(url, (texture) => {
+                        texture.colorSpace = THREE.SRGBColorSpace;
+                        texture.flipY = false;
+                        model.traverse((child) => {
+                            if (child.isMesh && child.material.name === VIDEO_MATERIAL_NAME) {
+                                child.material.map = texture;
+                                child.material.emissiveMap = texture;
+                                child.material.needsUpdate = true;
+                                video.pause();
+                            }
+                        });
+                    });
+                };
 
                 const playPromise = video.play();
                 if (playPromise !== undefined) {

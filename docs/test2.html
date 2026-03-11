@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>3D Viewer - Test 2</title>
+    <title data-key="title">Product Customizer</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="stylesheet" href="./assets/css/badge.css">
@@ -40,7 +40,7 @@ body, html {
 }
 
 /* --- Header & Footer --- */
-.main-header {
+.main-header, .main-footer {
     padding: 20px 0;
     background-color: var(--card-background);
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
@@ -52,33 +52,73 @@ body, html {
     align-items: center;
 }
 
+/* --- Language Switch --- */
+.language-switch {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.lang-label {
+    font-weight: 600;
+    color: var(--slate);
+}
+
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 50px;
+    height: 28px;
+}
+
+.switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    transition: .4s;
+    border-radius: 28px;
+}
+
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 20px;
+    width: 20px;
+    left: 4px;
+    bottom: 4px;
+    background-color: white;
+    transition: .4s;
+    border-radius: 50%;
+}
+
+input:checked + .slider {
+    background-color: var(--primary-color);
+}
+
+input:checked + .slider:before {
+    transform: translateX(22px);
+}
+
 .logo {
     width: 150px;
     height: auto;
 }
 
-.search-container {
-    flex-grow: 1;
-    display: flex;
-    justify-content: flex-end;
-    margin-left: 20px;
-}
-
-.search-input {
-    padding: 10px 20px;
-    border-radius: 25px;
-    border: 1px solid #ddd;
-    width: 100%;
-    max-width: 300px;
-    font-family: inherit;
-    font-size: 0.9em;
-    outline: none;
-    transition: border-color 0.3s, box-shadow 0.3s;
-}
-
-.search-input:focus {
-    border-color: var(--primary-color);
-    box-shadow: 0 0 8px rgba(255, 102, 0, 0.2);
+.main-footer {
+    text-align: center;
+    margin-top: 60px;
+    color: var(--slate);
+    border-top: 1px solid #e0e0e0;
 }
 
 /* --- Showcase Section --- */
@@ -99,6 +139,12 @@ body, html {
     grid-template-columns: 1fr 1fr;
     gap: 30px;
     align-items: center;
+}
+
+.full-width-cell {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 20px 0;
 }
 
 .text-cell {
@@ -155,6 +201,12 @@ model-viewer {
     --progress-bar-color: var(--primary-color);
 }
 
+#slideshow-canvas {
+    width: 100%;
+    height: 350px;
+    display: block;
+}
+
 /* --- Texture Switcher --- */
 .switcher-wrapper {
     width: 95%;
@@ -196,11 +248,11 @@ model-viewer {
     overflow-x: auto;
     padding: 5px;
     scroll-behavior: smooth;
-    scrollbar-width: none; /* Firefox */
+    scrollbar-width: none;
 }
 
 .texture-switcher::-webkit-scrollbar {
-    display: none; /* Chrome, Safari, Opera */
+    display: none;
 }
 
 .texture-option {
@@ -232,148 +284,6 @@ model-viewer {
     letter-spacing: 0.5px;
 }
 
-.model-cell.hidden-search {
-    display: none !important;
-}
-
-.text-cell.hidden-search {
-    display: none !important;
-}
-
-#no-results {
-    width: 100%;
-    text-align: center;
-    padding: 50px;
-    display: none;
-}
-
-#no-results h3 {
-    color: var(--slate);
-    font-weight: 400;
-}
-
-/* Modal Styles */
-.modal-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(15, 17, 26, 0.85);
-    backdrop-filter: blur(8px);
-    z-index: 9999;
-    display: none;
-    align-items: center;
-    justify-content: center;
-    opacity: 0;
-    transition: opacity 0.3s ease;
-}
-
-.modal-overlay.active {
-    display: flex;
-    opacity: 1;
-}
-
-.modal-content {
-    background: #fff;
-    width: 90%;
-    max-width: 1200px;
-    height: 85vh;
-    border-radius: 30px;
-    position: relative;
-    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-    transform: scale(0.95);
-    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-}
-
-.modal-overlay.active .modal-content {
-    transform: scale(1);
-}
-
-.modal-close {
-    position: absolute;
-    top: 20px;
-    right: 20px;
-    width: 45px;
-    height: 45px;
-    border-radius: 50%;
-    background: #f1f5f9;
-    border: none;
-    font-size: 24px;
-    color: #64748b;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 10;
-    transition: all 0.2s;
-}
-
-.modal-close:hover {
-    background: #ef4444;
-    color: white;
-    transform: rotate(90deg);
-}
-
-.modal-body {
-    display: grid;
-    grid-template-columns: 1.5fr 1fr;
-    height: 100%;
-}
-
-.modal-viewer-container {
-    background: #ffffff;
-    border-right: 1px solid #e2e8f0;
-    position: relative;
-}
-
-#modal-viewer {
-    width: 100%;
-    height: 100%;
-    --poster-color: transparent;
-}
-
-.modal-controls {
-    padding: 40px;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    background: white;
-}
-
-.modal-switcher-wrapper {
-    margin-top: 20px;
-    padding: 15px;
-    background: #f8fafc;
-    border-radius: 20px;
-}
-
-#modal-label {
-    margin-top: 15px;
-    font-weight: 600;
-    color: #1e293b;
-    font-size: 1.1rem;
-}
-
-@media (max-width: 992px) {
-    .modal-body {
-        grid-template-columns: 1fr;
-        grid-template-rows: 1fr auto;
-        overflow-y: auto;
-    }
-    .modal-content {
-        height: 95vh;
-    }
-    .modal-viewer-container {
-        height: 50vh;
-        border-right: none;
-        border-bottom: 1px solid #e2e8f0;
-    }
-}
-
 /* --- Zoom Toggle Button --- */
 .zoom-toggle {
     position: absolute;
@@ -393,20 +303,100 @@ model-viewer {
     z-index: 10;
 }
 
-.zoom-toggle:hover {
-    background-color: rgba(255, 255, 255, 1);
-    transform: scale(1.1);
+/* --- Search Bar --- */
+.search-container {
+    text-align: center;
+    margin: 30px auto;
+    max-width: 500px;
+    padding: 0 20px;
 }
 
-.zoom-toggle.active {
-    background-color: var(--primary-color);
-    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/><path d="M7 9h5v1H7z"/></svg>');
+.search-input {
+    width: 100%;
+    padding: 12px 25px;
+    border-radius: 30px;
+    border: 2px solid #ddd;
+    font-size: 1rem;
+    outline: none;
+    transition: border-color 0.3s, box-shadow 0.3s;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+
+.search-input:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 4px 15px rgba(255, 102, 0, 0.15);
+}
+
+/* --- Popup Modal --- */
+.model-popup {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.85);
+    z-index: 10000;
+    justify-content: center;
+    align-items: center;
+    backdrop-filter: blur(5px);
+}
+
+.popup-container {
+    position: relative;
+    width: 90%;
+    height: 85%;
+    background: white;
+    border-radius: 20px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+    animation: popupIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes popupIn {
+    from { transform: scale(0.8); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+}
+
+.close-popup {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    width: 40px;
+    height: 40px;
+    background: white;
+    border: none;
+    border-radius: 50%;
+    font-size: 24px;
+    cursor: pointer;
+    z-index: 10001;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    transition: background 0.3s, transform 0.2s;
+}
+
+.close-popup:hover {
+    background: #f0f0f0;
+    transform: rotate(90deg);
+}
+
+#popupViewer {
+    width: 100%;
+    height: 100%;
+    background-color: #ffffff;
 }
 
 /* --- Responsive Design --- */
 @media (max-width: 992px) {
     .chessboard-grid {
         grid-template-columns: 1fr;
+    }
+    .chessboard-grid > div {
+        order: unset !important;
     }
 }
     </style>
@@ -440,30 +430,43 @@ model-viewer {
     <header class="main-header">
         <div class="container">
             <img src="https://menutech.services/assets/img/logomt.png" alt="Logo MenuTech" class="logo">
-            <div class="search-container">
-                <input type="text" id="texture-search" placeholder="Buscar diseño..." class="search-input">
+            <div class="language-switch">
+                <span class="lang-label">ES</span>
+                <label class="switch">
+                    <input type="checkbox" id="language-toggle" checked>
+                    <span class="slider round"></span>
+                </label>
+                <span class="lang-label">EN</span>
             </div>
         </div>
     </header>
 
     <main>
+        <section class="hero-section" style="text-align: center; padding: 60px 0; background-color: var(--card-background);">
+            <div class="container">
+                <h1 data-key="heroTitle">Visualize Your Designs Instantly</h1>
+                <p data-key="heroSubtitle">Explore our customizable products with high-quality textures.</p>
+            </div>
+        </section>
+
+        <div class="search-container">
+            <input type="text" id="productSearch" class="search-input" placeholder="Buscar productos, diseños..." data-key="searchPlaceholder">
+        </div>
+
         <section class="showcase-section">
             <div class="container">
-                <h2 style="color: #e65c00;">Personalizador de Productos 3D</h2>
-                <div id="no-results">
-                    <h3>No se encontraron diseños que coincidan con tu búsqueda.</h3>
-                </div>
-                <div class="chessboard-grid" id="main-grid">
-                    <!-- Flyer -->
+                <h2 style="color: #e65c00;" data-key="productsTitle">Our Products</h2>
+                <div class="chessboard-grid">
+                    <!-- Fila 1 -->
                     <div class="text-cell">
                         <div class="text-content">
-                            <h2>Flyers</h2>
-                            <p>Comunica promociones y eventos de forma directa.</p>
+                            <h2 data-key="flyerTitle">Dynamic Flyers</h2>
+                            <p data-key="flyerDesc">Capture your customers' attention with flyers that come to life. Ideal for events and promotions.</p>
                         </div>
                     </div>
                     <div class="model-cell" data-key="flyer">
-                        <model-viewer id="flyer-viewer" src="./assets/img/flyer.gltf" alt="Flyer" camera-controls disable-zoom></model-viewer>
-                        <button class="zoom-toggle" data-viewer-id="flyer-viewer"></button>
+                        <model-viewer id="flyer-viewer" src="./assets/img/flyer.gltf" alt="Modelo 3D de un flyer" camera-controls disable-zoom></model-viewer>
+                        <button class="zoom-toggle" data-viewer-id="flyer-viewer" aria-label="Toggle Zoom"></button>
                         <div class="switcher-wrapper">
                             <button class="nav-btn prev-btn" data-key="flyer">❮</button>
                             <div class="texture-switcher" id="flyer-switcher"></div>
@@ -472,10 +475,10 @@ model-viewer {
                         <div class="current-label" id="flyer-label"></div>
                     </div>
 
-                    <!-- Poster -->
+                    <!-- Fila 2 -->
                     <div class="model-cell" data-key="poster">
-                        <model-viewer id="poster-viewer" src="./assets/img/poster.gltf" alt="Poster" camera-controls disable-zoom></model-viewer>
-                        <button class="zoom-toggle" data-viewer-id="poster-viewer"></button>
+                        <model-viewer id="poster-viewer" src="./assets/img/poster.gltf" alt="Modelo 3D de un póster" camera-controls disable-zoom></model-viewer>
+                        <button class="zoom-toggle" data-viewer-id="poster-viewer" aria-label="Toggle Zoom"></button>
                         <div class="switcher-wrapper">
                             <button class="nav-btn prev-btn" data-key="poster">❮</button>
                             <div class="texture-switcher" id="poster-switcher"></div>
@@ -485,21 +488,21 @@ model-viewer {
                     </div>
                     <div class="text-cell">
                         <div class="text-content">
-                            <h2>Pósters</h2>
-                            <p>Destaca ofertas clave e influye en la compra.</p>
+                            <h2 data-key="posterTitle">High-Impact Posters</h2>
+                            <p data-key="posterDesc">Transform any wall into an art gallery with our customizable posters.</p>
                         </div>
                     </div>
 
-                    <!-- Camisa -->
+                    <!-- Fila 3 -->
                     <div class="text-cell">
                         <div class="text-content">
-                            <h2>Camisas</h2>
-                            <p>Proyecta una imagen profesional de tu personal.</p>
+                            <h2 data-key="shirtTitle">Stylish Shirts</h2>
+                            <p data-key="shirtDesc">Wear your ideas. Customize every detail and create unique garments that represent your brand.</p>
                         </div>
                     </div>
                     <div class="model-cell" data-key="shirt">
-                        <model-viewer id="shirt-viewer" src="./assets/img/shirt.gltf" alt="Camisa" camera-controls disable-zoom></model-viewer>
-                        <button class="zoom-toggle" data-viewer-id="shirt-viewer"></button>
+                        <model-viewer id="camisa-viewer" src="./assets/img/shirt.gltf" alt="Modelo 3D de una camisa" camera-controls disable-zoom></model-viewer>
+                        <button class="zoom-toggle" data-viewer-id="camisa-viewer" aria-label="Toggle Zoom"></button>
                         <div class="switcher-wrapper">
                             <button class="nav-btn prev-btn" data-key="shirt">❮</button>
                             <div class="texture-switcher" id="shirt-switcher"></div>
@@ -508,10 +511,10 @@ model-viewer {
                         <div class="current-label" id="shirt-label"></div>
                     </div>
 
-                    <!-- Sticker -->
+                    <!-- Fila 4 -->
                     <div class="model-cell" data-key="sticker">
-                        <model-viewer id="sticker-viewer" src="./assets/img/sticker.gltf" alt="Sticker" camera-controls disable-zoom></model-viewer>
-                        <button class="zoom-toggle" data-viewer-id="sticker-viewer"></button>
+                        <model-viewer id="sticker-viewer" src="./assets/img/sticker.gltf" alt="Modelo 3D de un sticker" camera-controls disable-zoom></model-viewer>
+                        <button class="zoom-toggle" data-viewer-id="sticker-viewer" aria-label="Toggle Zoom"></button>
                         <div class="switcher-wrapper">
                             <button class="nav-btn prev-btn" data-key="sticker">❮</button>
                             <div class="texture-switcher" id="sticker-switcher"></div>
@@ -521,21 +524,21 @@ model-viewer {
                     </div>
                     <div class="text-cell">
                         <div class="text-content">
-                            <h2>Stickers</h2>
-                            <p>Mantiene tu marca presente en cada pedido.</p>
+                            <h2 data-key="stickerTitle">Creative Stickers</h2>
+                            <p data-key="stickerDesc">Add a personal touch to your belongings. Perfect for laptops, bottles, and more.</p>
                         </div>
                     </div>
 
-                    <!-- QR Mesa -->
+                    <!-- Fila 5 -->
                     <div class="text-cell">
                         <div class="text-content">
-                            <h2>QR de Mesa</h2>
-                            <p>Facilita el acceso al menú y promociones.</p>
+                            <h2 data-key="qrTitle">QR Table Signage</h2>
+                            <p data-key="qrDesc">Modernize your business with interactive signage. Connect with your customers in an innovative way.</p>
                         </div>
                     </div>
                     <div class="model-cell" data-key="tableqr">
-                        <model-viewer id="tableqr-viewer" src="./assets/img/tableQR.gltf" alt="QR Mesa" camera-controls disable-zoom></model-viewer>
-                        <button class="zoom-toggle" data-viewer-id="tableqr-viewer"></button>
+                        <model-viewer id="tableqr-viewer" src="./assets/img/tableQR.gltf" alt="Modelo 3D de un código QR de mesa" camera-controls disable-zoom></model-viewer>
+                        <button class="zoom-toggle" data-viewer-id="tableqr-viewer" aria-label="Toggle Zoom"></button>
                         <div class="switcher-wrapper">
                             <button class="nav-btn prev-btn" data-key="tableqr">❮</button>
                             <div class="texture-switcher" id="tableqr-switcher"></div>
@@ -544,10 +547,10 @@ model-viewer {
                         <div class="current-label" id="tableqr-label"></div>
                     </div>
 
-                    <!-- XBanner -->
+                    <!-- Fila 6 - XBanner -->
                     <div class="model-cell" data-key="xbanner">
-                        <model-viewer id="xbanner-viewer" src="./assets/img/xbanner.gltf" alt="XBanner" camera-controls disable-zoom></model-viewer>
-                        <button class="zoom-toggle" data-viewer-id="xbanner-viewer"></button>
+                        <model-viewer id="xbanner-viewer" src="./assets/img/xbanner.gltf" alt="Modelo 3D de un xbanner" camera-controls disable-zoom></model-viewer>
+                        <button class="zoom-toggle" data-viewer-id="xbanner-viewer" aria-label="Toggle Zoom"></button>
                         <div class="switcher-wrapper">
                             <button class="nav-btn prev-btn" data-key="xbanner">❮</button>
                             <div class="texture-switcher" id="xbanner-switcher"></div>
@@ -557,21 +560,21 @@ model-viewer {
                     </div>
                     <div class="text-cell">
                         <div class="text-content">
-                            <h2>Banners en X</h2>
-                            <p>Ideales para espacios estratégicos.</p>
+                            <h2 data-key="xbannerTitle">X-Banners</h2>
+                            <p data-key="xbannerDesc">Ideal for events and promotions, our x-banners are easy to transport and assemble.</p>
                         </div>
                     </div>
 
-                    <!-- Bandera -->
+                    <!-- Fila 7 - Flag -->
                     <div class="text-cell">
                         <div class="text-content">
-                            <h2>Banderas Publicitarias</h2>
-                            <p>Aumentan visibilidad desde la distancia.</p>
+                            <h2 data-key="flagTitle">Promotional Flags</h2>
+                            <p data-key="flagDesc">Make your brand stand out at any event with our customizable promotional flags.</p>
                         </div>
                     </div>
                     <div class="model-cell" data-key="flag">
-                        <model-viewer id="flag-viewer" src="./assets/img/flag.gltf" alt="Bandera" camera-controls disable-zoom></model-viewer>
-                        <button class="zoom-toggle" data-viewer-id="flag-viewer"></button>
+                        <model-viewer id="flag-viewer" src="./assets/img/flag.gltf" alt="Modelo 3D de una bandera" camera-controls disable-zoom></model-viewer>
+                        <button class="zoom-toggle" data-viewer-id="flag-viewer" aria-label="Toggle Zoom"></button>
                         <div class="switcher-wrapper">
                             <button class="nav-btn prev-btn" data-key="flag">❮</button>
                             <div class="texture-switcher" id="flag-switcher"></div>
@@ -580,10 +583,10 @@ model-viewer {
                         <div class="current-label" id="flag-label"></div>
                     </div>
 
-                    <!-- Banner -->
+                    <!-- Fila 8 - Banner -->
                     <div class="model-cell" data-key="banner">
-                        <model-viewer id="banner-viewer" src="./assets/img/banner.gltf" alt="Banner" camera-controls disable-zoom></model-viewer>
-                        <button class="zoom-toggle" data-viewer-id="banner-viewer"></button>
+                        <model-viewer id="banner-viewer" src="./assets/img/banner.gltf" alt="Modelo 3D de un banner" camera-controls disable-zoom></model-viewer>
+                        <button class="zoom-toggle" data-viewer-id="banner-viewer" aria-label="Toggle Zoom"></button>
                         <div class="switcher-wrapper">
                             <button class="nav-btn prev-btn" data-key="banner">❮</button>
                             <div class="texture-switcher" id="banner-switcher"></div>
@@ -593,33 +596,23 @@ model-viewer {
                     </div>
                     <div class="text-cell">
                         <div class="text-content">
-                            <h2>Banners</h2>
-                            <p>Captan clientes desde el exterior.</p>
+                            <h2 data-key="bannerTitle">Banners</h2>
+                            <p data-key="bannerDesc">Ideal for events and promotions, our banners are easy to transport and assemble.</p>
                         </div>
                     </div>
 
-                    <!-- Stickers Alternativos -->
+                    <!-- Fila 9 - Slideshow -->
                     <div class="text-cell">
                         <div class="text-content">
-                            <h2>Stickers Premium</h2>
-                            <p>Variedad de formas y acabados para tu marca.</p>
+                            <h2 data-key="slideshowTitle">Slideshow</h2>
+                            <p data-key="slideshowDesc">Display dishes or promotions in an attractive way. Designed to catch attention instantly.</p>
                         </div>
                     </div>
-                    <div class="model-cell" data-key="astickers">
-                        <model-viewer id="astickers-viewer" src="./assets/img/Astickers.gltf" alt="Stickers Premium" camera-controls disable-zoom></model-viewer>
-                        <button class="zoom-toggle" data-viewer-id="astickers-viewer"></button>
-                        <div class="switcher-wrapper">
-                            <button class="nav-btn prev-btn" data-key="astickers">❮</button>
-                            <div class="texture-switcher" id="astickers-switcher"></div>
-                            <button class="nav-btn next-btn" data-key="astickers">❯</button>
-                        </div>
-                        <div class="current-label" id="astickers-label"></div>
-                    </div>
-
-                    <!-- Slideshow -->
                     <div class="model-cell" data-key="slideshow">
-                        <model-viewer id="slideshow-viewer" src="./assets/img/slideshow.gltf" alt="Slideshow" camera-controls disable-zoom></model-viewer>
-                        <button class="zoom-toggle" data-viewer-id="slideshow-viewer"></button>
+                        <canvas id="slideshow-canvas"></canvas>
+                        <button id="slideshow-zoom-toggle" class="zoom-toggle" aria-label="Toggle Zoom"></button>
+                        <div id="slideshow-error-overlay" class="error-overlay"></div>
+                        <video id="video-texture" loop muted autoplay playsinline crossOrigin="anonymous" style="display:none;" src="./assets/img/slideshow.mp4"></video>
                         <div class="switcher-wrapper">
                             <button class="nav-btn prev-btn" data-key="slideshow">❮</button>
                             <div class="texture-switcher" id="slideshow-switcher"></div>
@@ -627,159 +620,131 @@ model-viewer {
                         </div>
                         <div class="current-label" id="slideshow-label"></div>
                     </div>
-                    <div class="text-cell">
-                        <div class="text-content">
-                            <h2>Presentaciones</h2>
-                            <p>Visualiza tus diseños en formato de diapositivas 3D.</p>
-                        </div>
+
+                    <!-- Fila 10 - menutech-menu -->
+                    <div class="full-width-cell">
+                        <menutech-menu id="restaurant-menu" class="menutech-menu-container" imagenes="./assets/img/m1.png,https://vikingantonio.github.io/cabanamenu/assets/img/2.jpg,https://vikingantonio.github.io/cabanamenu/assets/img/3.jpg,https://vikingantonio.github.io/cabanamenu/assets/img/4.jpg,https://vikingantonio.github.io/cabanamenu/assets/img/9.jpg,https://vikingantonio.github.io/cabanamenu/assets/img/10.jpg,https://vikingantonio.github.io/cabanamenu/assets/img/11.jpg,https://vikingantonio.github.io/cabanamenu/assets/img/12.jpg"></menutech-menu>
                     </div>
                 </div>
             </div>
         </section>
     </main>
 
-    <!-- 3D Preview Modal -->
-    <div id="preview-modal" class="modal-overlay">
-        <div class="modal-content">
-            <button class="modal-close" id="close-modal">&times;</button>
-            <div class="modal-body">
-                <div class="modal-viewer-container">
-                    <model-viewer id="modal-viewer" camera-controls shadow-intensity="1" environment-image="neutral" exposure="1" auto-rotate></model-viewer>
-                </div>
-                <div class="modal-controls">
-                    <h2 id="modal-title" style="margin: 0; color: var(--primary-color);">Producto</h2>
-                    <p id="modal-description" style="margin: 5px 0 20px; color: var(--slate);">Descripción del producto</p>
+    <footer class="main-footer">
+        <div class="container">
+            <p data-key="footerText">&copy; 2026 MenuTech Services. All rights reserved.</p>
+        </div>
+    </footer>
 
-                    <div class="switcher-wrapper modal-switcher-wrapper">
-                        <button class="nav-btn modal-prev-btn">❮</button>
-                        <div class="texture-switcher" id="modal-switcher"></div>
-                        <button class="nav-btn modal-next-btn">❯</button>
-                    </div>
-                    <div class="current-label" id="modal-label" style="text-align: center; width: 100%;"></div>
+    <!-- Popup Modal -->
+    <div id="modelPopup" class="model-popup">
+        <div class="popup-container">
+            <button id="closePopup" class="close-popup">✕</button>
+            <div id="popupModelContainer" style="width: 100%; height: 80%; display: flex; justify-content: center; align-items: center; background: #f8f8f8;">
+                <model-viewer id="popupViewer" camera-controls auto-rotate shadow-intensity="1" exposure="1" style="width: 100%; height: 100%;"></model-viewer>
+                <img id="popupImage" style="max-width: 90%; max-height: 90%; display: none; object-fit: contain; box-shadow: 0 10px 30px rgba(0,0,0,0.2); border-radius: 10px;">
+            </div>
+            <div id="popupSwitcherContainer" class="model-cell" style="box-shadow: none; min-height: auto; width: 100%; background: transparent;">
+                <div class="switcher-wrapper" style="width: 80%; margin: 0 auto;">
+                    <button class="nav-btn prev-btn" id="popupPrev">❮</button>
+                    <div class="texture-switcher" id="popup-switcher"></div>
+                    <button class="nav-btn next-btn" id="popupNext">❯</button>
                 </div>
+                <div class="current-label" id="popup-label"></div>
             </div>
         </div>
     </div>
 
     <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.5.0/model-viewer.min.js"></script>
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+                "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+            }
+        }
+    </script>
+    <script type="module" src="./assets/js/slideshow-viewer.js"></script>
     <script src="./assets/js/badge.js"></script>
     <script src="https://menutech.xyz/menutechUI.min.js"></script>
     <script src="./assets/js/renderer.js"></script>
+
     <script>
-        document.addEventListener('DOMContentLoaded', async () => {
-            // Modal Elements
-            const modal = document.getElementById('preview-modal');
-            const modalViewer = document.getElementById('modal-viewer');
-            const modalTitle = document.getElementById('modal-title');
-            const modalDescription = document.getElementById('modal-description');
-            const modalSwitcher = document.getElementById('modal-switcher');
-            const modalLabel = document.getElementById('modal-label');
-            const closeModal = document.getElementById('close-modal');
-            const modalPrev = document.querySelector('.modal-prev-btn');
-            const modalNext = document.querySelector('.modal-next-btn');
-
-            let activeModalKey = null;
-
-            function openPreviewModal(key) {
-                activeModalKey = key;
-                const cell = document.querySelector(`.model-cell[data-key="${key}"]`);
-                const viewer = cell.querySelector('model-viewer');
-
-                // Index pairing logic
-                const parent = cell.parentElement;
-                const index = Array.from(parent.children).indexOf(cell);
-                const isLeftModel = (key === 'poster' || key === 'sticker' || key === 'xbanner' || key === 'banner' || key === 'slideshow');
-                const textCellIndex = isLeftModel ? index + 1 : index - 1;
-                const textCell = parent.children[textCellIndex];
-
-                const title = textCell.querySelector('h2').textContent;
-                const desc = textCell.querySelector('p').textContent;
-
-                modalTitle.textContent = title;
-                modalDescription.textContent = desc;
-                modalViewer.src = viewer.src;
-
-                modal.classList.add('active');
-                updateModalUI();
+        const translations = {
+            en: {
+                title: "Product Customizer",
+                heroTitle: "Visualize Your Designs Instantly",
+                heroSubtitle: "Explore our customizable products with high-quality textures.",
+                productsTitle: "Our Products",
+                flyerTitle: "Flyers",
+                flyerDesc: "They allow you to communicate promotions, events, or new menu items in a direct and effective way.",
+                posterTitle: "Posters",
+                posterDesc: "They help highlight key offers inside the restaurant and influence customer purchasing decisions.",
+                shirtTitle: "T-Shirts",
+                shirtDesc: "They project a professional image and turn staff into a visible extension of the brand.",
+                stickerTitle: "Stickers",
+                stickerDesc: "They keep the brand present on packaging and takeout orders, reinforcing brand recall.",
+                qrTitle: "Table QR",
+                qrDesc: "They provide easy access to menus and promotions, improving customer experience and service efficiency.",
+                xbannerTitle: "X-Banners",
+                xbannerDesc: "They are ideal for clearly communicating promotions or updates in strategic spaces.",
+                flagTitle: "Advertising Flags",
+                flagDesc: "They increase restaurant visibility and attract attention from a distance.",
+                bannerTitle: "Banners",
+                bannerDesc: "They showcase promotions or featured dishes and capture customers from outside the venue.",
+                slideshowTitle: "Slideshow",
+                slideshowDesc: "Display dishes or promotions in an attractive way. Designed to catch attention instantly.",
+                footerText: "© 2026 Menutech. All rights reserved.",
+                searchPlaceholder: "Search products, designs..."
+            },
+            es: {
+                title: "Personalizador de Productos",
+                heroTitle: "Visualiza tus Diseños al Instante",
+                heroSubtitle: "Explora nuestros productos personalizables con texturas de alta calidad.",
+                productsTitle: "Nuestros Productos",
+                flyerTitle: "Flyers",
+                flyerDesc: "Permite comunicar promociones, eventos o nuevos platillos de forma directa y efectiva.",
+                posterTitle: "Pósters",
+                posterDesc: "Ayudan a destacar ofertas clave dentro del restaurante e influyen en la decisión de compra del cliente.",
+                shirtTitle: "Camisas",
+                shirtDesc: "Proyectan una imagen profesional y convierten al personal en una extensión visible de la marca.",
+                stickerTitle: "Stickers",
+                stickerDesc: "Mantienen la marca presente en empaques y pedidos para llevar, reforzando el recuerdo del restaurante.",
+                qrTitle: "QR de Mesa",
+                qrDesc: "Facilitan el acceso al menú y promociones, mejorando la experiencia del cliente y la eficiencia del servicio.",
+                xbannerTitle: "Banners en X",
+                xbannerDesc: "Son ideales para comunicar promociones o novedades de forma clara en espacios estratégicos.",
+                flagTitle: "Banderas Publicitarias",
+                flagDesc: "Aumentan la visibilidad del restaurante y atraen la atención desde la distancia.",
+                bannerTitle: "Banners",
+                bannerDesc: "Comunican promociones o platillos destacados y captan clientes desde el exterior del local.",
+                slideshowTitle: "Slideshow",
+                slideshowDesc: "Muestra platillos o promociones de forma atractiva. Pensado para llamar la atención al instante.",
+                footerText: "© 2026 Menutech. Todos los derechos reservados.",
+                searchPlaceholder: "Buscar productos, diseños..."
             }
+        };
 
-            function updateModalUI() {
-                if (!activeModalKey) return;
-                const textures = filteredTexturesByGltf[activeModalKey] || [];
-                const currentIndex = currentIndices[activeModalKey] || 0;
-                const current = textures[currentIndex];
-
-                modalSwitcher.innerHTML = '';
-                textures.forEach((t, index) => {
-                    const option = document.createElement('div');
-                    option.className = 'texture-option';
-                    if (index === currentIndex) option.classList.add('active');
-                    option.style.backgroundImage = `url('${t.texture_url}')`;
-                    option.title = t.label;
-                    option.onclick = () => {
-                        currentIndices[activeModalKey] = index;
-                        updateModelUI(activeModalKey, textures);
-                    };
-                    modalSwitcher.appendChild(option);
-                });
-
-                if (current) {
-                    modalLabel.textContent = current.label;
-                    applyTexture(modalViewer, activeModalKey, current.texture_url);
-
-                    // Center active option
-                    const activeOption = modalSwitcher.children[currentIndex];
-                    if (activeOption) {
-                        modalSwitcher.scrollTo({
-                            left: activeOption.offsetLeft - modalSwitcher.offsetWidth / 2 + activeOption.offsetWidth / 2,
-                            behavior: 'smooth'
-                        });
-                    }
-                } else {
-                    modalLabel.textContent = "Sin diseños";
+        function setLanguage(lang) {
+            document.querySelectorAll('[data-key]').forEach(el => {
+                const key = el.getAttribute('data-key');
+                if (translations[lang] && translations[lang][key]) {
+                    el.textContent = translations[lang][key];
                 }
-            }
-
-            closeModal.onclick = () => {
-                modal.classList.remove('active');
-                activeModalKey = null;
-            };
-
-            modal.onclick = (e) => {
-                if (e.target === modal) closeModal.onclick();
-            };
-
-            modalPrev.onclick = () => {
-                if (!activeModalKey) return;
-                const textures = filteredTexturesByGltf[activeModalKey] || [];
-                if (textures.length > 0) {
-                    currentIndices[activeModalKey] = (currentIndices[activeModalKey] - 1 + textures.length) % textures.length;
-                    updateModelUI(activeModalKey, textures);
-                }
-            };
-
-            modalNext.onclick = () => {
-                if (!activeModalKey) return;
-                const textures = filteredTexturesByGltf[activeModalKey] || [];
-                if (textures.length > 0) {
-                    currentIndices[activeModalKey] = (currentIndices[activeModalKey] + 1) % textures.length;
-                    updateModelUI(activeModalKey, textures);
-                }
-            };
-
-            // Replace Zoom Toggle Logic with Modal Logic
-            const zoomToggles = document.querySelectorAll('.zoom-toggle');
-            zoomToggles.forEach(button => {
-                button.addEventListener('click', () => {
-                    const cell = button.closest('.model-cell');
-                    openPreviewModal(cell.dataset.key);
-                });
             });
+        }
+
+        document.getElementById('language-toggle').addEventListener('change', (e) => {
+            setLanguage(e.target.checked ? 'en' : 'es');
+        });
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            setLanguage('en');
 
             let supabase = null;
             let allTextures = [];
-            let filteredTexturesByGltf = {};
-            let currentIndices = {}; // Track current texture index for each model
+            let texturesByGltf = {};
+            let currentIndices = {};
 
             async function initSupabase() {
                 if (window.supabase) {
@@ -789,175 +754,102 @@ model-viewer {
                     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9qcHlmamdrZmZtend2dWtqYWdmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQxNDIwMzYsImV4cCI6MjA3OTcxODAzNn0.dlVYmoMumBse_O1PLBx0FeNITqY4YktefD6l_uonSgo';
                     const { createClient } = await import('https://esm.sh/@supabase/supabase-js');
                     supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+                    window.supabase = supabase;
                 }
             }
 
             async function loadTextures() {
                 await initSupabase();
                 const { data, error } = await supabase.from('render3d_textures').select('*').order('created_at', { ascending: true });
-                if (error) {
-                    console.error('Error loading textures:', error);
-                    return;
-                }
+                if (error) return;
 
                 allTextures = data;
-                updateDisplay();
-            }
-
-            function updateDisplay(filter = '') {
-                const isSearchActive = filter.trim() !== '';
-                const filtered = allTextures.filter(t =>
-                    t.label.toLowerCase().includes(filter.toLowerCase()) ||
-                    t.gltf_key.toLowerCase().includes(filter.toLowerCase())
-                );
-
-                filteredTexturesByGltf = filtered.reduce((acc, texture) => {
-                    if (!acc[texture.gltf_key]) acc[texture.gltf_key] = [];
-                    acc[texture.gltf_key].push(texture);
+                texturesByGltf = data.reduce((acc, t) => {
+                    if (!acc[t.gltf_key]) acc[t.gltf_key] = [];
+                    acc[t.gltf_key].push(t);
                     return acc;
                 }, {});
 
-                let totalVisible = 0;
-                // Reset all visibility
-                document.querySelectorAll('.model-cell').forEach(cell => {
-                    const key = cell.dataset.key;
-                    const hasTextures = filteredTexturesByGltf[key] && filteredTexturesByGltf[key].length > 0;
-
-                    const indexInParent = Array.from(cell.parentElement.children).indexOf(cell);
-                    const pairedIndex = indexInParent % 2 === 0 ? indexInParent + 1 : indexInParent - 1;
-                    const pairedCell = cell.parentElement.children[pairedIndex];
-
-                    if (isSearchActive) {
-                        if (hasTextures) {
-                            cell.classList.remove('hidden-search');
-                            if (pairedCell) pairedCell.classList.remove('hidden-search');
-                            totalVisible++;
-                        } else {
-                            cell.classList.add('hidden-search');
-                            if (pairedCell) pairedCell.classList.add('hidden-search');
-                        }
-                    } else {
-                        cell.classList.remove('hidden-search');
-                        if (pairedCell) pairedCell.classList.remove('hidden-search');
-                        totalVisible++;
-                    }
-                });
-
-                const noResults = document.getElementById('no-results');
-                if (noResults) {
-                    noResults.style.display = (isSearchActive && totalVisible === 0) ? 'block' : 'none';
-                }
-
-                // Reset switchers
-                document.querySelectorAll('.texture-switcher').forEach(s => s.innerHTML = '');
-                document.querySelectorAll('.current-label').forEach(l => l.textContent = '');
-
-                // Update models that have textures
-                Object.keys(filteredTexturesByGltf).forEach(key => {
-                    if (currentIndices[key] === undefined) currentIndices[key] = 0;
-                    if (currentIndices[key] >= filteredTexturesByGltf[key].length) currentIndices[key] = 0;
-
-                    renderSwitcher(key, filteredTexturesByGltf[key]);
-                    if (filteredTexturesByGltf[key].length > 0) {
-                        const current = filteredTexturesByGltf[key][currentIndices[key]];
-                        applyTexture(document.getElementById(`${key}-viewer`), key, current.texture_url);
-                        const labelEl = document.getElementById(`${key}-label`);
-                        if (labelEl) labelEl.textContent = current.label;
-                    }
+                Object.keys(texturesByGltf).forEach(key => {
+                    currentIndices[key] = 0;
+                    renderSwitcher(key, texturesByGltf[key]);
+                    updateModelUI(key);
                 });
             }
 
-            function renderSwitcher(gltf_key, textures) {
-                const switcher = document.getElementById(`${gltf_key}-switcher`);
+            function renderSwitcher(key, textures) {
+                const switcher = document.getElementById(`${key}-switcher`);
                 if (!switcher) return;
-
-                textures.forEach((t, index) => {
-                    const option = document.createElement('div');
-                    option.className = 'texture-option';
-                    if (index === currentIndices[gltf_key]) option.classList.add('active');
-                    option.style.backgroundImage = `url('${t.texture_url}')`;
-                    option.title = t.label;
-                    option.onclick = () => {
-                        currentIndices[gltf_key] = index;
-                        updateModelUI(gltf_key, textures);
+                switcher.innerHTML = '';
+                textures.forEach((t, i) => {
+                    const opt = document.createElement('div');
+                    opt.className = 'texture-option';
+                    opt.style.backgroundImage = `url('${t.texture_url}')`;
+                    opt.onclick = () => {
+                        currentIndices[key] = i;
+                        updateModelUI(key);
                     };
-                    switcher.appendChild(option);
+                    switcher.appendChild(opt);
                 });
             }
 
-            function updateModelUI(gltf_key, textures) {
-                const switcher = document.getElementById(`${gltf_key}-switcher`);
-                const options = switcher.querySelectorAll('.texture-option');
-                options.forEach((el, i) => {
-                    if (i === currentIndices[gltf_key]) el.classList.add('active');
-                    else el.classList.remove('active');
-                });
+            function updateModelUI(key) {
+                const textures = texturesByGltf[key];
+                if (!textures || textures.length === 0) return;
 
-                const current = textures[currentIndices[gltf_key]];
-                if (current) {
-                    applyTexture(document.getElementById(`${gltf_key}-viewer`), gltf_key, current.texture_url);
-                    document.getElementById(`${gltf_key}-label`).textContent = current.label;
+                const current = textures[currentIndices[key]];
+                const viewer = document.getElementById(`${key}-viewer`);
+                const label = document.getElementById(`${key}-label`);
+                const switcher = document.getElementById(`${key}-switcher`);
 
-                    // Center active option in switcher
-                    const activeOption = options[currentIndices[gltf_key]];
-                    if (activeOption) {
-                        switcher.scrollTo({
-                            left: activeOption.offsetLeft - switcher.offsetWidth / 2 + activeOption.offsetWidth / 2,
-                            behavior: 'smooth'
-                        });
-                    }
+                if (label) label.textContent = current.label;
+                if (switcher) {
+                    switcher.querySelectorAll('.texture-option').forEach((opt, i) => {
+                        opt.classList.toggle('active', i === currentIndices[key]);
+                    });
+                }
 
-                    // Sync modal if open
-                    if (activeModalKey === gltf_key) {
-                        updateModalUI();
-                    }
+                if (viewer) applyTexture(viewer, key, current.texture_url);
+                if (key === 'slideshow' && window.updateSlideshowTexture) {
+                    window.updateSlideshowTexture(current.texture_url);
+                }
+
+                // Update popup if it's open for this product
+                const popup = document.getElementById('modelPopup');
+                const popupViewer = document.getElementById('popupViewer');
+                if (popup.style.display === 'flex' && popupViewer.dataset.currentKey === key) {
+                    applyTexture(popupViewer, key, current.texture_url);
                 }
             }
 
-            async function applyTexture(viewer, gltf_key, url) {
-                if (!viewer) return;
-
+            async function applyTexture(viewer, key, url) {
                 const model = viewer.model;
                 if (!model) {
-                    viewer.addEventListener('load', () => applyTexture(viewer, gltf_key, url), { once: true });
+                    viewer.addEventListener('load', () => applyTexture(viewer, key, url), { once: true });
                     return;
                 }
-
                 try {
-                    const texture = await viewer.createTexture(url);
-                    let material;
+                    const tex = await viewer.createTexture(url);
+                    let mat;
+                    if (key === 'sticker') mat = model.materials.find(m => m.name === 'texturaCircle');
+                    else if (key === 'xbanner') mat = model.materials.find(m => m.name === 'Poster');
+                    else if (key === 'flag') mat = model.materials.find(m => m.name === 'flag');
+                    else if (key === 'banner') mat = model.materials.find(m => m.name === 'Ad_16_Promo');
+                    else mat = model.materials.find(m => m.pbrMetallicRoughness.baseColorTexture);
 
-                    if (gltf_key === 'sticker') material = model.materials.find(m => m.name === 'texturaCircle');
-                    else if (gltf_key === 'astickers') material = model.materials.find(m => m.name === 'sticker_textures');
-                    else if (gltf_key === 'xbanner') material = model.materials.find(m => m.name === 'Poster');
-                    else if (gltf_key === 'flag') material = model.materials.find(m => m.name === 'flag');
-                    else if (gltf_key === 'banner') material = model.materials.find(m => m.name === 'Ad_16_Promo');
-                    else if (gltf_key === 'slideshow') material = model.materials.find(m => m.name === 'Screen_Texture');
-                    else {
-                        material = model.materials.find(m => m.pbrMetallicRoughness.baseColorTexture);
+                    if (mat && mat.pbrMetallicRoughness.baseColorTexture) {
+                        mat.pbrMetallicRoughness.baseColorTexture.setTexture(tex);
                     }
-
-                    if (material && material.pbrMetallicRoughness.baseColorTexture) {
-                        material.pbrMetallicRoughness.baseColorTexture.setTexture(texture);
-                    }
-                } catch (err) {
-                    console.error('Error applying texture:', err);
-                }
+                } catch (e) { console.error(e); }
             }
 
-            // Search filter
-            document.getElementById('texture-search').addEventListener('input', (e) => {
-                updateDisplay(e.target.value);
-            });
-
-            // Navigation buttons
             document.querySelectorAll('.prev-btn').forEach(btn => {
                 btn.onclick = () => {
                     const key = btn.dataset.key;
-                    const textures = filteredTexturesByGltf[key] || [];
-                    if (textures.length > 0) {
-                        currentIndices[key] = (currentIndices[key] - 1 + textures.length) % textures.length;
-                        updateModelUI(key, textures);
+                    const list = texturesByGltf[key];
+                    if (list) {
+                        currentIndices[key] = (currentIndices[key] - 1 + list.length) % list.length;
+                        updateModelUI(key);
                     }
                 };
             });
@@ -965,15 +857,150 @@ model-viewer {
             document.querySelectorAll('.next-btn').forEach(btn => {
                 btn.onclick = () => {
                     const key = btn.dataset.key;
-                    const textures = filteredTexturesByGltf[key] || [];
-                    if (textures.length > 0) {
-                        currentIndices[key] = (currentIndices[key] + 1) % textures.length;
-                        updateModelUI(key, textures);
+                    const list = texturesByGltf[key];
+                    if (list) {
+                        currentIndices[key] = (currentIndices[key] + 1) % list.length;
+                        updateModelUI(key);
                     }
                 };
             });
 
             loadTextures();
+
+            // --- Search Logic ---
+            const searchInput = document.getElementById('productSearch');
+            searchInput.addEventListener('input', () => {
+                const term = searchInput.value.toLowerCase();
+                const gridItems = document.querySelectorAll('.chessboard-grid > div');
+
+                // We group by pairs (text cell + model cell)
+                for (let i = 0; i < gridItems.length - 1; i += 2) {
+                    let cell1 = gridItems[i];
+                    let cell2 = gridItems[i+1];
+
+                    if (!cell1 || !cell2 || cell1.classList.contains('full-width-cell')) continue;
+
+                    let textCell, modelCell;
+                    if (cell1.classList.contains('text-cell')) {
+                        textCell = cell1;
+                        modelCell = cell2;
+                    } else {
+                        textCell = cell2;
+                        modelCell = cell1;
+                    }
+
+                    const title = textCell.querySelector('h2')?.textContent.toLowerCase() || "";
+                    const desc = textCell.querySelector('p')?.textContent.toLowerCase() || "";
+                    const key = modelCell.dataset.key || "";
+
+                    const textures = texturesByGltf[key] || [];
+                    const textureMatch = textures.some(t => t.label.toLowerCase().includes(term));
+
+                    const isMatch = title.includes(term) || desc.includes(term) || textureMatch;
+
+                    textCell.style.display = isMatch ? 'flex' : 'none';
+                    modelCell.style.display = isMatch ? 'flex' : 'none';
+                }
+            });
+
+            // --- Popup Logic ---
+            const popup = document.getElementById('modelPopup');
+            const popupViewer = document.getElementById('popupViewer');
+            const closePopup = document.getElementById('closePopup');
+            const popupLabel = document.getElementById('popup-label');
+            const popupSwitcher = document.getElementById('popup-switcher');
+
+            document.querySelectorAll('.zoom-toggle').forEach(btn => {
+                btn.onclick = async (e) => {
+                    const vid = btn.dataset.viewerId || (btn.id === 'slideshow-zoom-toggle' ? 'slideshow' : null);
+                    const mainCell = btn.closest('.model-cell');
+                    const key = mainCell.dataset.key;
+                    const popupImage = document.getElementById('popupImage');
+
+                    if (key === 'slideshow') {
+                        popupViewer.style.display = 'none';
+                        popupImage.style.display = 'block';
+                    } else {
+                        const mainViewer = document.getElementById(vid);
+                        popupViewer.src = mainViewer.src;
+                        popupViewer.style.display = 'block';
+                        popupImage.style.display = 'none';
+                    }
+
+                    popupViewer.dataset.currentKey = key;
+                    popup.style.display = 'flex';
+                    document.body.style.overflow = 'hidden';
+
+                    renderPopupSwitcher(key);
+                    updatePopupUI(key);
+                };
+            });
+
+            function renderPopupSwitcher(key) {
+                const textures = texturesByGltf[key] || [];
+                popupSwitcher.innerHTML = '';
+                textures.forEach((t, i) => {
+                    const opt = document.createElement('div');
+                    opt.className = 'texture-option';
+                    opt.style.backgroundImage = `url('${t.texture_url}')`;
+                    opt.onclick = () => {
+                        currentIndices[key] = i;
+                        updateModelUI(key);
+                        updatePopupUI(key);
+                    };
+                    popupSwitcher.appendChild(opt);
+                });
+            }
+
+            function updatePopupUI(key) {
+                const textures = texturesByGltf[key];
+                if (!textures || textures.length === 0) {
+                    popupLabel.textContent = '';
+                    return;
+                }
+                const current = textures[currentIndices[key]];
+                popupLabel.textContent = current.label;
+
+                popupSwitcher.querySelectorAll('.texture-option').forEach((opt, i) => {
+                    opt.classList.toggle('active', i === currentIndices[key]);
+                });
+
+                if (key !== 'slideshow') {
+                    applyTexture(popupViewer, key, current.texture_url);
+                } else {
+                    document.getElementById('popupImage').src = current.texture_url;
+                }
+            }
+
+            document.getElementById('popupPrev').onclick = () => {
+                const key = popupViewer.dataset.currentKey;
+                const list = texturesByGltf[key];
+                if (list) {
+                    currentIndices[key] = (currentIndices[key] - 1 + list.length) % list.length;
+                    updateModelUI(key);
+                    updatePopupUI(key);
+                }
+            };
+
+            document.getElementById('popupNext').onclick = () => {
+                const key = popupViewer.dataset.currentKey;
+                const list = texturesByGltf[key];
+                if (list) {
+                    currentIndices[key] = (currentIndices[key] + 1) % list.length;
+                    updateModelUI(key);
+                    updatePopupUI(key);
+                }
+            };
+
+            closePopup.onclick = () => {
+                popup.style.display = 'none';
+                document.body.style.overflow = 'auto';
+                popupViewer.src = "";
+            };
+
+            window.onclick = (e) => {
+                if (e.target === popup) closePopup.onclick();
+            };
         });
     </script>
 </body>
