@@ -1,12 +1,13 @@
 DIAGNÓSTICO DEL ERROR DE CLOUDINARY:
 
-El error "Upload preset not found" que aparecía en la consola indicaba que Cloudinary no reconocía el preset proporcionado anteriormente. Basado en la nueva información, se ha actualizado el sistema para utilizar el preset correcto: 'Tragalero'.
+El error "Upload preset not found" que aparecía en la consola indicaba que Cloudinary no reconocía el preset proporcionado anteriormente. Se ha actualizado el sistema para utilizar el preset correcto: 'Tragalero'.
 
 SOLUCIÓN APLICADA:
 1. Se ha actualizado el preset de subida a 'Tragalero' en:
    - docs/admintest2.html (Administración de Texturas 3D)
    - docs/configdirectorio.html (Configuración de Restaurantes)
-2. Se ha verificado que el preset esté configurado como "Unsigned" en Cloudinary para permitir la subida directa desde el navegador.
+2. Se ha modificado 'docs/test2.html' para que la textura original de cada modelo siempre aparezca como la primera opción ('Original') en el selector.
+3. Se ha añadido soporte completo para el modelo 'astickers' (Paquete de Stickers).
 
 ---------------------------------------------------------
 SQL PARA SUPABASE:
