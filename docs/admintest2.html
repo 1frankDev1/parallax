@@ -347,8 +347,17 @@
             // --- Cloudinary ---
             async function uploadToCloudinary(file) {
                 const cloudName = 'dbbjxhvz5';
-                const uploadPreset = '4x4661tTevWcpscPpH8wOaYDhrI';
+                // Usar trim() para asegurar que no hay espacios ocultos
+                const uploadPreset = '4x4661tTevWcpscPpH8wOaYDhrI'.trim();
                 const url = `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`;
+
+                console.log('Iniciando subida a Cloudinary...', {
+                    cloudName,
+                    uploadPreset,
+                    fileName: file.name,
+                    fileSize: file.size,
+                    fileType: file.type
+                });
 
                 const formData = new FormData();
                 formData.append('file', file);
@@ -361,15 +370,16 @@
                     });
 
                     if (!response.ok) {
-                        const data = await response.json();
-                        console.error('Cloudinary error response:', data);
-                        throw new Error(data.error?.message || 'Error al subir a Cloudinary');
+                        const errorData = await response.json();
+                        console.error('Error de Cloudinary (Detallado):', errorData);
+                        throw new Error(errorData.error ? errorData.error.message : 'Error al subir a Cloudinary');
                     }
 
                     const data = await response.json();
+                    console.log('Subida exitosa a Cloudinary:', data.secure_url);
                     return data.secure_url;
                 } catch (error) {
-                    console.error('Cloudinary Upload Error:', error);
+                    console.error('Error en uploadToCloudinary:', error);
                     throw error;
                 }
             }

@@ -329,7 +329,6 @@ model-viewer {
 
 /* --- Popup Modal --- */
 .model-popup {
-    display: none;
     position: fixed;
     top: 0;
     left: 0;
@@ -337,80 +336,129 @@ model-viewer {
     height: 100%;
     background: rgba(0,0,0,0.85);
     z-index: 10000;
+    display: flex;
     justify-content: center;
     align-items: center;
-    backdrop-filter: blur(5px);
-    transition: opacity 0.3s ease;
+    backdrop-filter: blur(12px);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.5s ease, visibility 0.5s;
 }
 
 .model-popup.active {
-    display: flex;
     opacity: 1;
+    visibility: visible;
 }
 
 .popup-container {
     position: relative;
-    width: 90%;
-    max-width: 1100px;
-    height: 80%;
+    width: 95%;
+    max-width: 1250px;
+    height: 85%;
     background: white;
-    border-radius: 20px;
+    border-radius: 24px;
     overflow: hidden;
     display: flex;
     flex-direction: row;
-    box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+    box-shadow: 0 30px 70px rgba(0,0,0,0.7);
+    transform: scale(0.7) translateY(100px);
+    opacity: 0;
+    transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.6s ease;
 }
 
-.popup-container.opening {
-    animation: popupIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+.model-popup.active .popup-container {
+    transform: scale(1) translateY(0);
+    opacity: 1;
 }
 
 .popup-container.closing {
-    animation: popupOut 0.3s cubic-bezier(0.6, -0.28, 0.735, 0.045) forwards;
-}
-
-@keyframes popupIn {
-    from { transform: scale(0.8); opacity: 0; }
-    to { transform: scale(1); opacity: 1; }
-}
-
-@keyframes popupOut {
-    from { transform: scale(1); opacity: 1; }
-    to { transform: scale(0.8); opacity: 0; }
+    transform: scale(0.7) translateY(100px);
+    opacity: 0;
 }
 
 .popup-left {
-    flex: 1.5;
-    background: #f8f8f8;
+    flex: 1.6;
+    background: #ffffff;
     display: flex;
+    flex-direction: column;
     justify-content: center;
     align-items: center;
     position: relative;
     min-width: 0;
+    padding: 30px;
 }
+
+/* Overlaid Nav Buttons in Popup */
+.popup-nav-btn {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 50px;
+    height: 50px;
+    background: rgba(255, 255, 255, 0.9);
+    border: none;
+    border-radius: 50%;
+    font-size: 24px;
+    cursor: pointer;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    transition: all 0.3s ease;
+    color: var(--primary-color);
+}
+
+.popup-nav-btn:hover {
+    background: var(--primary-color);
+    color: white;
+    transform: translateY(-50%) scale(1.1);
+}
+
+.popup-nav-btn.prev { left: 20px; }
+.popup-nav-btn.next { right: 20px; }
 
 .popup-right {
     flex: 1;
-    padding: 40px;
+    padding: 60px;
     display: flex;
     flex-direction: column;
     justify-content: center;
-    border-left: 1px solid #eee;
-    background: white;
+    border-left: 1px solid #f2f2f2;
+    background: #fafafa;
     min-width: 0;
 }
 
 .popup-right h2 {
-    font-size: 2em;
+    font-size: 2.8em;
     color: var(--primary-color);
     margin-bottom: 20px;
     margin-top: 0;
+    font-weight: 700;
+    letter-spacing: -1px;
+    transform: translateX(30px);
+    opacity: 0;
+    transition: all 0.5s ease 0.2s;
+}
+
+.model-popup.active .popup-right h2 {
+    transform: translateX(0);
+    opacity: 1;
 }
 
 .popup-right p {
     color: var(--slate);
-    font-size: 1.1em;
-    margin-bottom: 30px;
+    font-size: 1.2em;
+    line-height: 1.7;
+    margin-bottom: 0;
+    transform: translateX(30px);
+    opacity: 0;
+    transition: all 0.5s ease 0.3s;
+}
+
+.model-popup.active .popup-right p {
+    transform: translateX(0);
+    opacity: 1;
 }
 
 .close-popup {
@@ -716,23 +764,23 @@ model-viewer {
             <button id="closePopup" class="close-popup">✕</button>
 
             <div class="popup-left" id="popupModelContainer">
-                <model-viewer id="popupViewer" camera-controls auto-rotate shadow-intensity="1" exposure="1"></model-viewer>
+                <button class="popup-nav-btn prev" id="popupPrev">❮</button>
+                <button class="popup-nav-btn next" id="popupNext">❯</button>
+
+                <model-viewer id="popupViewer" camera-controls auto-rotate shadow-intensity="1" exposure="1" style="flex-grow: 1; width: 100%;"></model-viewer>
                 <canvas id="popupSlideshowCanvas" style="width: 100%; height: 100%; display: none;"></canvas>
                 <img id="popupImage" style="max-width: 90%; max-height: 90%; display: none; object-fit: contain; box-shadow: 0 10px 30px rgba(0,0,0,0.2); border-radius: 10px;">
+
+                <!-- Thumbnail Strip -->
+                <div id="popupSwitcherContainer" class="model-cell" style="box-shadow: none; min-height: auto; width: 80%; background: transparent; padding: 0; margin-top: 10px;">
+                    <div class="texture-switcher" id="popup-switcher" style="justify-content: center;"></div>
+                    <div class="current-label" id="popup-label"></div>
+                </div>
             </div>
 
             <div class="popup-right">
                 <h2 id="popupTitle">Product Name</h2>
                 <p id="popupDescription">Product description goes here.</p>
-
-                <div id="popupSwitcherContainer" class="model-cell" style="box-shadow: none; min-height: auto; width: 100%; background: transparent; padding: 0;">
-                    <div class="switcher-wrapper" style="width: 100%; margin: 0;">
-                        <button class="nav-btn prev-btn" id="popupPrev">❮</button>
-                        <div class="texture-switcher" id="popup-switcher"></div>
-                        <button class="nav-btn next-btn" id="popupNext">❯</button>
-                    </div>
-                    <div class="current-label" id="popup-label"></div>
-                </div>
             </div>
         </div>
     </div>
@@ -1032,7 +1080,6 @@ model-viewer {
 
                     popup.classList.add('active');
                     popupContainer.classList.remove('closing');
-                    popupContainer.classList.add('opening');
                     document.body.style.overflow = 'hidden';
 
                     renderPopupSwitcher(key);
@@ -1104,15 +1151,20 @@ model-viewer {
             };
 
             const handleClose = () => {
-                popupContainer.classList.remove('opening');
                 popupContainer.classList.add('closing');
+                popup.style.opacity = '0';
 
                 // Wait for animation to finish
                 setTimeout(() => {
                     popup.classList.remove('active');
+                    popup.style.opacity = '';
+                    popupContainer.classList.remove('closing');
                     document.body.style.overflow = 'auto';
                     popupViewer.src = "";
-                }, 300);
+
+                    // Cleanup Three.js loop if it was slideshow
+                    if (window.cleanupPopupSlideshow) window.cleanupPopupSlideshow();
+                }, 400);
             };
 
             closePopup.onclick = handleClose;
