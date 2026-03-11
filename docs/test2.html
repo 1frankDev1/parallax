@@ -723,7 +723,25 @@ model-viewer {
                         </div>
                     </div>
 
-                    <!-- Fila 9 - Slideshow -->
+                    <!-- Fila 9 - Astickers -->
+                    <div class="model-cell" data-key="astickers">
+                        <model-viewer id="astickers-viewer" src="./assets/img/Astickers.gltf" alt="Modelo 3D de un paquete de stickers" camera-controls disable-zoom></model-viewer>
+                        <button class="zoom-toggle" data-viewer-id="astickers-viewer" aria-label="Toggle Zoom"></button>
+                        <div class="switcher-wrapper">
+                            <button class="nav-btn prev-btn" data-key="astickers">❮</button>
+                            <div class="texture-switcher" id="astickers-switcher"></div>
+                            <button class="nav-btn next-btn" data-key="astickers">❯</button>
+                        </div>
+                        <div class="current-label" id="astickers-label"></div>
+                    </div>
+                    <div class="text-cell">
+                        <div class="text-content">
+                            <h2 data-key="astickersTitle">Sticker Packs</h2>
+                            <p data-key="astickersDesc">Versatile sticker collections to promote your brand in multiple places.</p>
+                        </div>
+                    </div>
+
+                    <!-- Fila 10 - Slideshow -->
                     <div class="text-cell">
                         <div class="text-content">
                             <h2 data-key="slideshowTitle">Slideshow</h2>
@@ -822,6 +840,8 @@ model-viewer {
                 flagDesc: "They increase restaurant visibility and attract attention from a distance.",
                 bannerTitle: "Banners",
                 bannerDesc: "They showcase promotions or featured dishes and capture customers from outside the venue.",
+                astickersTitle: "Sticker Packs",
+                astickersDesc: "Versatile sticker collections to promote your brand in multiple places.",
                 slideshowTitle: "Slideshow",
                 slideshowDesc: "Display dishes or promotions in an attractive way. Designed to catch attention instantly.",
                 footerText: "© 2026 Menutech. All rights reserved.",
@@ -848,6 +868,8 @@ model-viewer {
                 flagDesc: "Aumentan la visibilidad del restaurante y atraen la atención desde la distancia.",
                 bannerTitle: "Banners",
                 bannerDesc: "Comunican promociones o platillos destacados y captan clientes desde el exterior del local.",
+                astickersTitle: "Paquete de Stickers",
+                astickersDesc: "Colecciones versátiles de stickers para promocionar tu marca en múltiples lugares.",
                 slideshowTitle: "Slideshow",
                 slideshowDesc: "Muestra platillos o promociones de forma atractiva. Pensado para llamar la atención al instante.",
                 footerText: "© 2026 Menutech. Todos los derechos reservados.",
@@ -961,7 +983,7 @@ model-viewer {
                 try {
                     const tex = await viewer.createTexture(url);
                     let mat;
-                    if (key === 'sticker') mat = model.materials.find(m => m.name === 'texturaCircle');
+                    if (key === 'sticker' || key === 'astickers') mat = model.materials.find(m => m.name === 'texturaCircle');
                     else if (key === 'xbanner') mat = model.materials.find(m => m.name === 'Poster');
                     else if (key === 'flag') mat = model.materials.find(m => m.name === 'flag');
                     else if (key === 'banner') mat = model.materials.find(m => m.name === 'Ad_16_Promo');
