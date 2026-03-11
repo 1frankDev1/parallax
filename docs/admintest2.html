@@ -349,24 +349,28 @@
                 const cloudName = 'dbbjxhvz5';
                 const uploadPreset = '4x4661tTevWcpscPpH8wOaYDhrI';
                 const url = `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`;
+
                 const formData = new FormData();
                 formData.append('file', file);
                 formData.append('upload_preset', uploadPreset);
 
                 try {
-                    const response = await fetch(url, { method: 'POST', body: formData });
-                    const text = await response.text();
-                    let data;
-                    try { data = JSON.parse(text); } catch (e) { data = { error: { message: text } }; }
+                    const response = await fetch(url, {
+                        method: 'POST',
+                        body: formData
+                    });
 
                     if (!response.ok) {
-                        const errorMsg = data.error?.message || `HTTP ${response.status}: ${text.substring(0, 100)}`;
-                        throw new Error(`Cloudinary Error: ${errorMsg}`);
+                        const data = await response.json();
+                        console.error('Cloudinary error response:', data);
+                        throw new Error(data.error?.message || 'Error al subir a Cloudinary');
                     }
+
+                    const data = await response.json();
                     return data.secure_url;
-                } catch (e) {
-                    console.error('Fetch error:', e);
-                    throw e;
+                } catch (error) {
+                    console.error('Cloudinary Upload Error:', error);
+                    throw error;
                 }
             }
 
