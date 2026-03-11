@@ -135,4 +135,87 @@ document.addEventListener('DOMContentLoaded', () => {
 
         animate();
     }
+
+    // --- POPUP SLIDESHOW LOGIC ---
+    let popupRenderer, popupScene, popupCamera, popupControls, popupModel;
+
+    window.initPopupSlideshow = function(canvas) {
+        if (popupRenderer) {
+            // Re-use or resize if already exists
+            return;
+        }
+
+        popupRenderer = new THREE.WebGLRenderer({
+            canvas,
+            antialias: true,
+            alpha: true
+        });
+        popupScene = new THREE.Scene();
+
+        popupCamera = new THREE.PerspectiveCamera(45, canvas.clientWidth / canvas.clientHeight, 0.1, 100);
+        popupCamera.position.set(0, 1, 5);
+
+        popupControls = new OrbitControls(popupCamera, popupRenderer.domElement);
+        popupControls.enableDamping = true;
+
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
+        popupScene.add(ambientLight);
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+        directionalLight.position.set(5, 10, 7.5);
+        popupScene.add(directionalLight);
+
+        const loader = new GLTFLoader();
+        loader.load('./assets/img/slideshow.gltf', (gltf) => {
+            popupModel = gltf.scene;
+
+            // Adjust size/position
+            const box = new THREE.Box3().setFromObject(popupModel);
+            const center = box.getCenter(new THREE.Vector3());
+            const size = box.getSize(new THREE.Vector3());
+            popupModel.position.sub(center);
+            const scale = 2.5 / Math.max(size.x, size.y, size.z);
+            popupModel.scale.multiplyScalar(scale);
+
+            popupScene.add(popupModel);
+
+            // Apply current texture if available
+            const savedSession = localStorage.getItem("current_slideshow_texture");
+            if (savedSession) window.updatePopupSlideshowTexture(savedSession);
+        });
+
+        function popupAnimate() {
+            if (!popupRenderer) return;
+            requestAnimationFrame(popupAnimate);
+
+            const w = canvas.clientWidth;
+            const h = canvas.clientHeight;
+            if (canvas.width !== w || canvas.height !== h) {
+                popupRenderer.setSize(w, h, false);
+                popupCamera.aspect = w / h;
+                popupCamera.updateProjectionMatrix();
+            }
+
+            popupControls.update();
+            popupRenderer.render(popupScene, popupCamera);
+        }
+        popupAnimate();
+    };
+
+    window.updatePopupSlideshowTexture = function(url) {
+        localStorage.setItem("current_slideshow_texture", url);
+        if (!popupModel) return;
+
+        const textureLoader = new THREE.TextureLoader();
+        textureLoader.load(url, (texture) => {
+            texture.colorSpace = THREE.SRGBColorSpace;
+            texture.flipY = false;
+            popupModel.traverse((child) => {
+                if (child.isMesh && child.material.name === 'Material.001') {
+                    child.material.map = texture;
+                    child.material.emissiveMap = texture;
+                    child.material.needsUpdate = true;
+                }
+            });
+        });
+    };
 });

@@ -340,24 +340,77 @@ model-viewer {
     justify-content: center;
     align-items: center;
     backdrop-filter: blur(5px);
+    transition: opacity 0.3s ease;
+}
+
+.model-popup.active {
+    display: flex;
+    opacity: 1;
 }
 
 .popup-container {
     position: relative;
     width: 90%;
-    height: 85%;
+    max-width: 1100px;
+    height: 80%;
     background: white;
     border-radius: 20px;
     overflow: hidden;
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
     box-shadow: 0 20px 50px rgba(0,0,0,0.5);
-    animation: popupIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.popup-container.opening {
+    animation: popupIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+.popup-container.closing {
+    animation: popupOut 0.3s cubic-bezier(0.6, -0.28, 0.735, 0.045) forwards;
 }
 
 @keyframes popupIn {
     from { transform: scale(0.8); opacity: 0; }
     to { transform: scale(1); opacity: 1; }
+}
+
+@keyframes popupOut {
+    from { transform: scale(1); opacity: 1; }
+    to { transform: scale(0.8); opacity: 0; }
+}
+
+.popup-left {
+    flex: 1.5;
+    background: #f8f8f8;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    min-width: 0;
+}
+
+.popup-right {
+    flex: 1;
+    padding: 40px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    border-left: 1px solid #eee;
+    background: white;
+    min-width: 0;
+}
+
+.popup-right h2 {
+    font-size: 2em;
+    color: var(--primary-color);
+    margin-bottom: 20px;
+    margin-top: 0;
+}
+
+.popup-right p {
+    color: var(--slate);
+    font-size: 1.1em;
+    margin-bottom: 30px;
 }
 
 .close-popup {
@@ -376,7 +429,7 @@ model-viewer {
     align-items: center;
     justify-content: center;
     box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-    transition: background 0.3s, transform 0.2s;
+    transition: background 0.3s, transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .close-popup:hover {
@@ -387,7 +440,7 @@ model-viewer {
 #popupViewer {
     width: 100%;
     height: 100%;
-    background-color: #ffffff;
+    background-color: transparent;
 }
 
 /* --- Responsive Design --- */
@@ -397,6 +450,27 @@ model-viewer {
     }
     .chessboard-grid > div {
         order: unset !important;
+    }
+    .popup-container {
+        flex-direction: column;
+        height: 90%;
+    }
+    .popup-left {
+        flex: 1;
+    }
+    .popup-right {
+        flex: none;
+        padding: 20px;
+        border-left: none;
+        border-top: 1px solid #eee;
+    }
+    .popup-right h2 {
+        font-size: 1.5em;
+        margin-bottom: 10px;
+    }
+    .popup-right p {
+        font-size: 0.9em;
+        margin-bottom: 15px;
     }
 }
     </style>
@@ -638,19 +712,27 @@ model-viewer {
 
     <!-- Popup Modal -->
     <div id="modelPopup" class="model-popup">
-        <div class="popup-container">
+        <div class="popup-container" id="popupContainer">
             <button id="closePopup" class="close-popup">✕</button>
-            <div id="popupModelContainer" style="width: 100%; height: 80%; display: flex; justify-content: center; align-items: center; background: #f8f8f8;">
-                <model-viewer id="popupViewer" camera-controls auto-rotate shadow-intensity="1" exposure="1" style="width: 100%; height: 100%;"></model-viewer>
+
+            <div class="popup-left" id="popupModelContainer">
+                <model-viewer id="popupViewer" camera-controls auto-rotate shadow-intensity="1" exposure="1"></model-viewer>
+                <canvas id="popupSlideshowCanvas" style="width: 100%; height: 100%; display: none;"></canvas>
                 <img id="popupImage" style="max-width: 90%; max-height: 90%; display: none; object-fit: contain; box-shadow: 0 10px 30px rgba(0,0,0,0.2); border-radius: 10px;">
             </div>
-            <div id="popupSwitcherContainer" class="model-cell" style="box-shadow: none; min-height: auto; width: 100%; background: transparent;">
-                <div class="switcher-wrapper" style="width: 80%; margin: 0 auto;">
-                    <button class="nav-btn prev-btn" id="popupPrev">❮</button>
-                    <div class="texture-switcher" id="popup-switcher"></div>
-                    <button class="nav-btn next-btn" id="popupNext">❯</button>
+
+            <div class="popup-right">
+                <h2 id="popupTitle">Product Name</h2>
+                <p id="popupDescription">Product description goes here.</p>
+
+                <div id="popupSwitcherContainer" class="model-cell" style="box-shadow: none; min-height: auto; width: 100%; background: transparent; padding: 0;">
+                    <div class="switcher-wrapper" style="width: 100%; margin: 0;">
+                        <button class="nav-btn prev-btn" id="popupPrev">❮</button>
+                        <div class="texture-switcher" id="popup-switcher"></div>
+                        <button class="nav-btn next-btn" id="popupNext">❯</button>
+                    </div>
+                    <div class="current-label" id="popup-label"></div>
                 </div>
-                <div class="current-label" id="popup-label"></div>
             </div>
         </div>
     </div>
@@ -905,10 +987,13 @@ model-viewer {
 
             // --- Popup Logic ---
             const popup = document.getElementById('modelPopup');
+            const popupContainer = document.getElementById('popupContainer');
             const popupViewer = document.getElementById('popupViewer');
             const closePopup = document.getElementById('closePopup');
             const popupLabel = document.getElementById('popup-label');
             const popupSwitcher = document.getElementById('popup-switcher');
+            const popupTitle = document.getElementById('popupTitle');
+            const popupDescription = document.getElementById('popupDescription');
 
             document.querySelectorAll('.zoom-toggle').forEach(btn => {
                 btn.onclick = async (e) => {
@@ -917,18 +1002,37 @@ model-viewer {
                     const key = mainCell.dataset.key;
                     const popupImage = document.getElementById('popupImage');
 
+                    // Find corresponding text cell to get title/description
+                    // The layout is Chessboard, so text-cell is usually before or after model-cell
+                    const grid = document.querySelector('.chessboard-grid');
+                    const cells = Array.from(grid.children);
+                    const index = cells.indexOf(mainCell);
+                    let textCell = cells[index - 1]?.classList.contains('text-cell') ? cells[index - 1] : cells[index + 1];
+
+                    if (textCell) {
+                        popupTitle.textContent = textCell.querySelector('h2').textContent;
+                        popupDescription.textContent = textCell.querySelector('p').textContent;
+                    }
+
                     if (key === 'slideshow') {
                         popupViewer.style.display = 'none';
-                        popupImage.style.display = 'block';
+                        popupImage.style.display = 'none';
+                        const canvas = document.getElementById('popupSlideshowCanvas');
+                        canvas.style.display = 'block';
+                        if (window.initPopupSlideshow) window.initPopupSlideshow(canvas);
                     } else {
                         const mainViewer = document.getElementById(vid);
                         popupViewer.src = mainViewer.src;
                         popupViewer.style.display = 'block';
                         popupImage.style.display = 'none';
+                        document.getElementById('popupSlideshowCanvas').style.display = 'none';
                     }
 
                     popupViewer.dataset.currentKey = key;
-                    popup.style.display = 'flex';
+
+                    popup.classList.add('active');
+                    popupContainer.classList.remove('closing');
+                    popupContainer.classList.add('opening');
                     document.body.style.overflow = 'hidden';
 
                     renderPopupSwitcher(key);
@@ -968,7 +1072,14 @@ model-viewer {
                 if (key !== 'slideshow') {
                     applyTexture(popupViewer, key, current.texture_url);
                 } else {
-                    document.getElementById('popupImage').src = current.texture_url;
+                    if (window.updatePopupSlideshowTexture) {
+                        window.updatePopupSlideshowTexture(current.texture_url);
+                    } else {
+                        // Fallback if slideshow script not ready for popup
+                        document.getElementById('popupImage').src = current.texture_url;
+                        document.getElementById('popupImage').style.display = 'block';
+                        document.getElementById('popupSlideshowCanvas').style.display = 'none';
+                    }
                 }
             }
 
@@ -992,14 +1103,22 @@ model-viewer {
                 }
             };
 
-            closePopup.onclick = () => {
-                popup.style.display = 'none';
-                document.body.style.overflow = 'auto';
-                popupViewer.src = "";
+            const handleClose = () => {
+                popupContainer.classList.remove('opening');
+                popupContainer.classList.add('closing');
+
+                // Wait for animation to finish
+                setTimeout(() => {
+                    popup.classList.remove('active');
+                    document.body.style.overflow = 'auto';
+                    popupViewer.src = "";
+                }, 300);
             };
 
+            closePopup.onclick = handleClose;
+
             window.onclick = (e) => {
-                if (e.target === popup) closePopup.onclick();
+                if (e.target === popup) handleClose();
             };
         });
     </script>
