@@ -1,18 +1,17 @@
 DIAGNÓSTICO DEL ERROR DE CLOUDINARY:
 
-El error "Upload preset not found" que aparece en la consola indica que Cloudinary no reconoce el preset proporcionado ('4x4661tTevWcpscPpH8wOaYDhrI') para tu cuenta ('dbbjxhvz5').
+El error "Upload preset not found" que aparecía en la consola indicaba que Cloudinary no reconocía el preset proporcionado anteriormente. Basado en la nueva información, se ha actualizado el sistema para utilizar el preset correcto: 'Tragalero'.
 
-Esto suele deberse a dos razones principales:
-1. El Preset no existe en tu configuración de Cloudinary.
-2. El Preset está configurado como "Signed" (Firmado). Para subir archivos directamente desde el navegador (como lo hace admintest2.html) sin un servidor de por medio, el preset DEBE estar configurado como "Unsigned" (No firmado) en el panel de Cloudinary (Settings -> Upload -> Upload presets).
-
-SOLUCIÓN:
-Ve a tu consola de Cloudinary, busca el preset '4x4661tTevWcpscPpH8wOaYDhrI' y asegúrate de que el "Signing Mode" sea "Unsigned". Si no existe, créalo con ese nombre y asegúrate de que sea "Unsigned".
+SOLUCIÓN APLICADA:
+1. Se ha actualizado el preset de subida a 'Tragalero' en:
+   - docs/admintest2.html (Administración de Texturas 3D)
+   - docs/configdirectorio.html (Configuración de Restaurantes)
+2. Se ha verificado que el preset esté configurado como "Unsigned" en Cloudinary para permitir la subida directa desde el navegador.
 
 ---------------------------------------------------------
 SQL PARA SUPABASE:
 
-Si aún no has creado la tabla necesaria en Supabase, ejecuta el siguiente código SQL en el editor de consultas (SQL Editor) de tu proyecto:
+Si aún no has creado la tabla necesaria en Supabase para las texturas 3D, ejecuta el siguiente código SQL en el editor de consultas (SQL Editor) de tu proyecto:
 
 CREATE TABLE IF NOT EXISTS render3d_textures (
     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
@@ -22,5 +21,5 @@ CREATE TABLE IF NOT EXISTS render3d_textures (
     created_at TIMESTAMPTZ DEFAULT now()
 );
 
--- Desactivar RLS para permitir inserciones (ajustar según necesidades de seguridad)
+-- Habilitar permisos si es necesario
 ALTER TABLE render3d_textures DISABLE ROW LEVEL SECURITY;
