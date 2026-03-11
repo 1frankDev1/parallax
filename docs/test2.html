@@ -893,6 +893,19 @@ model-viewer {
         document.addEventListener('DOMContentLoaded', async () => {
             setLanguage('en');
 
+            const DEFAULT_TEXTURES = {
+                flyer: './assets/img/flyer.png',
+                poster: './assets/img/poster.png',
+                shirt: './assets/img/shirt.png',
+                sticker: './assets/img/stickers.png',
+                tableqr: './assets/img/tableQR.png',
+                xbanner: './assets/img/xbanner.png',
+                flag: './assets/img/flag.png',
+                banner: './assets/img/banner.png',
+                astickers: './assets/img/Cylinder.png',
+                slideshow: './assets/img/slideshow.png'
+            };
+
             let supabase = null;
             let allTextures = [];
             let texturesByGltf = {};
@@ -912,18 +925,31 @@ model-viewer {
 
             async function loadTextures() {
                 await initSupabase();
-                const { data, error } = await supabase.from('render3d_textures').select('*').order('created_at', { ascending: true });
-                if (error) return;
 
-                allTextures = data;
-                texturesByGltf = data.reduce((acc, t) => {
-                    if (!acc[t.gltf_key]) acc[t.gltf_key] = [];
-                    acc[t.gltf_key].push(t);
-                    return acc;
-                }, {});
-
-                Object.keys(texturesByGltf).forEach(key => {
+                // Initialize with defaults
+                texturesByGltf = {};
+                Object.keys(DEFAULT_TEXTURES).forEach(key => {
+                    texturesByGltf[key] = [{
+                        label: 'Original',
+                        texture_url: DEFAULT_TEXTURES[key],
+                        gltf_key: key
+                    }];
                     currentIndices[key] = 0;
+                });
+
+                const { data, error } = await supabase.from('render3d_textures').select('*').order('created_at', { ascending: true });
+
+                if (!error && data) {
+                    allTextures = data;
+                    data.forEach(t => {
+                        if (texturesByGltf[t.gltf_key]) {
+                            texturesByGltf[t.gltf_key].push(t);
+                        }
+                    });
+                }
+
+                // Render all
+                Object.keys(texturesByGltf).forEach(key => {
                     renderSwitcher(key, texturesByGltf[key]);
                     updateModelUI(key);
                 });
