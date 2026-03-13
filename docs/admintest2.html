@@ -11,7 +11,7 @@
         :root {
             --bg-color: #1a1a1a;
             --card-bg: #2b2b2b;
-            --text-color: #e0e0e0;
+            --text-color: #ffffff;
             --primary-color: #ffa200;
             --border-color: #444;
             --shadow-color: rgba(0, 0, 0, 0.2);
@@ -33,11 +33,8 @@
             margin: 0 auto;
         }
 
-        h1 {
+        h2 {
             color: white;
-            text-align: center;
-            font-size: 2.5rem;
-            margin-bottom: 40px;
         }
 
         .form-container {
@@ -148,6 +145,10 @@
 
         th { color: white; }
 
+        * {
+            color: white;
+        }
+
         .delete-btn {
             background-color: var(--danger-color);
             color: white;
@@ -198,7 +199,9 @@
     <menutech-chatbot></menutech-chatbot>
 
     <div class="container">
-        <h1>Administración de Texturas 3D</h1>
+        <div style="text-align: center; margin-bottom: 40px;">
+            <img src="https://menutech.services/assets/img/logomt.png" alt="MenuTech Logo" style="max-width: 400px; width: 100%;">
+        </div>
 
         <div class="form-container">
             <h2>Subir Nueva Textura</h2>
