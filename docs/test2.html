@@ -910,6 +910,7 @@ model-viewer {
             let allTextures = [];
             let texturesByGltf = {};
             let currentIndices = {};
+            let closeTimeout;
 
             async function initSupabase() {
                 if (window.supabase) {
@@ -995,7 +996,7 @@ model-viewer {
                 // Update popup if it's open for this product
                 const popup = document.getElementById('modelPopup');
                 const popupViewer = document.getElementById('popupViewer');
-                if (popup.style.display === 'flex' && popupViewer.dataset.currentKey === key) {
+                if (popup.classList.contains('active') && popupViewer.dataset.currentKey === key) {
                     applyTexture(popupViewer, key, current.texture_url);
                 }
             }
@@ -1093,6 +1094,9 @@ model-viewer {
 
             document.querySelectorAll('.zoom-toggle').forEach(btn => {
                 btn.onclick = async (e) => {
+                    e.stopPropagation();
+                    clearTimeout(closeTimeout);
+                    popup.style.pointerEvents = '';
                     const vid = btn.dataset.viewerId || (btn.id === 'slideshow-zoom-toggle' ? 'slideshow' : null);
                     const mainCell = btn.closest('.model-cell');
                     const key = mainCell.dataset.key;
@@ -1201,11 +1205,13 @@ model-viewer {
             const handleClose = () => {
                 popupContainer.classList.add('closing');
                 popup.style.opacity = '0';
+                popup.style.pointerEvents = 'none';
 
                 // Wait for animation to finish
-                setTimeout(() => {
+                closeTimeout = setTimeout(() => {
                     popup.classList.remove('active');
                     popup.style.opacity = '';
+                    popup.style.pointerEvents = '';
                     popupContainer.classList.remove('closing');
                     document.body.style.overflow = 'auto';
                     popupViewer.src = "";
@@ -1216,6 +1222,18 @@ model-viewer {
             };
 
             closePopup.onclick = handleClose;
+            popup.onclick = (e) => {
+                if (e.target === popup) handleClose();
+            };
+
+            // Allow clicking the model-viewer directly to open popup
+            document.querySelectorAll('.model-cell model-viewer, .model-cell canvas').forEach(el => {
+                el.style.cursor = 'pointer';
+                el.onclick = () => {
+                    const btn = el.closest('.model-cell').querySelector('.zoom-toggle');
+                    if (btn) btn.click();
+                };
+            });
 
         });
     </script>
