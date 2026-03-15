@@ -1,0 +1,15 @@
+-- SQL para la gestión de galería de clientes
+
+-- 1. Agregar columna 'domain' a la tabla de usuarios existente
+ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS domain TEXT;
+
+-- 2. Crear la tabla 'galeria' para almacenar las imágenes de los clientes
+CREATE TABLE IF NOT EXISTS galeria (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    username TEXT NOT NULL,
+    domain TEXT NOT NULL,
+    image_url TEXT NOT NULL,
+    created_at TIMESTAMPTZ DEFAULT now()
+);
+
+-- Nota: No se habilitará RLS (Row Level Security) según las instrucciones del cliente.

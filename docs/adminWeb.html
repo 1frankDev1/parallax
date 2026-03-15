@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel de Galería - AdminWeb</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@700&display=swap');
+
+        :root {
+            --bg-color: #0f111a;
+            --card-bg: #1c1f2b;
+            --text-color: #e6e6e6;
+            --primary-color: #ff9533;
+            --border-color: #30363d;
+            --shadow-color: rgba(0, 0, 0, 0.5);
+            --success-color: #238636;
+            --danger-color: #da3633;
+            --glass-bg: rgba(28, 31, 43, 0.7);
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            background-image: radial-gradient(circle at top right, rgba(255, 149, 51, 0.05), transparent),
+                              radial-gradient(circle at bottom left, rgba(255, 149, 51, 0.05), transparent);
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1100px;
+            animation: fadeIn 0.8s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        h1 {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 2.8rem;
+            margin-bottom: 10px;
+            color: white;
+            letter-spacing: -1px;
+        }
+
+        /* Drag and Drop Zone */
+        .drop-zone {
+            width: 100%;
+            height: 220px;
+            padding: 25px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            cursor: pointer;
+            color: #8b949e;
+            border: 2px dashed var(--primary-color);
+            border-radius: 20px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            background-color: var(--glass-bg);
+            backdrop-filter: blur(10px);
+            margin-bottom: 40px;
+            box-sizing: border-box;
+            box-shadow: 0 8px 32px var(--shadow-color);
+        }
+
+        .drop-zone--over {
+            border-style: solid;
+            background-color: rgba(255, 149, 51, 0.15);
+            transform: scale(1.01);
+            color: var(--primary-color);
+        }
+
+        .drop-zone__input {
+            display: none;
+        }
+
+        .drop-zone__prompt {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .drop-zone__icon {
+            font-size: 3.5rem;
+            filter: drop-shadow(0 0 10px rgba(255, 149, 51, 0.3));
+        }
+
+        /* Bento Grid */
+        .bento-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+            grid-auto-rows: 240px;
+            gap: 20px;
+            width: 100%;
+            padding-bottom: 40px;
+        }
+
+        .bento-item {
+            position: relative;
+            border-radius: 16px;
+            overflow: hidden;
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        }
+
+        .bento-item:hover {
+            transform: translateY(-5px) scale(1.02);
+            box-shadow: 0 12px 25px rgba(0,0,0,0.4);
+            border-color: var(--primary-color);
+        }
+
+        .bento-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.5s ease;
+        }
+
+        .bento-item:hover img {
+            transform: scale(1.1);
+        }
+
+        /* Bento patterns */
+        .bento-item.large { grid-column: span 2; grid-row: span 2; }
+        .bento-item.wide { grid-column: span 2; }
+        .bento-item.tall { grid-row: span 2; }
+
+        .delete-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(15, 17, 26, 0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            backdrop-filter: blur(2px);
+        }
+
+        .bento-item:hover .delete-overlay {
+            opacity: 1;
+        }
+
+        .delete-btn {
+            background: var(--danger-color);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 700;
+            text-transform: uppercase;
+            font-size: 0.8rem;
+            letter-spacing: 1px;
+            transition: transform 0.2s;
+        }
+
+        .delete-btn:hover {
+            transform: scale(1.05);
+            background: #ff4d4d;
+        }
+
+        /* Login Overlay */
+        #login-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--bg-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 3000;
+        }
+
+        .login-card {
+            background: var(--card-bg);
+            padding: 50px 40px;
+            border-radius: 24px;
+            box-shadow: 0 20px 50px var(--shadow-color);
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+            border: 1px solid var(--border-color);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .login-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 5px;
+            background: linear-gradient(90deg, transparent, var(--primary-color), transparent);
+        }
+
+        .login-card h2 {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 2rem;
+            margin-bottom: 30px;
+            color: white;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 0.85rem;
+            color: #8b949e;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        input {
+            width: 100%;
+            padding: 14px;
+            background: #0d1117;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            color: white;
+            box-sizing: border-box;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+
+        .btn-primary {
+            width: 100%;
+            padding: 15px;
+            background: var(--primary-color);
+            color: #000;
+            border: none;
+            border-radius: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            margin-top: 10px;
+            font-size: 1rem;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 149, 51, 0.4);
+        }
+
+        .status-msg {
+            margin-top: 20px;
+            font-size: 0.9rem;
+            min-height: 1.2em;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* User Info Badge */
+        #user-info {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: var(--glass-bg);
+            padding: 12px 20px;
+            border-radius: 14px;
+            border: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 4px;
+            z-index: 2000;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        #badge-username {
+            font-weight: 700;
+            color: var(--primary-color);
+            font-size: 1rem;
+        }
+
+        #badge-role {
+            font-size: 0.75rem;
+            color: #8b949e;
+            font-weight: 500;
+        }
+
+        #logout-btn {
+            background: none;
+            border: none;
+            color: #ff4d4d;
+            cursor: pointer;
+            padding: 0;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-top: 5px;
+            transition: color 0.2s;
+        }
+
+        #logout-btn:hover {
+            color: #ff8080;
+        }
+
+        /* Spinner */
+        .spinner {
+            border: 3px solid rgba(255, 149, 51, 0.1);
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            border-left-color: var(--primary-color);
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: var(--bg-color); }
+        ::-webkit-scrollbar-thumb { background: #30363d; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #484f58; }
+    </style>
+</head>
+<body>
+
+    <!-- Overlay de Login -->
+    <div id="login-overlay">
+        <div class="login-card">
+            <h2>Acceso</h2>
+            <div class="input-group">
+                <label>Usuario</label>
+                <input type="text" id="login-user" placeholder="Tu usuario">
+            </div>
+            <div class="input-group">
+                <label>Contraseña</label>
+                <input type="password" id="login-pass" placeholder="********">
+            </div>
+            <button id="login-btn" class="btn-primary">Entrar</button>
+            <div id="login-status" class="status-msg"></div>
+        </div>
+    </div>
+
+    <!-- Info de Usuario -->
+    <div id="user-info" class="hidden">
+        <div id="badge-username"></div>
+        <div id="badge-role"></div>
+        <button id="logout-btn">Cerrar Sesión</button>
+    </div>
+
+    <div class="container hidden" id="main-content">
+        <header>
+            <h1>Mi Galería</h1>
+            <p id="domain-display" style="color: var(--primary-color); font-weight: 600; font-size: 1.1rem; opacity: 0.9;"></p>
+        </header>
+
+        <div class="drop-zone" id="drop-zone">
+            <div class="drop-zone__prompt">
+                <span class="drop-zone__icon">🚀</span>
+                <span style="font-weight: 600; font-size: 1.3rem; color: white;">Añadir nuevas imágenes</span>
+                <span>Arrastra y suelta aquí o haz clic para subir</span>
+                <small style="opacity: 0.6; font-size: 0.8rem;">Formatos recomendados: JPG, PNG, WEBP</small>
+            </div>
+            <input type="file" id="file-input" class="drop-zone__input" accept="image/*" multiple>
+        </div>
+
+        <div id="upload-status" style="text-align: center; margin-bottom: 30px; font-weight: 600;"></div>
+
+        <div class="bento-grid" id="gallery-grid">
+            <!-- Items se cargarán aquí -->
+        </div>
+    </div>
+
+    <script>
+        const SUPABASE_URL = "https://ojpyfjgkffmzwvukjagf.supabase.co";
+        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9qcHlmamdrZmZtend2dWtqYWdmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQxNDIwMzYsImV4cCI6MjA3OTcxODAzNn0.dlVYmoMumBse_O1PLBx0FeNITqY4YktefD6l_uonSgo";
+        let supabase = null;
+        let session = null;
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                const mod = await import("https://esm.sh/@supabase/supabase-js");
+                supabase = mod.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+                checkSession();
+            } catch (err) {
+                console.error("Error cargando Supabase:", err);
+            }
+            setupEventListeners();
+        });
+
+        async function checkSession() {
+            const saved = localStorage.getItem("session");
+            if (saved) {
+                session = JSON.parse(saved);
+                await fetchUserData();
+            } else {
+                document.getElementById('login-overlay').classList.remove('hidden');
+                document.getElementById('main-content').classList.add('hidden');
+            }
+        }
+
+        async function fetchUserData() {
+            try {
+                const { data, error } = await supabase
+                    .from('usuarios')
+                    .select('username, role, domain')
+                    .eq('username', session.user)
+                    .single();
+
+                if (error || !data) {
+                    logout();
+                    return;
+                }
+
+                session.domain = data.domain;
+                session.role = data.role;
+
+                if (!session.domain) {
+                    alert("No tienes un dominio asignado. Contacta con soporte.");
+                    logout();
+                    return;
+                }
+
+                showMainContent();
+            } catch (err) {
+                console.error(err);
+                logout();
+            }
+        }
+
+        function showMainContent() {
+            document.getElementById('login-overlay').classList.add('hidden');
+            document.getElementById('main-content').classList.remove('hidden');
+            document.getElementById('user-info').classList.remove('hidden');
+            document.getElementById('badge-username').textContent = session.user;
+            document.getElementById('badge-role').textContent = session.role;
+            document.getElementById('domain-display').textContent = session.domain;
+
+            loadGallery();
+        }
+
+        function setupEventListeners() {
+            document.getElementById('login-btn').addEventListener('click', doLogin);
+            document.getElementById('login-pass').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') doLogin();
+            });
+            document.getElementById('logout-btn').addEventListener('click', logout);
+
+            const dropZone = document.getElementById('drop-zone');
+            const fileInput = document.getElementById('file-input');
+
+            dropZone.addEventListener('click', () => fileInput.click());
+            fileInput.addEventListener('change', () => {
+                if (fileInput.files.length) handleUploads(fileInput.files);
+            });
+            dropZone.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                dropZone.classList.add('drop-zone--over');
+            });
+            ['dragleave', 'dragend'].forEach(type => {
+                dropZone.addEventListener(type, () => dropZone.classList.remove('drop-zone--over'));
+            });
+            dropZone.addEventListener('drop', (e) => {
+                e.preventDefault();
+                if (e.dataTransfer.files.length) handleUploads(e.dataTransfer.files);
+                dropZone.classList.remove('drop-zone--over');
+            });
+        }
+
+        async function doLogin() {
+            const user = document.getElementById('login-user').value.trim();
+            const pass = document.getElementById('login-pass').value.trim();
+            const status = document.getElementById('login-status');
+
+            if (!user || !pass) {
+                status.textContent = "Ingresa credenciales";
+                status.style.color = "var(--danger-color)";
+                return;
+            }
+
+            status.innerHTML = '<div class="spinner"></div>';
+
+            try {
+                const { data, error } = await supabase
+                    .from('usuarios')
+                    .select('username, password, role, domain')
+                    .eq('username', user)
+                    .maybeSingle();
+
+                if (error || !data || data.password !== pass) {
+                    status.textContent = "Usuario o contraseña incorrectos";
+                    status.style.color = "var(--danger-color)";
+                    return;
+                }
+
+                session = { user: data.username, role: data.role, domain: data.domain };
+                localStorage.setItem("session", JSON.stringify(session));
+
+                if (!data.domain) {
+                    status.textContent = "Sin dominio asignado";
+                    status.style.color = "var(--danger-color)";
+                    return;
+                }
+
+                showMainContent();
+            } catch (err) {
+                status.textContent = "Error de conexión";
+                status.style.color = "var(--danger-color)";
+            }
+        }
+
+        function logout() {
+            localStorage.removeItem("session");
+            session = null;
+            location.reload();
+        }
+
+        async function handleUploads(files) {
+            const uploadStatus = document.getElementById('upload-status');
+            uploadStatus.innerHTML = '<div class="spinner"></div><p style="margin-top:10px">Subiendo imágenes...</p>';
+
+            let successCount = 0;
+            for (const file of files) {
+                if (!file.type.startsWith('image/')) continue;
+                try {
+                    const url = await uploadToCloudinary(file);
+                    await saveToSupabase(url);
+                    successCount++;
+                } catch (err) {
+                    console.error("Error subiendo archivo:", err);
+                }
+            }
+
+            if (successCount > 0) {
+                uploadStatus.innerHTML = `<p style="color: #4ade80">¡${successCount} imagen(es) subida(s) con éxito!</p>`;
+                loadGallery();
+            } else {
+                uploadStatus.innerHTML = '<p style="color: var(--danger-color)">Error en la subida</p>';
+            }
+            setTimeout(() => { uploadStatus.innerHTML = ''; }, 4000);
+        }
+
+        async function uploadToCloudinary(file) {
+            const cloudName = 'dbbjxhvz5';
+            const uploadPreset = 'Tragalero';
+            const url = `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`;
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('upload_preset', uploadPreset);
+            const res = await fetch(url, { method: 'POST', body: formData });
+            if (!res.ok) throw new Error("Cloudinary error");
+            const data = await res.json();
+            return data.secure_url;
+        }
+
+        async function saveToSupabase(imageUrl) {
+            const { error } = await supabase
+                .from('galeria')
+                .insert([{ username: session.user, domain: session.domain, image_url: imageUrl }]);
+            if (error) throw error;
+        }
+
+        async function loadGallery() {
+            const grid = document.getElementById('gallery-grid');
+            grid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 40px;"><div class="spinner"></div></div>';
+
+            const { data, error } = await supabase
+                .from('galeria')
+                .select('*')
+                .eq('domain', session.domain)
+                .order('created_at', { ascending: false });
+
+            if (error) {
+                grid.innerHTML = '<p style="grid-column: 1/-1; text-align: center;">Error al cargar imágenes.</p>';
+                return;
+            }
+
+            grid.innerHTML = '';
+            if (data.length === 0) {
+                grid.innerHTML = '<p style="grid-column: 1/-1; text-align: center; padding: 40px; opacity: 0.5;">No hay imágenes en tu galería. ¡Añade algunas arriba!</p>';
+                return;
+            }
+
+            data.forEach((item, index) => {
+                const bentoClass = getBentoClass(index);
+                const div = document.createElement('div');
+                div.className = `bento-item ${bentoClass}`;
+                div.innerHTML = `
+                    <img src="${item.image_url}" alt="Galería item" loading="lazy">
+                    <div class="delete-overlay">
+                        <button class="delete-btn" onclick="deleteImage('${item.id}')">Eliminar</button>
+                    </div>
+                `;
+                grid.appendChild(div);
+            });
+        }
+
+        function getBentoClass(index) {
+            const patterns = ['', 'wide', 'tall', '', 'large', '', 'wide', ''];
+            return patterns[index % patterns.length];
+        }
+
+        window.deleteImage = async (id) => {
+            if (!confirm("¿Seguro que quieres eliminar esta imagen?")) return;
+            const { error } = await supabase.from('galeria').delete().eq('id', id);
+            if (error) alert("Error al eliminar"); else loadGallery();
+        };
+    </script>
+</body>
+</html>
