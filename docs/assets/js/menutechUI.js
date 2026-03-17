@@ -50,44 +50,44 @@ class MenutechGallery extends HTMLElement {
     async render() {
         const domain = this.getAttribute('domain');
         if (!domain) {
-            this.shadowRoot.innerHTML = `<p style="color:#ef4444; font-weight:bold;">Error: 'domain' attribute not specified.</p>`;
+            this.shadowRoot.innerHTML = `<p style="color:#ef4444; font-weight:500;">Error: 'domain' attribute not specified.</p>`;
             return;
         }
 
         const styles = `
             <style>
-                :host { display: block; width: 100%; font-family: 'Inter', system-ui, sans-serif; }
+                :host { display: block; width: 100%; font-family: 'Plus Jakarta Sans', system-ui, sans-serif; }
                 .gallery-grid {
                     display: grid;
                     grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
                     grid-auto-rows: 240px;
-                    gap: 16px;
+                    gap: 20px;
                     padding: 0;
                 }
                 .gallery-item {
                     position: relative;
-                    border-radius: 20px;
+                    border-radius: 28px;
                     overflow: hidden;
                     background: #14161d;
-                    box-shadow: 0 10px 30px -5px rgba(0,0,0,0.3);
-                    transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+                    box-shadow: 0 12px 30px -10px rgba(0,0,0,0.3);
+                    transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
                 }
-                .gallery-item:hover { transform: translateY(-8px); }
+                .gallery-item:hover { transform: translateY(-8px); box-shadow: 0 20px 40px -10px rgba(0,0,0,0.4); }
                 .gallery-item img {
                     width: 100%;
                     height: 100%;
                     object-fit: cover;
-                    transition: transform 0.8s ease;
+                    transition: transform 1.2s cubic-bezier(0.16, 1, 0.3, 1);
                 }
-                .gallery-item:hover img { transform: scale(1.1); }
+                .gallery-item:hover img { transform: scale(1.06); }
                 .gallery-item.large { grid-column: span 2; grid-row: span 2; }
                 .gallery-item.wide { grid-column: span 2; }
                 .gallery-item.tall { grid-row: span 2; }
 
-                .loader { text-align: center; padding: 60px; color: #ff9533; font-weight: bold; text-transform: uppercase; letter-spacing: 2px; }
+                .loader { text-align: center; padding: 60px; color: #ff9533; font-weight: 600; letter-spacing: 1px; }
 
                 @media (max-width: 640px) {
-                    .gallery-grid { grid-template-columns: 1fr; grid-auto-rows: 300px; }
+                    .gallery-grid { grid-template-columns: 1fr; grid-auto-rows: 300px; gap: 16px; }
                     .gallery-item.wide, .gallery-item.large { grid-column: span 1; }
                     .gallery-item.tall, .gallery-item.large { grid-row: span 1; }
                 }
@@ -99,7 +99,7 @@ class MenutechGallery extends HTMLElement {
         const images = await this.fetchImages(domain);
 
         if (images.length === 0) {
-            this.shadowRoot.innerHTML = `${styles}<div style="text-align:center; padding: 80px 20px; color: #64748b; font-weight: 500;">No images found in the gallery for this domain.</div>`;
+            this.shadowRoot.innerHTML = `${styles}<div style="text-align:center; padding: 80px 20px; color: #64748b; font-weight: 400;">No images found in the gallery for this domain.</div>`;
             return;
         }
 
