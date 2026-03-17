@@ -1,17 +1,28 @@
 -- SQL para la cuenta de Supabase (eemqyrysdgasfjlitads)
--- Implementación de RLS y Roles para Gestión de Galería y Usuarios
+-- Implementación de Roles Multi-nivel: Owner, Admin, Developer
 
--- 1. Tabla de perfiles con roles
-CREATE TABLE IF NOT EXISTS profiles (
+-- 1. Tabla de perfiles con nuevos roles
+CREATE TABLE IF NOT EXISTS public.profiles (
     id UUID REFERENCES auth.users ON DELETE CASCADE PRIMARY KEY,
     domain TEXT DEFAULT NULL,
-    role TEXT DEFAULT 'client', -- 'client' o 'admin'
+    role TEXT DEFAULT 'owner', -- 'owner', 'admin', 'developer'
     updated_at TIMESTAMPTZ DEFAULT now()
 );
 
-ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
 
--- Función SECURITY DEFINER para chequear el rol sin recursividad
+-- 2. Tabla de acceso para developers
+CREATE TABLE IF NOT EXISTS public.developer_access (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    developer_id UUID REFERENCES auth.users ON DELETE CASCADE NOT NULL,
+    owner_id UUID REFERENCES auth.users ON DELETE CASCADE NOT NULL,
+    created_at TIMESTAMPTZ DEFAULT now(),
+    UNIQUE(developer_id, owner_id)
+);
+
+ALTER TABLE public.developer_access ENABLE ROW LEVEL SECURITY;
+
+-- Funciones auxiliares SECURITY DEFINER para evitar recursividad
 CREATE OR REPLACE FUNCTION is_admin()
 RETURNS BOOLEAN AS $$
   SELECT EXISTS (
@@ -20,19 +31,61 @@ RETURNS BOOLEAN AS $$
   );
 $$ LANGUAGE sql SECURITY DEFINER;
 
+CREATE OR REPLACE FUNCTION has_developer_access(target_owner_id UUID)
+RETURNS BOOLEAN AS $$
+  SELECT EXISTS (
+    SELECT 1 FROM public.developer_access
+    WHERE developer_id = auth.uid() AND owner_id = target_owner_id
+  );
+$$ LANGUAGE sql SECURITY DEFINER;
+
 -- Políticas para 'profiles'
-CREATE POLICY "Users can manage their own profile" ON profiles
+CREATE POLICY "Users can manage their own profile" ON public.profiles
     FOR ALL USING (auth.uid() = id) WITH CHECK (auth.uid() = id);
 
-CREATE POLICY "Admins can manage all profiles" ON profiles
+CREATE POLICY "Admins can manage all profiles" ON public.profiles
     FOR ALL USING (is_admin());
 
--- 2. Trigger para crear perfil automáticamente
+CREATE POLICY "Developers can view assigned owners" ON public.profiles
+    FOR SELECT USING (has_developer_access(id));
+
+-- Políticas para 'developer_access'
+CREATE POLICY "Admins manage developer access" ON public.developer_access
+    FOR ALL USING (is_admin());
+
+CREATE POLICY "Developers can view their own assignments" ON public.developer_access
+    FOR SELECT USING (developer_id = auth.uid());
+
+-- 3. Tabla 'galeria' con acceso multi-tier
+CREATE TABLE IF NOT EXISTS public.galeria (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    user_id UUID REFERENCES auth.users NOT NULL, -- El ID del owner de la imagen
+    domain TEXT NOT NULL,
+    image_url TEXT NOT NULL,
+    created_at TIMESTAMPTZ DEFAULT now()
+);
+
+ALTER TABLE public.galeria ENABLE ROW LEVEL SECURITY;
+
+-- Políticas para 'galeria'
+CREATE POLICY "Public can view images by domain" ON public.galeria
+    FOR SELECT USING (true);
+
+CREATE POLICY "Owners manage their own images" ON public.galeria
+    FOR ALL USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);
+
+CREATE POLICY "Admins manage all images" ON public.galeria
+    FOR ALL USING (is_admin());
+
+CREATE POLICY "Developers manage assigned owners images" ON public.galeria
+    FOR ALL USING (has_developer_access(user_id)) WITH CHECK (has_developer_access(user_id));
+
+-- 4. Trigger para creación de perfil (Owner por defecto)
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS trigger AS $$
 BEGIN
   INSERT INTO public.profiles (id, domain, role)
-  VALUES (new.id, NULL, 'client');
+  VALUES (new.id, NULL, 'owner');
   RETURN new;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
@@ -41,24 +94,3 @@ DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
 CREATE TRIGGER on_auth_user_created
   AFTER INSERT ON auth.users
   FOR EACH ROW EXECUTE PROCEDURE public.handle_new_user();
-
--- 3. Tabla 'galeria' con RLS
-CREATE TABLE IF NOT EXISTS galeria (
-    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-    user_id UUID REFERENCES auth.users NOT NULL,
-    domain TEXT NOT NULL,
-    image_url TEXT NOT NULL,
-    created_at TIMESTAMPTZ DEFAULT now()
-);
-
-ALTER TABLE galeria ENABLE ROW LEVEL SECURITY;
-
--- Políticas para 'galeria'
-CREATE POLICY "Public can view images by domain" ON galeria
-    FOR SELECT USING (true);
-
-CREATE POLICY "Users can manage their own images" ON galeria
-    FOR ALL USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);
-
-CREATE POLICY "Admins can manage all images" ON galeria
-    FOR ALL USING (is_admin());
