@@ -32,7 +32,7 @@
         header { text-align: center; margin-bottom: 40px; }
         h1 { font-family: 'Montserrat', sans-serif; font-size: 2.8rem; margin-bottom: 10px; color: white; letter-spacing: -1px; }
 
-        /* Login UI */
+        /* Auth UI */
         #login-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-color);
             display: flex; align-items: center; justify-content: center; z-index: 3000;
@@ -46,8 +46,11 @@
         .input-group { margin-bottom: 20px; text-align: left; }
         .input-group label { display: block; margin-bottom: 8px; font-size: 0.85rem; color: #8b949e; font-weight: 600; text-transform: uppercase; }
         input { width: 100%; padding: 14px; background: #0d1117; border: 1px solid var(--border-color); border-radius: 12px; color: white; box-sizing: border-box; font-size: 1rem; }
-        .btn-primary { width: 100%; padding: 15px; background: var(--primary-color); color: #000; border: none; border-radius: 12px; font-weight: 700; cursor: pointer; transition: 0.3s; text-transform: uppercase; }
+        .btn-primary { width: 100%; padding: 15px; background: var(--primary-color); color: #000; border: none; border-radius: 12px; font-weight: 700; cursor: pointer; transition: 0.3s; text-transform: uppercase; margin-bottom: 15px; }
         .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(255, 149, 51, 0.4); }
+
+        .auth-toggle { font-size: 0.9rem; color: #8b949e; cursor: pointer; text-decoration: underline; background: none; border: none; }
+        .auth-toggle:hover { color: var(--primary-color); }
 
         /* Domain Init UI */
         #domain-init-overlay {
@@ -93,14 +96,15 @@
     </style>
 </head>
 <body>
-    <!-- Login Overlay -->
+    <!-- Auth Overlay -->
     <div id="login-overlay">
         <div class="login-card">
-            <h2>Acceso Clientes</h2>
-            <div class="input-group"><label>Email</label><input type="email" id="login-email" placeholder="email@ejemplo.com"></div>
-            <div class="input-group"><label>Contraseña</label><input type="password" id="login-pass" placeholder="********"></div>
-            <button id="login-btn" class="btn-primary">Entrar</button>
-            <div id="login-status" style="margin-top:15px"></div>
+            <h2 id="auth-title">Acceso Clientes</h2>
+            <div class="input-group"><label>Email</label><input type="email" id="auth-email" placeholder="email@ejemplo.com"></div>
+            <div class="input-group"><label>Contraseña</label><input type="password" id="auth-pass" placeholder="********"></div>
+            <button id="auth-btn" class="btn-primary">Entrar</button>
+            <div id="auth-status" style="margin-top:15px"></div>
+            <button id="auth-mode-toggle" class="auth-toggle">¿No tienes cuenta? Regístrate</button>
         </div>
     </div>
 
@@ -133,10 +137,11 @@
 
     <script>
         const SUPABASE_URL = "https://eemqyrysdgasfjlitads.supabase.co";
-        const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVlbXF5cnlzZGdhc2ZqbGl0YWRzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM3MjA0NDUsImV4cCI6MjA3OTcxODAzNn0.UiyZLqhXSQ1Z_FoL006PDrDYKXbr_pxCOugYTulhdPY";
+        const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVlbXF5cnlzZGdhc2ZqbGl0YWRzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM3MjA0NDUsImV4cCI6MjA4OTI5NjQ0NX0.UiyZLqhXSQ1Z_FoL006PDrDYKXbr_pxCOugYTulhdPY";
         let supabase = null;
         let currentUser = null;
         let userDomain = null;
+        let isLoginMode = true;
 
         document.addEventListener('DOMContentLoaded', async () => {
             const mod = await import("https://esm.sh/@supabase/supabase-js");
@@ -160,7 +165,6 @@
                 if (!userDomain) showDomainInit();
                 else showContent();
             } else {
-                // Si no hay perfil, lo intentamos crear (el trigger debería hacerlo)
                 showDomainInit();
             }
         }
@@ -181,7 +185,8 @@
         }
 
         function setupEvents() {
-            document.getElementById('login-btn').onclick = doLogin;
+            document.getElementById('auth-btn').onclick = handleAuth;
+            document.getElementById('auth-mode-toggle').onclick = toggleAuthMode;
             document.getElementById('logout-btn').onclick = () => { supabase.auth.signOut(); location.reload(); };
             document.getElementById('save-domain-btn').onclick = saveDomain;
 
@@ -194,14 +199,34 @@
             dz.ondrop = e => { e.preventDefault(); dz.classList.remove('drop-zone--over'); if(e.dataTransfer.files.length) handleUpload(e.dataTransfer.files); };
         }
 
-        async function doLogin() {
-            const email = document.getElementById('login-email').value;
-            const pass = document.getElementById('login-pass').value;
-            const st = document.getElementById('login-status');
+        function toggleAuthMode() {
+            isLoginMode = !isLoginMode;
+            document.getElementById('auth-title').textContent = isLoginMode ? "Acceso Clientes" : "Crear Cuenta";
+            document.getElementById('auth-btn').textContent = isLoginMode ? "Entrar" : "Registrarse";
+            document.getElementById('auth-mode-toggle').textContent = isLoginMode ? "¿No tienes cuenta? Regístrate" : "¿Ya tienes cuenta? Entra";
+        }
+
+        async function handleAuth() {
+            const email = document.getElementById('auth-email').value;
+            const pass = document.getElementById('auth-pass').value;
+            const st = document.getElementById('auth-status');
+            if (!email || !pass) { st.textContent = "Completa todos los campos"; return; }
+
             st.innerHTML = '<div class="spinner"></div>';
-            const { data, error } = await supabase.auth.signInWithPassword({ email, password: pass });
-            if (error) { st.textContent = "Error: " + error.message; st.style.color = "var(--danger-color)"; }
-            else { currentUser = data.user; await fetchProfile(); }
+
+            if (isLoginMode) {
+                const { data, error } = await supabase.auth.signInWithPassword({ email, password: pass });
+                if (error) { st.textContent = "Error: " + error.message; st.style.color = "var(--danger-color)"; }
+                else { currentUser = data.user; await fetchProfile(); }
+            } else {
+                const { data, error } = await supabase.auth.signUp({ email, password: pass });
+                if (error) { st.textContent = "Error: " + error.message; st.style.color = "var(--danger-color)"; }
+                else {
+                    st.textContent = "¡Cuenta creada! Revisa tu email (si aplica) o intenta entrar.";
+                    st.style.color = "var(--success-color)";
+                    setTimeout(toggleAuthMode, 2000);
+                }
+            }
         }
 
         async function saveDomain() {
@@ -210,7 +235,7 @@
             if (!domain) return;
             st.innerHTML = '<div class="spinner"></div>';
             const { error } = await supabase.from('profiles').upsert({ id: currentUser.id, domain: domain });
-            if (error) { st.textContent = "Error al guardar"; st.style.color = "var(--danger-color)"; }
+            if (error) { st.textContent = "Error al guardar: " + error.message; st.style.color = "var(--danger-color)"; }
             else { userDomain = domain; showContent(); }
         }
 
