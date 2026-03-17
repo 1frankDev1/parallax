@@ -1,4 +1,5 @@
--- SQL para la nueva cuenta de Supabase (eemqyrysdgasfjlitads) con RLS
+-- SQL para la nueva cuenta de Supabase (eemqyrysdgasfjlitads)
+-- Nota: RLS deshabilitado por solicitud del usuario.
 
 -- 1. Crear tabla de perfiles
 CREATE TABLE IF NOT EXISTS profiles (
@@ -6,18 +7,6 @@ CREATE TABLE IF NOT EXISTS profiles (
     domain TEXT DEFAULT NULL,
     updated_at TIMESTAMPTZ DEFAULT now()
 );
-
-ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
-
--- Políticas para 'profiles'
-CREATE POLICY "Users can view their own profile" ON profiles
-    FOR SELECT USING (auth.uid() = id);
-
-CREATE POLICY "Users can update their own profile" ON profiles
-    FOR UPDATE USING (auth.uid() = id);
-
-CREATE POLICY "Users can insert their own profile" ON profiles
-    FOR INSERT WITH CHECK (auth.uid() = id);
 
 -- 2. Trigger para crear perfil automáticamente
 CREATE OR REPLACE FUNCTION public.handle_new_user()
@@ -42,15 +31,3 @@ CREATE TABLE IF NOT EXISTS galeria (
     image_url TEXT NOT NULL,
     created_at TIMESTAMPTZ DEFAULT now()
 );
-
-ALTER TABLE galeria ENABLE ROW LEVEL SECURITY;
-
--- Políticas para 'galeria'
-CREATE POLICY "Public can view gallery images by domain" ON galeria
-    FOR SELECT USING (true); -- Permite que el web component lea las fotos
-
-CREATE POLICY "Users can manage their own gallery images" ON galeria
-    FOR ALL USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);
-
--- Nota: Estas políticas aseguran que solo el dueño pueda editar sus fotos,
--- pero cualquiera pueda verlas si conoce el dominio, lo cual es necesario para la galería pública.
