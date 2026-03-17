@@ -17,6 +17,7 @@
             --border: #2d333f;
             --success: #10b981;
             --error: #ef4444;
+            --dev: #8b5cf6;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -62,6 +63,10 @@
         header { text-align: center; margin-bottom: 72px; }
         header h1 { font-family: 'Outfit', sans-serif; font-size: 3.2rem; font-weight: 600; letter-spacing: -1.5px; margin-bottom: 6px; }
         header .tag { color: var(--orange); font-weight: 700; text-transform: uppercase; font-size: 0.8rem; letter-spacing: 4px; opacity: 0.8; }
+
+        .switcher-box { max-width: 400px; margin: 0 auto 60px auto; background: var(--card); border: 1px solid var(--border); padding: 20px; border-radius: 24px; text-align: left; }
+        .switcher-box label { display: block; font-size: 0.7rem; font-weight: 700; color: var(--orange); text-transform: uppercase; margin-bottom: 10px; margin-left: 10px; }
+        .switcher-box select { width: 100%; background: var(--input); border: 1px solid var(--border); border-radius: 14px; padding: 12px 16px; color: #fff; font-size: 0.9rem; }
 
         .drop-zone {
             width: 100%; height: 260px; border-radius: 36px; border: 2px dashed var(--border); background: var(--card);
@@ -109,7 +114,6 @@
 
     <!-- Auth Module -->
     <div id="auth-overlay">
-        <!-- Sign In State -->
         <div class="auth-card" id="signin-box">
             <h2>Welcome back</h2>
             <p class="lead">Manage your gallery projects with ease.</p>
@@ -122,7 +126,6 @@
             </div>
         </div>
 
-        <!-- Sign Up State -->
         <div class="auth-card hidden" id="signup-box">
             <h2>Get Started</h2>
             <p class="lead">Create your free Menutech gallery account.</p>
@@ -149,15 +152,24 @@
 
     <div id="top-nav" class="hidden">
         <div id="user-email"></div>
+        <button id="btn-console" class="btn-logout" style="margin-right: 15px; border-right: 1px solid var(--border); padding-right: 15px;">CONSOLE</button>
         <button id="btn-logout" class="btn-logout">Logout</button>
     </div>
 
     <div class="container hidden" id="main-app">
         <header>
-            <div class="tag">System Manager</div>
-            <h1>My Gallery</h1>
-            <p id="view-domain" style="font-weight: 700; color: var(--orange); font-size: 0.85rem; letter-spacing: 1px;"></p>
+            <div class="tag">Management Portal</div>
+            <h1>Gallery Manager</h1>
+            <p id="view-domain-title" style="font-weight: 700; color: var(--orange); font-size: 0.85rem; letter-spacing: 1px;"></p>
         </header>
+
+        <!-- Admin/Dev account switcher -->
+        <div id="account-switcher" class="switcher-box hidden">
+            <label>Switch Project Context</label>
+            <select id="owner-select">
+                <option value="">Loading your own project...</option>
+            </select>
+        </div>
 
         <div class="drop-zone" id="drop-zone">
             <p>Upload Images</p>
@@ -171,8 +183,8 @@
 
     <script>
         const URL = "https://eemqyrysdgasfjlitads.supabase.co";
-        const KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVlbXF5cnlzZGdhc2ZqbGl0YWRzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM3MjA0NDUsImV4cCI6MjA3OTcxODAzNn0.dlVYmoMumBse_O1PLBx0FeNITqY4YktefD6l_uonSgo";
-        let sb = null, user = null, domain = null;
+        const KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVlbXF5cnlzZGdhc2ZqbGl0YWRzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM3MjA0NDUsImV4cCI6MjA3OTcxODAzNn0.UiyZLqhXSQ1Z_FoL006PDrDYKXbr_pxCOugYTulhdPY";
+        let sb = null, user = null, userRole = null, activeOwnerId = null, activeDomain = null;
 
         document.addEventListener('DOMContentLoaded', async () => {
             const m = await import("https://esm.sh/@supabase/supabase-js");
@@ -183,13 +195,60 @@
 
         async function checkSession() {
             const { data: { session } } = await sb.auth.getSession();
-            if (session) { user = session.user; fetchProfile(); }
+            if (session) {
+                user = session.user;
+                const { data: profile } = await sb.from('profiles').select('*').eq('id', user.id).single();
+                userRole = profile.role;
+
+                if (userRole === 'admin' || userRole === 'developer') {
+                    document.getElementById('btn-console').classList.remove('hidden');
+                    setupContextSwitcher();
+                } else {
+                    // Logic for owner
+                    activeOwnerId = user.id;
+                    activeDomain = profile.domain;
+                    if (!activeDomain) showDomainSetup(); else showApp();
+                }
+            }
         }
 
-        async function fetchProfile() {
-            const { data } = await sb.from('profiles').select('domain').eq('id', user.id).single();
-            if (data && data.domain) { domain = data.domain; showApp(); }
-            else { showDomainSetup(); }
+        async function setupContextSwitcher() {
+            const switcher = document.getElementById('account-switcher');
+            const select = document.getElementById('owner-select');
+            switcher.classList.remove('hidden');
+
+            let owners = [];
+            if (userRole === 'admin') {
+                const { data } = await sb.from('profiles').select('*').eq('role', 'owner');
+                owners = data || [];
+            } else {
+                const { data } = await sb.from('profiles').select('*').neq('id', user.id);
+                owners = data || [];
+            }
+
+            select.innerHTML = '<option value="">-- Select a Client --</option>' +
+                owners.map(o => `<option value="${o.id}" data-domain="${o.domain || ''}">${o.domain || o.id.substring(0,8)}</option>`).join('');
+
+            // Check if context was passed from adminCustomer.html
+            const passedId = sessionStorage.getItem('mt_edit_owner_id');
+            if (passedId) {
+                select.value = passedId;
+                sessionStorage.removeItem('mt_edit_owner_id');
+                switchContext(passedId);
+            }
+
+            select.onchange = () => switchContext(select.value);
+            showApp();
+        }
+
+        function switchContext(ownerId) {
+            if (!ownerId) return;
+            const select = document.getElementById('owner-select');
+            const option = select.options[select.selectedIndex];
+            activeOwnerId = ownerId;
+            activeDomain = option.getAttribute('data-domain');
+            document.getElementById('view-domain-title').textContent = activeDomain || "No Domain Set";
+            loadGallery();
         }
 
         function showDomainSetup() {
@@ -203,8 +262,10 @@
             document.getElementById('main-app').classList.remove('hidden');
             document.getElementById('top-nav').classList.remove('hidden');
             document.getElementById('user-email').textContent = user.email;
-            document.getElementById('view-domain').textContent = domain;
-            loadGallery();
+            if (userRole === 'owner') {
+                document.getElementById('view-domain-title').textContent = activeDomain;
+                loadGallery();
+            }
         }
 
         function toggleAuth(mode) {
@@ -217,6 +278,7 @@
             document.getElementById('btn-signin').onclick = signIn;
             document.getElementById('btn-signup').onclick = signUp;
             document.getElementById('btn-logout').onclick = () => { sb.auth.signOut(); location.reload(); };
+            document.getElementById('btn-console').onclick = () => location.href = "adminCustomer.html";
             document.getElementById('btn-save-domain').onclick = saveDomain;
 
             const dz = document.getElementById('drop-zone'), fi = document.getElementById('file-input');
@@ -233,7 +295,7 @@
             m.innerHTML = '<div class="loader"></div>';
             const { data, error } = await sb.auth.signInWithPassword({ email: e, password: p });
             if (error) { m.textContent = error.message; m.style.color = "var(--error)"; }
-            else { user = data.user; fetchProfile(); }
+            else { location.reload(); }
         }
 
         async function signUp() {
@@ -242,33 +304,34 @@
             m.innerHTML = '<div class="loader"></div>';
             const { error } = await sb.auth.signUp({ email: e, password: p });
             if (error) { m.textContent = error.message; m.style.color = "var(--error)"; }
-            else { m.textContent = "Account created. Check your email or sign in."; m.style.color = "var(--success)"; setTimeout(() => toggleAuth('signin'), 3000); }
+            else { m.textContent = "Check email or sign in."; m.style.color = "var(--success)"; setTimeout(() => toggleAuth('signin'), 3000); }
         }
 
         async function saveDomain() {
             const v = document.getElementById('init-domain').value.trim(), m = document.getElementById('init-msg');
             if (!v) return;
-            m.innerHTML = '<div class="loader"></div>';
             const { error } = await sb.from('profiles').upsert({ id: user.id, domain: v });
-            if (error) { m.textContent = "Error saving configuration."; m.style.color = "var(--error)"; }
-            else { domain = v; showApp(); }
+            if (error) { m.textContent = "Error saving domain."; m.style.color = "var(--error)"; }
+            else { activeDomain = v; showApp(); }
         }
 
         async function uploadFiles(files) {
+            if (!activeOwnerId) return alert("Select a project context first.");
             const s = document.getElementById('upload-status');
-            s.innerHTML = '<div class="loader"></div><p style="margin-top:10px">Uploading files...</p>';
+            s.innerHTML = '<div class="loader"></div><p style="margin-top:10px">Uploading...</p>';
             for (const f of files) {
                 const fd = new FormData(); fd.append('file', f); fd.append('upload_preset', 'Tragalero');
                 const res = await fetch('https://api.cloudinary.com/v1_1/dbbjxhvz5/image/upload', { method: 'POST', body: fd });
                 const d = await res.json();
-                await sb.from('galeria').insert([{ user_id: user.id, domain: domain, image_url: d.secure_url }]);
+                await sb.from('galeria').insert([{ user_id: activeOwnerId, domain: activeDomain || 'undetermined', image_url: d.secure_url }]);
             }
-            s.textContent = "Upload Complete"; setTimeout(() => s.textContent = "", 3000); loadGallery();
+            s.textContent = "Done"; setTimeout(() => s.textContent = "", 3000); loadGallery();
         }
 
         async function loadGallery() {
+            if (!activeOwnerId) return;
             const g = document.getElementById('gallery-grid');
-            const { data } = await sb.from('galeria').select('*').eq('user_id', user.id).order('created_at', { ascending: false });
+            const { data } = await sb.from('galeria').select('*').eq('user_id', activeOwnerId).order('created_at', { ascending: false });
             g.innerHTML = (data || []).map((it, i) => `
                 <div class="card ${getBento(i)}">
                     <img src="${it.image_url}" loading="lazy">
@@ -277,7 +340,7 @@
             `).join('');
         }
         function getBento(i) { const p = ['', 'wide', 'tall', '', 'large', '', 'wide', '']; return p[i % p.length]; }
-        window.deleteImage = async (id) => { if(confirm("Are you sure?")) { await sb.from('galeria').delete().eq('id', id); loadGallery(); } };
+        window.deleteImage = async (id) => { if(confirm("Confirm deletion?")) { await sb.from('galeria').delete().eq('id', id); loadGallery(); } };
     </script>
 </body>
 </html>
