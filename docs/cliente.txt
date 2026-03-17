@@ -1,15 +1,37 @@
--- SQL para la gestión de galería de clientes
+-- SQL para la nueva cuenta de Supabase (eemqyrysdgasfjlitads)
 
--- 1. Agregar columna 'domain' a la tabla de usuarios existente
-ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS domain TEXT;
+-- 1. Crear tabla de perfiles para asociar usuarios de Auth con dominios
+CREATE TABLE IF NOT EXISTS profiles (
+    id UUID REFERENCES auth.users ON DELETE CASCADE PRIMARY KEY,
+    domain TEXT DEFAULT NULL,
+    updated_at TIMESTAMPTZ DEFAULT now()
+);
 
--- 2. Crear la tabla 'galeria' para almacenar las imágenes de los clientes
+-- 2. Habilitar el trigger para crear un perfil automáticamente al registrarse
+CREATE OR REPLACE FUNCTION public.handle_new_user()
+RETURNS trigger AS $$
+BEGIN
+  INSERT INTO public.profiles (id, domain)
+  VALUES (new.id, NULL);
+  RETURN new;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Eliminar trigger si ya existe para evitar errores al re-ejecutar
+DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
+
+CREATE TRIGGER on_auth_user_created
+  AFTER INSERT ON auth.users
+  FOR EACH ROW EXECUTE PROCEDURE public.handle_new_user();
+
+-- 3. Crear tabla 'galeria' vinculada a los perfiles/usuarios
 CREATE TABLE IF NOT EXISTS galeria (
     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-    username TEXT NOT NULL,
+    user_id UUID REFERENCES auth.users NOT NULL,
     domain TEXT NOT NULL,
     image_url TEXT NOT NULL,
     created_at TIMESTAMPTZ DEFAULT now()
 );
 
--- Nota: No se habilitará RLS (Row Level Security) según las instrucciones del cliente.
+-- Nota: El cliente solicitó NO usar RLS, por lo que las tablas son accesibles si se conoce la URL/Key.
+-- Sin embargo, se recomienda usar user_id para filtrar en las consultas.
