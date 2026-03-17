@@ -131,13 +131,14 @@
         });
 
         async function checkAuth() {
-            const { data: { session } } = await sb.auth.getSession();
+            const { data: { session }, error: sError } = await sb.auth.getSession();
+            if (sError) { console.error("Session error:", sError); return; }
             if (!session) { location.href = "adminWeb.html"; return; }
 
             user = session.user;
-            const { data } = await sb.from('profiles').select('role').eq('id', user.id).single();
+            const { data, error } = await sb.from('profiles').select('role').eq('id', user.id).single();
 
-            if (!data || data.role === 'owner') {
+            if (error || !data || data.role === 'owner') {
                 document.getElementById('no-access').classList.remove('hidden');
             } else {
                 userRole = data.role;
@@ -163,24 +164,23 @@
             const { data, error } = await sb.from('profiles').select('*').order('role', { ascending: true });
             loader.classList.add('hidden');
 
-            if (error) return alert(error.message);
+            if (error) return alert("Error loading users: " + error.message);
             renderList(data, 'user-list', true);
         }
 
         async function loadAssignedOwners() {
             const loader = document.getElementById('loading');
             loader.classList.remove('hidden');
-            // Un developer puede ver sus owners asignados mediante la política de profiles que permite SELECT si tiene acceso
             const { data, error } = await sb.from('profiles').select('*').neq('id', user.id).order('updated_at', { ascending: false });
             loader.classList.add('hidden');
 
-            if (error) return alert(error.message);
+            if (error) return alert("Error loading assigned projects: " + error.message);
             renderList(data, 'assigned-list', false);
         }
 
         function renderList(users, targetId, isAdminView) {
             const list = document.getElementById(targetId);
-            list.innerHTML = users.map(u => `
+            list.innerHTML = (users || []).map(u => `
                 <div class="user-card">
                     <div class="user-info">
                         <h3>${u.role.toUpperCase()}</h3>
@@ -212,25 +212,24 @@
             const domain = document.getElementById(`dom-${id}`).value.trim();
             const role = document.getElementById(`role-${id}`).value;
             const { error } = await sb.from('profiles').update({ domain, role }).eq('id', id);
-            if (error) alert(error.message);
-            else { alert("User updated"); loadAllUsers(); }
+            if (error) alert("Update error: " + error.message);
+            else { alert("User updated successfully"); loadAllUsers(); }
         }
 
         async function deleteUser(id) {
             if (confirm("Delete profile?")) {
-                await sb.from('profiles').delete().eq('id', id);
-                loadAllUsers();
+                const { error } = await sb.from('profiles').delete().eq('id', id);
+                if (error) alert("Deletion error: " + error.message);
+                else loadAllUsers();
             }
         }
 
         function manageGallery(id, domain) {
-            // Guardamos el contexto en sessionStorage para que adminWeb.html sepa qué galería editar
             sessionStorage.setItem('mt_edit_owner_id', id);
             sessionStorage.setItem('mt_edit_domain', domain);
             location.href = "adminWeb.html";
         }
 
-        // Developer Access Management (Admin only)
         async function openAccess(ownerId) {
             activeOwnerId = ownerId;
             document.getElementById('access-modal').classList.remove('hidden');
@@ -239,7 +238,7 @@
 
             const existingIds = (existing || []).map(e => e.developer_id);
             const list = document.getElementById('dev-check-list');
-            list.innerHTML = devs.map(d => `
+            list.innerHTML = (devs || []).map(d => `
                 <div class="dev-item">
                     <span style="font-size: 0.8rem; font-weight: 600;">${d.id.substring(0,8)}...</span>
                     <input type="checkbox" value="${d.id}" ${existingIds.includes(d.id) ? 'checked' : ''} class="dev-chk">
@@ -251,9 +250,6 @@
 
         async function saveAccess() {
             const checks = document.querySelectorAll('.dev-chk');
-            const toAdd = [], toRemove = [];
-
-            // Simplificación: Eliminamos todos y re-insertamos los seleccionados
             await sb.from('developer_access').delete().eq('owner_id', activeOwnerId);
 
             const inserts = Array.from(checks).filter(c => c.checked).map(c => ({
@@ -261,8 +257,13 @@
                 owner_id: activeOwnerId
             }));
 
-            if (inserts.length) await sb.from('developer_access').insert(inserts);
-            alert("Access updated");
+            if (inserts.length) {
+                const { error } = await sb.from('developer_access').insert(inserts);
+                if (error) alert("Access update error: " + error.message);
+                else alert("Access updated successfully");
+            } else {
+                alert("Access cleared");
+            }
             closeModal();
         }
 
