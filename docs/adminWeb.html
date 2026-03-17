@@ -1,249 +1,306 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gallery Manager | Menutech</title>
+    <title>Gallery Admin | Menutech</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Montserrat:wght@800&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Outfit:wght@600;700;800&display=swap');
 
         :root {
-            --accent: #ff9533;
-            --bg: #050505;
-            --card: #111111;
+            --orange: #ff9533;
+            --bg: #0b0c10;
+            --card: #14161d;
+            --input: #1a1d26;
             --text: #ffffff;
-            --text-dim: #888888;
-            --border: #222222;
-            --danger: #ff4444;
-            --success: #00c853;
+            --text-dim: #94a3b8;
+            --border: #2d333f;
+            --success: #10b981;
+            --error: #ef4444;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; overflow-x: hidden; }
 
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: var(--bg);
-            color: var(--text);
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            overflow-x: hidden;
-            background-image:
-                radial-gradient(circle at 20% 20%, rgba(255, 149, 51, 0.05) 0%, transparent 40%),
-                radial-gradient(circle at 80% 80%, rgba(255, 149, 51, 0.05) 0%, transparent 40%);
-        }
+        /* Modern Gradient Background */
+        .bg-mesh { position: fixed; inset: 0; z-index: -1; background: radial-gradient(circle at 0% 0%, rgba(255, 149, 51, 0.15) 0%, transparent 35%), radial-gradient(circle at 100% 100%, rgba(255, 149, 51, 0.1) 0%, transparent 35%); }
 
-        .container { width: 100%; max-width: 1200px; padding: 40px 20px; animation: fadeIn 1s ease-out; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-
-        header { text-align: center; margin-bottom: 60px; }
-        h1 { font-family: 'Montserrat', sans-serif; font-size: 3.5rem; letter-spacing: -2px; margin-bottom: 8px; text-transform: uppercase; background: linear-gradient(180deg, #fff 0%, #aaa 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-        .subtitle { color: var(--accent); font-weight: 600; text-transform: uppercase; font-size: 0.8rem; letter-spacing: 4px; }
-
-        /* Auth Premium */
-        #login-overlay { position: fixed; inset: 0; background: var(--bg); display: flex; align-items: center; justify-content: center; z-index: 5000; padding: 20px; }
+        /* Auth Screen */
+        #auth-overlay { position: fixed; inset: 0; background: var(--bg); display: flex; align-items: center; justify-content: center; z-index: 9999; padding: 24px; }
         .auth-card {
-            background: var(--card); width: 100%; max-width: 440px; padding: 60px 40px; border-radius: 32px; border: 1px solid var(--border);
-            box-shadow: 0 40px 100px rgba(0,0,0,0.8); text-align: center; position: relative;
+            background: var(--card); width: 100%; max-width: 440px; padding: 56px 40px; border-radius: 32px; border: 1px solid var(--border);
+            box-shadow: 0 24px 64px -12px rgba(0,0,0,0.5); position: relative; text-align: center;
+            animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1);
         }
-        .auth-card::after { content: ''; position: absolute; inset: -1px; border-radius: 32px; padding: 1px; background: linear-gradient(135deg, #444, #111); -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0); mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0); -webkit-mask-composite: xor; mask-composite: exclude; pointer-events: none; }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
 
-        .auth-card h2 { font-family: 'Montserrat', sans-serif; font-size: 1.8rem; margin-bottom: 40px; letter-spacing: -1px; }
-        .input-wrap { margin-bottom: 24px; text-align: left; }
-        .input-wrap label { font-size: 0.7rem; font-weight: 700; color: var(--text-dim); text-transform: uppercase; letter-spacing: 1px; margin-left: 4px; display: block; margin-bottom: 8px; }
+        .auth-card h2 { font-family: 'Outfit', sans-serif; font-size: 2.2rem; margin-bottom: 8px; color: #fff; }
+        .auth-card p.lead { color: var(--text-dim); margin-bottom: 40px; font-size: 0.95rem; }
+
+        .group { margin-bottom: 24px; text-align: left; }
+        .group label { display: block; font-size: 0.8rem; font-weight: 700; color: var(--orange); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; margin-left: 4px; }
         input {
-            width: 100%; background: #000; border: 1px solid var(--border); border-radius: 14px; padding: 16px 20px; color: #fff; font-size: 1rem; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            width: 100%; background: var(--input); border: 1px solid var(--border); border-radius: 16px; padding: 16px 20px; color: #fff; font-size: 1rem;
+            transition: all 0.3s;
         }
-        input:focus { border-color: var(--accent); outline: none; box-shadow: 0 0 0 4px rgba(255, 149, 51, 0.1); }
+        input:focus { outline: none; border-color: var(--orange); box-shadow: 0 0 0 4px rgba(255, 149, 51, 0.1); }
 
-        .btn-main {
-            width: 100%; padding: 18px; border-radius: 14px; border: none; background: #fff; color: #000; font-weight: 800; font-size: 0.9rem; text-transform: uppercase; cursor: pointer; transition: all 0.3s; margin-top: 10px;
+        .btn-orange {
+            width: 100%; padding: 18px; border-radius: 16px; border: none; background: var(--orange); color: #000; font-weight: 800; font-size: 1rem;
+            cursor: pointer; transition: all 0.3s; margin-top: 8px; text-transform: uppercase;
         }
-        .btn-main:hover { transform: scale(1.02); filter: brightness(0.9); }
-        .btn-toggle { background: none; border: none; color: var(--text-dim); font-size: 0.8rem; margin-top: 24px; cursor: pointer; text-decoration: underline; }
-        .btn-toggle:hover { color: #fff; }
+        .btn-orange:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(255, 149, 51, 0.3); }
 
-        /* Dashboard */
-        .drop-area {
-            width: 100%; height: 260px; border-radius: 24px; border: 2px dashed var(--border); background: var(--card);
-            display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; transition: all 0.4s; margin-bottom: 50px;
+        .auth-nav { margin-top: 32px; display: flex; flex-direction: column; gap: 12px; }
+        .link { background: none; border: none; color: var(--text-dim); font-size: 0.85rem; cursor: pointer; text-decoration: none; font-weight: 600; transition: color 0.2s; }
+        .link:hover { color: var(--orange); }
+
+        /* Main App */
+        .container { width: 100%; max-width: 1200px; margin: 0 auto; padding: 60px 24px; animation: fadeIn 0.8s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        header { text-align: center; margin-bottom: 64px; }
+        header h1 { font-family: 'Outfit', sans-serif; font-size: 3.5rem; letter-spacing: -2px; margin-bottom: 4px; }
+        header .tag { color: var(--orange); font-weight: 800; text-transform: uppercase; font-size: 0.85rem; letter-spacing: 5px; }
+
+        .drop-zone {
+            width: 100%; height: 240px; border-radius: 24px; border: 2px dashed var(--border); background: var(--card);
+            display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; transition: all 0.4s;
+            margin-bottom: 64px;
         }
-        .drop-area:hover { border-color: var(--accent); background: rgba(255, 149, 51, 0.02); }
-        .drop-area p { font-weight: 600; font-size: 1.1rem; color: var(--text-dim); }
-        .drop-area span { font-size: 0.8rem; color: #555; margin-top: 8px; text-transform: uppercase; letter-spacing: 1px; }
+        .drop-zone:hover { border-color: var(--orange); background: rgba(255, 149, 51, 0.02); }
+        .drop-zone p { font-weight: 700; font-size: 1.2rem; color: #fff; }
+        .drop-zone span { font-size: 0.85rem; color: var(--text-dim); margin-top: 8px; text-transform: uppercase; letter-spacing: 1px; }
 
-        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); grid-auto-rows: 280px; gap: 24px; width: 100%; }
-        .item { position: relative; border-radius: 20px; overflow: hidden; background: var(--card); border: 1px solid var(--border); transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1); }
-        .item:hover { transform: translateY(-8px); border-color: #444; }
-        .item img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.8s; }
-        .item:hover img { transform: scale(1.05); }
+        .bento { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); grid-auto-rows: 300px; gap: 24px; }
+        .card { position: relative; border-radius: 24px; overflow: hidden; background: var(--card); border: 1px solid var(--border); transition: all 0.5s; }
+        .card:hover { transform: translateY(-12px); border-color: var(--orange); }
+        .card img { width: 100%; height: 100%; object-fit: cover; transition: 0.8s; }
+        .card:hover img { transform: scale(1.08); }
 
-        .overlay-del { position: absolute; inset: 0; background: rgba(0,0,0,0.8); display: flex; align-items: center; justify-content: center; opacity: 0; transition: 0.3s; backdrop-filter: blur(4px); }
-        .item:hover .overlay-del { opacity: 1; }
-        .btn-del { background: var(--danger); color: #fff; border: none; padding: 12px 24px; border-radius: 10px; font-weight: 700; cursor: pointer; text-transform: uppercase; font-size: 0.75rem; }
+        .del-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.85); display: flex; align-items: center; justify-content: center; opacity: 0; transition: 0.3s; backdrop-filter: blur(8px); }
+        .card:hover .del-overlay { opacity: 1; }
+        .btn-del { background: var(--error); color: #fff; border: none; padding: 14px 28px; border-radius: 12px; font-weight: 800; cursor: pointer; text-transform: uppercase; font-size: 0.8rem; }
 
-        .item.lg { grid-column: span 2; grid-row: span 2; }
-        .item.wd { grid-column: span 2; }
-        .item.tl { grid-row: span 2; }
+        .card.wide { grid-column: span 2; }
+        .card.tall { grid-row: span 2; }
+        .card.large { grid-column: span 2; grid-row: span 2; }
 
-        #user-nav { position: fixed; top: 30px; right: 30px; background: rgba(255,255,255,0.05); backdrop-filter: blur(20px); padding: 12px 20px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.1); display: flex; flex-direction: column; align-items: flex-end; z-index: 4000; }
-        #u-email { font-weight: 700; font-size: 0.8rem; color: var(--accent); }
-        #btn-out { background: none; border: none; color: #fff; font-size: 0.65rem; font-weight: 600; margin-top: 4px; cursor: pointer; text-transform: uppercase; opacity: 0.6; }
-        #btn-out:hover { opacity: 1; }
+        #top-nav { position: fixed; top: 24px; right: 24px; background: rgba(20,22,29,0.6); backdrop-filter: blur(16px); padding: 12px 24px; border-radius: 20px; border: 1px solid var(--border); display: flex; align-items: center; gap: 20px; z-index: 5000; }
+        #user-email { font-weight: 800; font-size: 0.85rem; color: var(--orange); }
+        .btn-logout { background: none; border: none; color: #fff; font-size: 0.75rem; font-weight: 700; cursor: pointer; opacity: 0.5; transition: 0.2s; }
+        .btn-logout:hover { opacity: 1; }
 
-        .spin { border: 2px solid rgba(255, 255, 255, 0.1); width: 24px; height: 24px; border-radius: 50%; border-left-color: #fff; animation: r 1s linear infinite; margin: 0 auto; }
-        @keyframes r { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .loader { border: 3px solid rgba(255, 149, 51, 0.1); width: 28px; height: 28px; border-radius: 50%; border-left-color: var(--orange); animation: rotate 1s linear infinite; margin: 0 auto; }
+        @keyframes rotate { to { transform: rotate(360deg); } }
         .hidden { display: none !important; }
 
-        @media (max-width: 600px) {
-            h1 { font-size: 2.2rem; }
-            .grid { grid-template-columns: 1fr; grid-auto-rows: 300px; }
-            .item.lg, .item.wd { grid-column: span 1; }
-            .item.lg, .item.tl { grid-row: span 1; }
+        @media (max-width: 640px) {
+            header h1 { font-size: 2.5rem; }
+            .bento { grid-template-columns: 1fr; grid-auto-rows: 320px; }
+            .card.wide, .card.large { grid-column: span 1; }
+            .card.tall, .card.large { grid-row: span 1; }
         }
     </style>
 </head>
 <body>
-    <div id="login-overlay">
-        <div class="auth-card">
-            <h2 id="a-title">ACCESO</h2>
-            <div class="input-wrap"><label>Email</label><input type="email" id="a-email" placeholder="nombre@ejemplo.com"></div>
-            <div class="input-wrap"><label>Contraseña</label><input type="password" id="a-pass" placeholder="••••••••"></div>
-            <button id="a-btn" class="btn-main">CONTINUAR</button>
-            <div id="a-status" style="margin-top:20px; font-size: 0.8rem; font-weight: 600;"></div>
-            <button id="a-mode" class="btn-toggle">CREAR CUENTA</button>
+    <div class="bg-mesh"></div>
+
+    <!-- Auth Module -->
+    <div id="auth-overlay">
+        <!-- Sign In State -->
+        <div class="auth-card" id="signin-box">
+            <h2>Welcome back</h2>
+            <p class="lead">Manage your gallery projects with ease.</p>
+            <div class="group"><label>Email Address</label><input type="email" id="login-email" placeholder="you@domain.com"></div>
+            <div class="group"><label>Password</label><input type="password" id="login-pass" placeholder="••••••••"></div>
+            <button id="btn-signin" class="btn-orange">Sign In</button>
+            <div id="login-msg" style="margin-top:20px; font-size: 0.85rem;"></div>
+            <div class="auth-nav">
+                <button class="link" onclick="toggleAuth('signup')">Don't have an account? Sign Up</button>
+                <button class="link" onclick="toggleAuth('reset')">Forgot password?</button>
+            </div>
+        </div>
+
+        <!-- Sign Up State -->
+        <div class="auth-card hidden" id="signup-box">
+            <h2>Get Started</h2>
+            <p class="lead">Create your free Menutech gallery account.</p>
+            <div class="group"><label>Email Address</label><input type="email" id="reg-email" placeholder="you@domain.com"></div>
+            <div class="group"><label>Password</label><input type="password" id="reg-pass" placeholder="••••••••"></div>
+            <button id="btn-signup" class="btn-orange">Create Account</button>
+            <div id="reg-msg" style="margin-top:20px; font-size: 0.85rem;"></div>
+            <div class="auth-nav">
+                <button class="link" onclick="toggleAuth('signin')">Already have an account? Sign In</button>
+            </div>
+        </div>
+
+        <!-- Reset Password State -->
+        <div class="auth-card hidden" id="reset-box">
+            <h2>Reset Password</h2>
+            <p class="lead">Enter your email to receive a recovery link.</p>
+            <div class="group"><label>Email Address</label><input type="email" id="reset-email" placeholder="you@domain.com"></div>
+            <button id="btn-reset" class="btn-orange">Send Reset Link</button>
+            <div id="reset-msg" style="margin-top:20px; font-size: 0.85rem;"></div>
+            <div class="auth-nav">
+                <button class="link" onclick="toggleAuth('signin')">Back to Sign In</button>
+            </div>
         </div>
     </div>
 
+    <!-- Domain Init Flow -->
     <div id="domain-init-overlay" class="hidden">
         <div class="auth-card">
-            <h2>CONFIGURACIÓN</h2>
-            <p style="margin-bottom: 30px; color: var(--text-dim); font-size: 0.9rem;">Define el dominio para tu galería.</p>
-            <div class="input-wrap"><label>Dominio</label><input type="text" id="i-dom" placeholder="misitio.com"></div>
-            <button id="i-save" class="btn-main">GUARDAR</button>
-            <div id="i-status" style="margin-top:20px"></div>
+            <h2>Configuration</h2>
+            <p class="lead" style="margin-bottom: 32px">Enter the domain where your gallery will live.</p>
+            <div class="group"><label>Target Domain</label><input type="text" id="init-domain" placeholder="example.com"></div>
+            <button id="btn-save-domain" class="btn-orange">Save Configuration</button>
+            <div id="init-msg" style="margin-top:20px"></div>
         </div>
     </div>
 
-    <div id="user-nav" class="hidden">
-        <div id="u-email"></div>
-        <button id="btn-out">SALIR</button>
+    <div id="top-nav" class="hidden">
+        <div id="user-email"></div>
+        <button id="btn-logout" class="btn-logout">LOGOUT</button>
     </div>
 
-    <div class="container hidden" id="main">
+    <div class="container hidden" id="main-app">
         <header>
-            <div class="subtitle">Manager</div>
-            <h1>Galería</h1>
-            <p id="dom-view" style="font-weight: 700; color: var(--text-dim); letter-spacing: 2px; font-size: 0.75rem; text-transform: uppercase;"></p>
+            <div class="tag">System Manager</div>
+            <h1>My Gallery</h1>
+            <p id="view-domain" style="font-weight: 800; color: var(--orange); text-transform: uppercase; letter-spacing: 2px; font-size: 0.8rem;"></p>
         </header>
 
-        <div class="drop-area" id="drop">
-            <p>SUBIR IMÁGENES</p>
-            <span>Click o arrastra aquí</span>
-            <input type="file" id="f-in" class="hidden" accept="image/*" multiple>
+        <div class="drop-zone" id="drop-zone">
+            <p>UPLOAD IMAGES</p>
+            <span>Click to select or drag files here</span>
+            <input type="file" id="file-input" class="hidden" accept="image/*" multiple>
         </div>
 
-        <div id="u-status" style="text-align:center; margin-bottom:30px; font-weight: 700; font-size: 0.8rem;"></div>
-        <div class="grid" id="grid"></div>
+        <div id="upload-status" style="text-align:center; margin-bottom:40px; font-weight: 700;"></div>
+        <div class="bento" id="gallery-grid"></div>
     </div>
 
     <script>
         const URL = "https://eemqyrysdgasfjlitads.supabase.co";
-        const KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVlbXF5cnlzZGdhc2ZqbGl0YWRzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM3MjA0NDUsImV4cCI6MjA3OTcxODAzNn0.dlVYmoMumBse_O1PLBx0FeNITqY4YktefD6l_uonSgo"; // Fixed Key
-        let sb = null, user = null, dom = null, mode = true;
+        const KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVlbXF5cnlzZGdhc2ZqbGl0YWRzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM3MjA0NDUsImV4cCI6MjA3OTcxODAzNn0.UiyZLqhXSQ1Z_FoL006PDrDYKXbr_pxCOugYTulhdPY";
+        let sb = null, user = null, domain = null;
 
         document.addEventListener('DOMContentLoaded', async () => {
             const m = await import("https://esm.sh/@supabase/supabase-js");
             sb = m.createClient(URL, KEY);
-            check();
-            events();
+            checkSession();
+            initEvents();
         });
 
-        async function check() {
+        async function checkSession() {
             const { data: { session } } = await sb.auth.getSession();
-            if (session) { user = session.user; await profile(); }
+            if (session) { user = session.user; fetchProfile(); }
         }
 
-        async function profile() {
+        async function fetchProfile() {
             const { data } = await sb.from('profiles').select('domain').eq('id', user.id).single();
-            if (data) { dom = data.domain; if (!dom) initDom(); else show(); } else initDom();
+            if (data && data.domain) { domain = data.domain; showApp(); }
+            else { showDomainSetup(); }
         }
 
-        function initDom() { document.getElementById('login-overlay').classList.add('hidden'); document.getElementById('domain-init-overlay').classList.remove('hidden'); }
+        function showDomainSetup() {
+            document.getElementById('auth-overlay').classList.add('hidden');
+            document.getElementById('domain-init-overlay').classList.remove('hidden');
+        }
 
-        function show() {
-            document.getElementById('login-overlay').classList.add('hidden');
+        function showApp() {
+            document.getElementById('auth-overlay').classList.add('hidden');
             document.getElementById('domain-init-overlay').classList.add('hidden');
-            document.getElementById('main').classList.remove('hidden');
-            document.getElementById('user-nav').classList.remove('hidden');
-            document.getElementById('u-email').textContent = user.email;
-            document.getElementById('dom-view').textContent = dom;
-            load();
+            document.getElementById('main-app').classList.remove('hidden');
+            document.getElementById('top-nav').classList.remove('hidden');
+            document.getElementById('user-email').textContent = user.email;
+            document.getElementById('view-domain').textContent = domain;
+            loadGallery();
         }
 
-        function events() {
-            document.getElementById('a-btn').onclick = auth;
-            document.getElementById('a-mode').onclick = toggle;
-            document.getElementById('btn-out').onclick = () => { sb.auth.signOut(); location.reload(); };
-            document.getElementById('i-save').onclick = save;
-            const d = document.getElementById('drop'), f = document.getElementById('f-in');
-            d.onclick = () => f.click();
-            f.onchange = () => upload(f.files);
-            d.ondragover = e => { e.preventDefault(); d.style.borderColor = "#fff"; };
-            ['dragleave', 'dragend'].forEach(t => d.addEventListener(t, () => d.style.borderColor = "var(--border)"));
-            d.ondrop = e => { e.preventDefault(); d.style.borderColor = "var(--border)"; if(e.dataTransfer.files.length) upload(e.dataTransfer.files); };
+        function toggleAuth(mode) {
+            document.getElementById('signin-box').classList.add('hidden');
+            document.getElementById('signup-box').classList.add('hidden');
+            document.getElementById('reset-box').classList.add('hidden');
+            document.getElementById(mode + '-box').classList.remove('hidden');
         }
 
-        function toggle() {
-            mode = !mode;
-            document.getElementById('a-title').textContent = mode ? "ACCESO" : "REGISTRO";
-            document.getElementById('a-btn').textContent = mode ? "CONTINUAR" : "CREAR CUENTA";
-            document.getElementById('a-mode').textContent = mode ? "CREAR CUENTA" : "VOLVER AL ACCESO";
+        function initEvents() {
+            document.getElementById('btn-signin').onclick = signIn;
+            document.getElementById('btn-signup').onclick = signUp;
+            document.getElementById('btn-reset').onclick = resetPass;
+            document.getElementById('btn-logout').onclick = () => { sb.auth.signOut(); location.reload(); };
+            document.getElementById('btn-save-domain').onclick = saveDomain;
+
+            const dz = document.getElementById('drop-zone'), fi = document.getElementById('file-input');
+            dz.onclick = () => fi.click();
+            fi.onchange = () => uploadFiles(fi.files);
+            dz.ondragover = e => { e.preventDefault(); dz.style.borderColor = "var(--orange)"; };
+            ['dragleave', 'dragend'].forEach(t => dz.addEventListener(t, () => dz.style.borderColor = "var(--border)"));
+            dz.ondrop = e => { e.preventDefault(); dz.style.borderColor = "var(--border)"; if(e.dataTransfer.files.length) uploadFiles(e.dataTransfer.files); };
         }
 
-        async function auth() {
-            const e = document.getElementById('a-email').value, p = document.getElementById('a-pass').value, s = document.getElementById('a-status');
-            if (!e || !p) { s.textContent = "COMPLETA LOS CAMPOS"; return; }
-            s.innerHTML = '<div class="spin"></div>';
-            const { data, error } = mode ? await sb.auth.signInWithPassword({ email: e, password: p }) : await sb.auth.signUp({ email: e, password: p });
-            if (error) { s.textContent = "ERROR: " + error.message.toUpperCase(); s.style.color = "var(--danger)"; }
-            else if (!mode) { s.textContent = "CUENTA CREADA. REVISA TU EMAIL O ACCEDE."; s.style.color = "var(--success)"; setTimeout(toggle, 2000); }
-            else { user = data.user; await profile(); }
+        async function signIn() {
+            const e = document.getElementById('login-email').value, p = document.getElementById('login-pass').value, m = document.getElementById('login-msg');
+            if (!e || !p) return;
+            m.innerHTML = '<div class="loader"></div>';
+            const { data, error } = await sb.auth.signInWithPassword({ email: e, password: p });
+            if (error) { m.textContent = error.message; m.style.color = "var(--error)"; }
+            else { user = data.user; fetchProfile(); }
         }
 
-        async function save() {
-            const v = document.getElementById('i-dom').value.trim(), s = document.getElementById('i-status');
+        async function signUp() {
+            const e = document.getElementById('reg-email').value, p = document.getElementById('reg-pass').value, m = document.getElementById('reg-msg');
+            if (!e || !p) return;
+            m.innerHTML = '<div class="loader"></div>';
+            const { error } = await sb.auth.signUp({ email: e, password: p });
+            if (error) { m.textContent = error.message; m.style.color = "var(--error)"; }
+            else { m.textContent = "Account created. Check your email or sign in."; m.style.color = "var(--success)"; setTimeout(() => toggleAuth('signin'), 3000); }
+        }
+
+        async function resetPass() {
+            const e = document.getElementById('reset-email').value, m = document.getElementById('reset-msg');
+            if (!e) return;
+            m.innerHTML = '<div class="loader"></div>';
+            const { error } = await sb.auth.resetPasswordForEmail(e);
+            if (error) { m.textContent = error.message; m.style.color = "var(--error)"; }
+            else { m.textContent = "Recovery link sent to your email."; m.style.color = "var(--success)"; }
+        }
+
+        async function saveDomain() {
+            const v = document.getElementById('init-domain').value.trim(), m = document.getElementById('init-msg');
             if (!v) return;
-            s.innerHTML = '<div class="spin"></div>';
+            m.innerHTML = '<div class="loader"></div>';
             const { error } = await sb.from('profiles').upsert({ id: user.id, domain: v });
-            if (error) { s.textContent = "ERROR AL GUARDAR"; s.style.color = "var(--danger)"; } else { dom = v; show(); }
+            if (error) { m.textContent = "Error saving configuration."; m.style.color = "var(--error)"; }
+            else { domain = v; showApp(); }
         }
 
-        async function upload(files) {
-            const s = document.getElementById('u-status');
-            s.innerHTML = '<div class="spin"></div>';
+        async function uploadFiles(files) {
+            const s = document.getElementById('upload-status');
+            s.innerHTML = '<div class="loader"></div><p style="margin-top:10px">Uploading files...</p>';
             for (const f of files) {
                 const fd = new FormData(); fd.append('file', f); fd.append('upload_preset', 'Tragalero');
                 const res = await fetch('https://api.cloudinary.com/v1_1/dbbjxhvz5/image/upload', { method: 'POST', body: fd });
                 const d = await res.json();
-                await sb.from('galeria').insert([{ user_id: user.id, domain: dom, image_url: d.secure_url }]);
+                await sb.from('galeria').insert([{ user_id: user.id, domain: domain, image_url: d.secure_url }]);
             }
-            s.textContent = "IMÁGENES CARGADAS"; setTimeout(() => s.textContent = "", 3000); load();
+            s.textContent = "UPLOAD COMPLETE"; setTimeout(() => s.textContent = "", 3000); loadGallery();
         }
 
-        async function load() {
-            const g = document.getElementById('grid');
+        async function loadGallery() {
+            const g = document.getElementById('gallery-grid');
             const { data } = await sb.from('galeria').select('*').eq('user_id', user.id).order('created_at', { ascending: false });
             g.innerHTML = (data || []).map((it, i) => `
-                <div class="item ${pattern(i)}">
+                <div class="card ${getBento(i)}">
                     <img src="${it.image_url}" loading="lazy">
-                    <div class="overlay-del"><button class="btn-del" onclick="del('${it.id}')">Eliminar</button></div>
+                    <div class="del-overlay"><button class="btn-del" onclick="deleteImage('${it.id}')">Delete</button></div>
                 </div>
             `).join('');
         }
-        function pattern(i) { const p = ['', 'wd', 'tl', '', 'lg', '', 'wd', '']; return p[i % p.length]; }
-        window.del = async (id) => { if(confirm("¿ELIMINAR?")) { await sb.from('galeria').delete().eq('id', id); load(); } };
+        function getBento(i) { const p = ['', 'wide', 'tall', '', 'large', '', 'wide', '']; return p[i % p.length]; }
+        window.deleteImage = async (id) => { if(confirm("Are you sure?")) { await sb.from('galeria').delete().eq('id', id); loadGallery(); } };
     </script>
 </body>
 </html>
