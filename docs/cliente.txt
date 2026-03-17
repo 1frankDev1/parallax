@@ -1,19 +1,38 @@
--- SQL para la nueva cuenta de Supabase (eemqyrysdgasfjlitads)
--- Nota: RLS deshabilitado por solicitud del usuario.
+-- SQL para la cuenta de Supabase (eemqyrysdgasfjlitads)
+-- Implementación de RLS y Roles para Gestión de Galería y Usuarios
 
--- 1. Crear tabla de perfiles
+-- 1. Tabla de perfiles con roles
 CREATE TABLE IF NOT EXISTS profiles (
     id UUID REFERENCES auth.users ON DELETE CASCADE PRIMARY KEY,
     domain TEXT DEFAULT NULL,
+    role TEXT DEFAULT 'client', -- 'client' o 'admin'
     updated_at TIMESTAMPTZ DEFAULT now()
 );
+
+ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
+
+-- Función SECURITY DEFINER para chequear el rol sin recursividad
+CREATE OR REPLACE FUNCTION is_admin()
+RETURNS BOOLEAN AS $$
+  SELECT EXISTS (
+    SELECT 1 FROM public.profiles
+    WHERE id = auth.uid() AND role = 'admin'
+  );
+$$ LANGUAGE sql SECURITY DEFINER;
+
+-- Políticas para 'profiles'
+CREATE POLICY "Users can manage their own profile" ON profiles
+    FOR ALL USING (auth.uid() = id) WITH CHECK (auth.uid() = id);
+
+CREATE POLICY "Admins can manage all profiles" ON profiles
+    FOR ALL USING (is_admin());
 
 -- 2. Trigger para crear perfil automáticamente
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS trigger AS $$
 BEGIN
-  INSERT INTO public.profiles (id, domain)
-  VALUES (new.id, NULL);
+  INSERT INTO public.profiles (id, domain, role)
+  VALUES (new.id, NULL, 'client');
   RETURN new;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
@@ -23,7 +42,7 @@ CREATE TRIGGER on_auth_user_created
   AFTER INSERT ON auth.users
   FOR EACH ROW EXECUTE PROCEDURE public.handle_new_user();
 
--- 3. Crear tabla 'galeria'
+-- 3. Tabla 'galeria' con RLS
 CREATE TABLE IF NOT EXISTS galeria (
     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
     user_id UUID REFERENCES auth.users NOT NULL,
@@ -31,3 +50,15 @@ CREATE TABLE IF NOT EXISTS galeria (
     image_url TEXT NOT NULL,
     created_at TIMESTAMPTZ DEFAULT now()
 );
+
+ALTER TABLE galeria ENABLE ROW LEVEL SECURITY;
+
+-- Políticas para 'galeria'
+CREATE POLICY "Public can view images by domain" ON galeria
+    FOR SELECT USING (true);
+
+CREATE POLICY "Users can manage their own images" ON galeria
+    FOR ALL USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);
+
+CREATE POLICY "Admins can manage all images" ON galeria
+    FOR ALL USING (is_admin());

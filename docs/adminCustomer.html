@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customer Management | Menutech</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Outfit:wght@500;600;700&display=swap');
+
+        :root {
+            --orange: #ff9533;
+            --bg: #0b0c10;
+            --card: #14161d;
+            --input: #1a1d26;
+            --text: #ffffff;
+            --text-dim: #94a3b8;
+            --border: #2d333f;
+            --error: #ef4444;
+            --success: #10b981;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+        .bg-mesh { position: fixed; inset: 0; z-index: -1; background: radial-gradient(circle at 100% 0%, rgba(255, 149, 51, 0.1) 0%, transparent 40%), radial-gradient(circle at 0% 100%, rgba(255, 149, 51, 0.05) 0%, transparent 40%); }
+
+        header { padding: 40px 60px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); background: rgba(11, 12, 16, 0.8); backdrop-filter: blur(20px); position: sticky; top: 0; z-index: 1000; }
+        header h1 { font-family: 'Outfit', sans-serif; font-size: 1.8rem; font-weight: 600; letter-spacing: -0.5px; }
+        .admin-badge { background: rgba(255, 149, 51, 0.1); color: var(--orange); padding: 6px 14px; border-radius: 12px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; border: 1px solid rgba(255, 149, 51, 0.2); }
+
+        .container { max-width: 1200px; margin: 60px auto; padding: 0 40px; animation: fadeIn 0.8s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        .user-list { display: flex; flex-direction: column; gap: 16px; }
+        .user-card { background: var(--card); border: 1px solid var(--border); border-radius: 24px; padding: 24px 32px; display: grid; grid-template-columns: 1fr 1.5fr 1fr auto; align-items: center; gap: 24px; transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
+        .user-card:hover { border-color: var(--orange); transform: scale(1.005); box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
+
+        .user-info h3 { font-size: 0.95rem; font-weight: 600; color: #fff; margin-bottom: 4px; }
+        .user-info p { font-size: 0.75rem; color: var(--text-dim); font-family: monospace; }
+
+        .domain-edit { position: relative; }
+        .domain-edit input, .domain-edit select { width: 100%; background: var(--input); border: 1px solid var(--border); border-radius: 12px; padding: 12px 16px; color: #fff; font-size: 0.85rem; transition: all 0.3s; }
+        .domain-edit input:focus, .domain-edit select:focus { outline: none; border-color: var(--orange); }
+
+        .actions { display: flex; gap: 12px; }
+        .btn { padding: 12px 20px; border-radius: 14px; font-size: 0.8rem; font-weight: 600; cursor: pointer; transition: all 0.3s; border: none; }
+        .btn-update { background: var(--orange); color: #000; }
+        .btn-update:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(255, 149, 51, 0.3); }
+        .btn-del { background: rgba(239, 68, 68, 0.1); color: var(--error); border: 1px solid rgba(239, 68, 68, 0.2); }
+        .btn-del:hover { background: var(--error); color: #fff; }
+
+        .loader { width: 40px; height: 40px; border: 3px solid rgba(255, 149, 51, 0.1); border-top-color: var(--orange); border-radius: 50%; animation: spin 1s linear infinite; margin: 100px auto; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        #no-access { position: fixed; inset: 0; background: var(--bg); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 9999; }
+        #no-access h2 { font-family: 'Outfit', sans-serif; font-size: 2rem; margin-bottom: 20px; }
+
+        .hidden { display: none !important; }
+    </style>
+</head>
+<body>
+    <div class="bg-mesh"></div>
+
+    <div id="no-access" class="hidden">
+        <h2>Access Denied</h2>
+        <p>Administrator privileges required.</p>
+    </div>
+
+    <div id="app" class="hidden">
+        <header>
+            <h1>Customer Management</h1>
+            <div style="display: flex; align-items: center; gap: 20px;">
+                <span id="admin-email" style="font-size: 0.85rem; font-weight: 600;"></span>
+                <span class="admin-badge">Admin System</span>
+                <button onclick="logout()" class="btn btn-del" style="padding: 8px 16px; font-size: 0.7rem;">LOGOUT</button>
+            </div>
+        </header>
+
+        <div class="container">
+            <div id="loading" class="loader"></div>
+            <div id="user-list" class="user-list"></div>
+        </div>
+    </div>
+
+    <script>
+        const URL = "https://eemqyrysdgasfjlitads.supabase.co";
+        const KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVlbXF5cnlzZGdhc2ZqbGl0YWRzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM3MjA0NDUsImV4cCI6MjA3OTcxODAzNn0.UiyZLqhXSQ1Z_FoL006PDrDYKXbr_pxCOugYTulhdPY";
+        let sb = null, user = null;
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            const m = await import("https://esm.sh/@supabase/supabase-js");
+            sb = m.createClient(URL, KEY);
+            checkAdmin();
+        });
+
+        async function checkAdmin() {
+            const { data: { session } } = await sb.auth.getSession();
+            if (!session) { location.href = "adminWeb.html"; return; }
+
+            user = session.user;
+            const { data, error } = await sb.from('profiles').select('role').eq('id', user.id).single();
+
+            if (error || !data || data.role !== 'admin') {
+                document.getElementById('no-access').classList.remove('hidden');
+            } else {
+                document.getElementById('app').classList.remove('hidden');
+                document.getElementById('admin-email').textContent = user.email;
+                loadUsers();
+            }
+        }
+
+        async function loadUsers() {
+            const list = document.getElementById('user-list');
+            const loader = document.getElementById('loading');
+            list.innerHTML = '';
+            loader.classList.remove('hidden');
+
+            const { data, error } = await sb.from('profiles').select('*').order('updated_at', { ascending: false });
+
+            loader.classList.add('hidden');
+            if (error) { alert("Error loading users: " + error.message); return; }
+
+            list.innerHTML = data.map(u => `
+                <div class="user-card" id="user-${u.id}">
+                    <div class="user-info">
+                        <h3>Customer</h3>
+                        <p>${u.id}</p>
+                    </div>
+                    <div class="domain-edit">
+                        <input type="text" value="${u.domain || ''}" placeholder="Assign domain..." id="domain-${u.id}" style="margin-bottom:8px">
+                        <select id="role-${u.id}">
+                            <option value="client" ${u.role === 'client' ? 'selected' : ''}>Client</option>
+                            <option value="admin" ${u.role === 'admin' ? 'selected' : ''}>Admin</option>
+                        </select>
+                    </div>
+                    <div>
+                        <span class="admin-badge" style="background: ${u.role === 'admin' ? 'rgba(16,185,129,0.1)' : 'rgba(148,163,184,0.1)'}; color: ${u.role === 'admin' ? '#10b981' : '#94a3b8'}; border-color: ${u.role === 'admin' ? 'rgba(16,185,129,0.2)' : 'rgba(148,163,184,0.2)'}">
+                            ${u.role}
+                        </span>
+                    </div>
+                    <div class="actions">
+                        <button class="btn btn-update" onclick="updateUser('${u.id}')">SAVE</button>
+                        <button class="btn btn-del" onclick="deleteUser('${u.id}')">DELETE</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        async function updateUser(id) {
+            const domain = document.getElementById(`domain-${id}`).value.trim();
+            const role = document.getElementById(`role-${id}`).value;
+            const { error } = await sb.from('profiles').update({ domain, role }).eq('id', id);
+            if (error) alert("Error: " + error.message);
+            else {
+                alert("User updated successfully");
+                loadUsers();
+            }
+        }
+
+        async function deleteUser(id) {
+            if (!confirm("Are you sure? This will remove the profile record. (Auth user remains)")) return;
+            const { error } = await sb.from('profiles').delete().eq('id', id);
+            if (error) alert("Error: " + error.message);
+            else {
+                document.getElementById(`user-${id}`).remove();
+            }
+        }
+
+        async function logout() {
+            await sb.auth.signOut();
+            location.href = "adminWeb.html";
+        }
+    </script>
+</body>
+</html>
