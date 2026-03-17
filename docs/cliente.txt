@@ -1,13 +1,25 @@
--- SQL para la nueva cuenta de Supabase (eemqyrysdgasfjlitads)
+-- SQL para la nueva cuenta de Supabase (eemqyrysdgasfjlitads) con RLS
 
--- 1. Crear tabla de perfiles para asociar usuarios de Auth con dominios
+-- 1. Crear tabla de perfiles
 CREATE TABLE IF NOT EXISTS profiles (
     id UUID REFERENCES auth.users ON DELETE CASCADE PRIMARY KEY,
     domain TEXT DEFAULT NULL,
     updated_at TIMESTAMPTZ DEFAULT now()
 );
 
--- 2. Habilitar el trigger para crear un perfil automáticamente al registrarse
+ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
+
+-- Políticas para 'profiles'
+CREATE POLICY "Users can view their own profile" ON profiles
+    FOR SELECT USING (auth.uid() = id);
+
+CREATE POLICY "Users can update their own profile" ON profiles
+    FOR UPDATE USING (auth.uid() = id);
+
+CREATE POLICY "Users can insert their own profile" ON profiles
+    FOR INSERT WITH CHECK (auth.uid() = id);
+
+-- 2. Trigger para crear perfil automáticamente
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS trigger AS $$
 BEGIN
@@ -17,14 +29,12 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
--- Eliminar trigger si ya existe para evitar errores al re-ejecutar
 DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
-
 CREATE TRIGGER on_auth_user_created
   AFTER INSERT ON auth.users
   FOR EACH ROW EXECUTE PROCEDURE public.handle_new_user();
 
--- 3. Crear tabla 'galeria' vinculada a los perfiles/usuarios
+-- 3. Crear tabla 'galeria'
 CREATE TABLE IF NOT EXISTS galeria (
     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
     user_id UUID REFERENCES auth.users NOT NULL,
@@ -33,5 +43,14 @@ CREATE TABLE IF NOT EXISTS galeria (
     created_at TIMESTAMPTZ DEFAULT now()
 );
 
--- Nota: El cliente solicitó NO usar RLS, por lo que las tablas son accesibles si se conoce la URL/Key.
--- Sin embargo, se recomienda usar user_id para filtrar en las consultas.
+ALTER TABLE galeria ENABLE ROW LEVEL SECURITY;
+
+-- Políticas para 'galeria'
+CREATE POLICY "Public can view gallery images by domain" ON galeria
+    FOR SELECT USING (true); -- Permite que el web component lea las fotos
+
+CREATE POLICY "Users can manage their own gallery images" ON galeria
+    FOR ALL USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);
+
+-- Nota: Estas políticas aseguran que solo el dueño pueda editar sus fotos,
+-- pero cualquiera pueda verlas si conoce el dominio, lo cual es necesario para la galería pública.
