@@ -1,13 +1,20 @@
 -- SQL para la cuenta de Supabase (eemqyrysdgasfjlitads)
 -- Implementación de Roles Multi-nivel: Owner, Admin, Developer
 
--- 1. Tabla de perfiles con nuevos roles
+-- 1. Asegurar que la tabla y columnas existen
 CREATE TABLE IF NOT EXISTS public.profiles (
     id UUID REFERENCES auth.users ON DELETE CASCADE PRIMARY KEY,
     domain TEXT DEFAULT NULL,
-    role TEXT DEFAULT 'owner', -- 'owner', 'admin', 'developer'
     updated_at TIMESTAMPTZ DEFAULT now()
 );
+
+-- Agregar columna role si no existe (previene el error 42703)
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema='public' AND table_name='profiles' AND column_name='role') THEN
+    ALTER TABLE public.profiles ADD COLUMN role TEXT DEFAULT 'owner';
+  END IF;
+END $$;
 
 ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
 
@@ -22,8 +29,8 @@ CREATE TABLE IF NOT EXISTS public.developer_access (
 
 ALTER TABLE public.developer_access ENABLE ROW LEVEL SECURITY;
 
--- Funciones auxiliares SECURITY DEFINER para evitar recursividad
-CREATE OR REPLACE FUNCTION is_admin()
+-- 3. Funciones auxiliares SECURITY DEFINER (Bypass RLS)
+CREATE OR REPLACE FUNCTION public.is_admin()
 RETURNS BOOLEAN AS $$
   SELECT EXISTS (
     SELECT 1 FROM public.profiles
@@ -31,7 +38,7 @@ RETURNS BOOLEAN AS $$
   );
 $$ LANGUAGE sql SECURITY DEFINER;
 
-CREATE OR REPLACE FUNCTION has_developer_access(target_owner_id UUID)
+CREATE OR REPLACE FUNCTION public.has_developer_access(target_owner_id UUID)
 RETURNS BOOLEAN AS $$
   SELECT EXISTS (
     SELECT 1 FROM public.developer_access
@@ -39,27 +46,36 @@ RETURNS BOOLEAN AS $$
   );
 $$ LANGUAGE sql SECURITY DEFINER;
 
--- Políticas para 'profiles'
+-- 4. Políticas para 'profiles'
+DROP POLICY IF EXISTS "Users can view their own profile" ON public.profiles;
+CREATE POLICY "Users can view their own profile" ON public.profiles
+    FOR SELECT USING (auth.uid() = id);
+
+DROP POLICY IF EXISTS "Users can manage their own profile" ON public.profiles;
 CREATE POLICY "Users can manage their own profile" ON public.profiles
     FOR ALL USING (auth.uid() = id) WITH CHECK (auth.uid() = id);
 
+DROP POLICY IF EXISTS "Admins can manage all profiles" ON public.profiles;
 CREATE POLICY "Admins can manage all profiles" ON public.profiles
-    FOR ALL USING (is_admin());
+    FOR ALL USING (public.is_admin());
 
+DROP POLICY IF EXISTS "Developers can view assigned owners" ON public.profiles;
 CREATE POLICY "Developers can view assigned owners" ON public.profiles
-    FOR SELECT USING (has_developer_access(id));
+    FOR SELECT USING (public.has_developer_access(id));
 
 -- Políticas para 'developer_access'
+DROP POLICY IF EXISTS "Admins manage developer access" ON public.developer_access;
 CREATE POLICY "Admins manage developer access" ON public.developer_access
-    FOR ALL USING (is_admin());
+    FOR ALL USING (public.is_admin());
 
+DROP POLICY IF EXISTS "Developers can view their own assignments" ON public.developer_access;
 CREATE POLICY "Developers can view their own assignments" ON public.developer_access
     FOR SELECT USING (developer_id = auth.uid());
 
--- 3. Tabla 'galeria' con acceso multi-tier
+-- 5. Tabla 'galeria' con acceso multi-tier
 CREATE TABLE IF NOT EXISTS public.galeria (
     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-    user_id UUID REFERENCES auth.users NOT NULL, -- El ID del owner de la imagen
+    user_id UUID REFERENCES auth.users NOT NULL,
     domain TEXT NOT NULL,
     image_url TEXT NOT NULL,
     created_at TIMESTAMPTZ DEFAULT now()
@@ -68,19 +84,23 @@ CREATE TABLE IF NOT EXISTS public.galeria (
 ALTER TABLE public.galeria ENABLE ROW LEVEL SECURITY;
 
 -- Políticas para 'galeria'
+DROP POLICY IF EXISTS "Public can view images by domain" ON public.galeria;
 CREATE POLICY "Public can view images by domain" ON public.galeria
     FOR SELECT USING (true);
 
+DROP POLICY IF EXISTS "Owners manage their own images" ON public.galeria;
 CREATE POLICY "Owners manage their own images" ON public.galeria
     FOR ALL USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "Admins manage all images" ON public.galeria;
 CREATE POLICY "Admins manage all images" ON public.galeria
-    FOR ALL USING (is_admin());
+    FOR ALL USING (public.is_admin());
 
+DROP POLICY IF EXISTS "Developers manage assigned owners images" ON public.galeria;
 CREATE POLICY "Developers manage assigned owners images" ON public.galeria
-    FOR ALL USING (has_developer_access(user_id)) WITH CHECK (has_developer_access(user_id));
+    FOR ALL USING (public.has_developer_access(user_id)) WITH CHECK (public.has_developer_access(user_id));
 
--- 4. Trigger para creación de perfil (Owner por defecto)
+-- 6. Trigger para creación de perfil
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS trigger AS $$
 BEGIN
@@ -94,3 +114,14 @@ DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
 CREATE TRIGGER on_auth_user_created
   AFTER INSERT ON auth.users
   FOR EACH ROW EXECUTE PROCEDURE public.handle_new_user();
+
+-- =================================================================
+-- COMANDOS PARA EL USUARIO FRANCISCO (ADMINISTRACIÓN MANUAL)
+-- =================================================================
+
+-- 1. Para eliminar al usuario (Ejecutar en el SQL Editor):
+-- DELETE FROM auth.users WHERE email = 'francisco.menutech@gmail.com';
+
+-- 2. Después de que Francisco se registre de nuevo en adminWeb.html,
+-- para ponerlo como ADMIN, ejecuta esto con su nuevo ID:
+-- UPDATE public.profiles SET role = 'admin' WHERE id = (SELECT id FROM auth.users WHERE email = 'francisco.menutech@gmail.com');
