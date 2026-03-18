@@ -4,10 +4,19 @@
 -- 1. Tabla de perfiles
 CREATE TABLE IF NOT EXISTS public.profiles (
     id UUID REFERENCES auth.users ON DELETE CASCADE PRIMARY KEY,
+    email TEXT,
     domain TEXT DEFAULT NULL,
     role TEXT DEFAULT 'owner',
     updated_at TIMESTAMPTZ DEFAULT now()
 );
+
+-- Migración: Agregar columna email si no existe
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema='public' AND table_name='profiles' AND column_name='email') THEN
+    ALTER TABLE public.profiles ADD COLUMN email TEXT;
+  END IF;
+END $$;
 
 ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
 
@@ -97,8 +106,8 @@ CREATE POLICY "Developers manage assigned owners images" ON public.galeria
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS trigger AS $$
 BEGIN
-  INSERT INTO public.profiles (id, domain, role)
-  VALUES (new.id, NULL, 'owner');
+  INSERT INTO public.profiles (id, email, domain, role)
+  VALUES (new.id, new.email, NULL, 'owner');
   RETURN new;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;

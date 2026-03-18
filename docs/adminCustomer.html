@@ -27,6 +27,8 @@
 
         header { padding: 30px 60px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); background: rgba(11, 12, 16, 0.8); backdrop-filter: blur(20px); position: sticky; top: 0; z-index: 1000; }
         header h1 { font-family: 'Outfit', sans-serif; font-size: 1.6rem; font-weight: 600; }
+        .btn-back { background: none; border: 1px solid var(--border); color: #fff; padding: 10px 20px; border-radius: 12px; font-size: 0.75rem; font-weight: 600; cursor: pointer; transition: 0.3s; margin-right: 20px; }
+        .btn-back:hover { border-color: var(--orange); color: var(--orange); }
 
         .badge { padding: 6px 14px; border-radius: 12px; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; border: 1px solid transparent; }
         .badge-admin { background: rgba(255, 149, 51, 0.1); color: var(--orange); border-color: rgba(255, 149, 51, 0.2); }
@@ -83,7 +85,10 @@
 
     <div id="app" class="hidden">
         <header>
-            <h1>Console</h1>
+            <div style="display: flex; align-items: center;">
+                <button onclick="location.href='adminPanel.html'" class="btn-back">PANEL</button>
+                <h1>Console</h1>
+            </div>
             <div style="display: flex; align-items: center; gap: 20px;">
                 <span id="user-display" style="font-size: 0.85rem; font-weight: 600;"></span>
                 <span id="role-badge" class="badge"></span>
@@ -137,8 +142,7 @@
 
         async function checkAuth() {
             const { data: { session }, error: sError } = await sb.auth.getSession();
-            if (sError) { console.error("Session error:", sError); return; }
-            if (!session) { location.href = "adminWeb.html"; return; }
+            if (sError || !session) { location.href = "adminPanel.html"; return; }
 
             user = session.user;
             const { data, error } = await sb.from('profiles').select('role').eq('id', user.id).single();
@@ -166,6 +170,10 @@
         async function loadAllUsers() {
             const loader = document.getElementById('loading');
             loader.classList.remove('hidden');
+
+            // First, get emails from auth users list would require admin sdk,
+            // but we can try to get them if the user exists in profiles with more info
+            // or just use the IDs for now as emails are restricted in client SDK for other users.
             const { data, error } = await sb.from('profiles').select('*').order('role', { ascending: true });
             loader.classList.add('hidden');
 
@@ -213,8 +221,8 @@
             list.innerHTML = (users || []).map(u => `
                 <div class="user-card">
                     <div class="user-info">
-                        <h3>${u.role.toUpperCase()}</h3>
-                        <p>${u.id}</p>
+                        <h3>${u.email || 'No Email'}</h3>
+                        <p>${u.role.toUpperCase()} | ${u.id.substring(0,8)}</p>
                     </div>
                     <div class="controls">
                         <input type="text" value="${u.domain || ''}" placeholder="No domain assigned" id="dom-${u.id}" ${!isAdminView ? 'disabled' : ''}>
@@ -231,7 +239,7 @@
                     <div class="actions">
                         ${isAdminView ? `<button class="btn btn-save" onclick="updateUser('${u.id}')">Update</button>` : ''}
                         ${isAdminView && u.role === 'owner' ? `<button class="btn btn-access" onclick="openAccess('${u.id}')">Access</button>` : ''}
-                        ${!isAdminView ? `<button class="btn btn-save" onclick="manageGallery('${u.id}', '${u.domain}')">Manage</button>` : ''}
+                        <button class="btn btn-access" onclick="manageGallery('${u.id}', '${u.domain}')">Gallery</button>
                         ${isAdminView ? `<button class="btn btn-del" onclick="deleteUser('${u.id}')">Del</button>` : ''}
                     </div>
                 </div>
@@ -297,7 +305,7 @@
             closeModal();
         }
 
-        async function logout() { await sb.auth.signOut(); location.href = "adminWeb.html"; }
+        async function logout() { await sb.auth.signOut(); location.href = "adminPanel.html"; }
     </script>
 </body>
 </html>

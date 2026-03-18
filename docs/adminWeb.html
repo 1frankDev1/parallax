@@ -112,32 +112,6 @@
 <body>
     <div class="bg-mesh"></div>
 
-    <!-- Auth Module -->
-    <div id="auth-overlay">
-        <div class="auth-card" id="signin-box">
-            <h2>Welcome back</h2>
-            <p class="lead">Manage your gallery projects with ease.</p>
-            <div class="group"><label>Email Address</label><input type="email" id="login-email" placeholder="you@domain.com"></div>
-            <div class="group"><label>Password</label><input type="password" id="login-pass" placeholder="••••••••"></div>
-            <button id="btn-signin" class="btn-orange">Sign In</button>
-            <div id="login-msg" style="margin-top:20px; font-size: 0.85rem;"></div>
-            <div class="auth-nav">
-                <button class="link" onclick="toggleAuth('signup')">Don't have an account? Sign Up</button>
-            </div>
-        </div>
-
-        <div class="auth-card hidden" id="signup-box">
-            <h2>Get Started</h2>
-            <p class="lead">Create your free Menutech gallery account.</p>
-            <div class="group"><label>Email Address</label><input type="email" id="reg-email" placeholder="you@domain.com"></div>
-            <div class="group"><label>Password</label><input type="password" id="reg-pass" placeholder="••••••••"></div>
-            <button id="btn-signup" class="btn-orange">Create Account</button>
-            <div id="reg-msg" style="margin-top:20px; font-size: 0.85rem;"></div>
-            <div class="auth-nav">
-                <button class="link" onclick="toggleAuth('signin')">Already have an account? Sign In</button>
-            </div>
-        </div>
-    </div>
 
     <!-- Domain Init Flow -->
     <div id="domain-init-overlay" class="hidden">
@@ -152,7 +126,7 @@
 
     <div id="top-nav" class="hidden">
         <div id="user-email"></div>
-        <button id="btn-console" class="btn-logout" style="margin-right: 15px; border-right: 1px solid var(--border); padding-right: 15px;">CONSOLE</button>
+        <button id="btn-panel" class="btn-logout" style="margin-right: 15px; border-right: 1px solid var(--border); padding-right: 15px;">PANEL</button>
         <button id="btn-logout" class="btn-logout">Logout</button>
     </div>
 
@@ -201,29 +175,27 @@
 
         async function checkSession() {
             const { data: { session }, error } = await sb.auth.getSession();
-            if (error) { console.error("Session error:", error); return; }
-            if (session) {
-                user = session.user;
-                const { data: profile, error: pError } = await sb.from('profiles').select('*').eq('id', user.id).single();
+            if (error || !session) { location.href = "adminPanel.html"; return; }
 
-                if (pError || !profile) {
-                    console.warn("Profile not found, waiting for trigger or manual creation.");
-                    userRole = 'owner';
-                    activeOwnerId = user.id;
-                    showDomainSetup();
-                    return;
-                }
+            user = session.user;
+            const { data: profile, error: pError } = await sb.from('profiles').select('*').eq('id', user.id).single();
 
-                userRole = profile.role;
+            if (pError || !profile) {
+                userRole = 'owner';
+                activeOwnerId = user.id;
+                showDomainSetup();
+                return;
+            }
 
-                if (userRole === 'admin' || userRole === 'developer') {
-                    document.getElementById('btn-console').classList.remove('hidden');
-                    setupContextSwitcher();
-                } else {
-                    activeOwnerId = user.id;
-                    activeDomain = profile.domain;
-                    if (!activeDomain) showDomainSetup(); else showApp();
-                }
+            userRole = profile.role;
+
+            if (userRole === 'admin' || userRole === 'developer') {
+                document.getElementById('btn-panel').classList.remove('hidden');
+                setupContextSwitcher();
+            } else {
+                activeOwnerId = user.id;
+                activeDomain = profile.domain;
+                if (!activeDomain) showDomainSetup(); else showApp();
             }
         }
 
@@ -282,17 +254,10 @@
             }
         }
 
-        function toggleAuth(mode) {
-            document.getElementById('signin-box').classList.add('hidden');
-            document.getElementById('signup-box').classList.add('hidden');
-            document.getElementById(mode + '-box').classList.remove('hidden');
-        }
 
         function initEvents() {
-            document.getElementById('btn-signin').onclick = signIn;
-            document.getElementById('btn-signup').onclick = signUp;
             document.getElementById('btn-logout').onclick = () => { if(sb) sb.auth.signOut(); location.reload(); };
-            document.getElementById('btn-console').onclick = () => location.href = "adminCustomer.html";
+            document.getElementById('btn-panel').onclick = () => location.href = "adminPanel.html";
             document.getElementById('btn-save-domain').onclick = saveDomain;
 
             const dz = document.getElementById('drop-zone'), fi = document.getElementById('file-input');
@@ -303,33 +268,6 @@
             dz.ondrop = e => { e.preventDefault(); dz.style.borderColor = "var(--border)"; if(e.dataTransfer.files.length) uploadFiles(e.dataTransfer.files); };
         }
 
-        async function signIn() {
-            const e = document.getElementById('login-email').value.trim(), p = document.getElementById('login-pass').value, m = document.getElementById('login-msg');
-            if (!e || !p) { m.textContent = "Please fill all fields."; m.style.color = "var(--error)"; return; }
-            if (!sb) return alert("System still loading...");
-            m.innerHTML = '<div class="loader"></div>';
-            const { data, error } = await sb.auth.signInWithPassword({ email: e, password: p });
-            if (error) {
-                console.error("SignIn error:", error);
-                m.textContent = error.message;
-                m.style.color = "var(--error)";
-            }
-            else { location.reload(); }
-        }
-
-        async function signUp() {
-            const e = document.getElementById('reg-email').value.trim(), p = document.getElementById('reg-pass').value, m = document.getElementById('reg-msg');
-            if (!e || !p) { m.textContent = "Please fill all fields."; m.style.color = "var(--error)"; return; }
-            if (!sb) return alert("System still loading...");
-            m.innerHTML = '<div class="loader"></div>';
-            const { error } = await sb.auth.signUp({ email: e, password: p });
-            if (error) {
-                console.error("SignUp error:", error);
-                m.textContent = error.message;
-                m.style.color = "var(--error)";
-            }
-            else { m.textContent = "Check email or sign in."; m.style.color = "var(--success)"; setTimeout(() => toggleAuth('signin'), 3000); }
-        }
 
         async function saveDomain() {
             const v = document.getElementById('init-domain').value.trim(), m = document.getElementById('init-msg');
