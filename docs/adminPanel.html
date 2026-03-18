@@ -109,11 +109,17 @@
             </div>
         </div>
 
-        <div class="auth-card hidden" id="signup-box">
+        <div class="auth-card hidden" id="signup-box" style="max-width: 500px;">
             <h2>Get Started</h2>
             <p class="lead">Create your account to start managing.</p>
-            <div class="group"><label>Email Address</label><input type="email" id="reg-email" placeholder="you@domain.com"></div>
-            <div class="group"><label>Password</label><input type="password" id="reg-pass" placeholder="••••••••"></div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                <div class="group"><label>Full Name</label><input type="text" id="reg-name" placeholder="John Doe"></div>
+                <div class="group"><label>Email Address</label><input type="email" id="reg-email" placeholder="you@domain.com"></div>
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                <div class="group"><label>Password</label><input type="password" id="reg-pass" placeholder="••••••••"></div>
+                <div class="group"><label>Target Domain</label><input type="text" id="reg-domain" placeholder="example.com"></div>
+            </div>
             <button id="btn-signup" class="btn-orange">Create Account</button>
             <div id="reg-msg" style="margin-top:20px; font-size: 0.85rem;"></div>
             <div class="auth-nav">
@@ -207,12 +213,32 @@
         }
 
         async function signUp() {
-            const e = document.getElementById('reg-email').value.trim(), p = document.getElementById('reg-pass').value, m = document.getElementById('reg-msg');
-            if (!e || !p) { m.textContent = "Please fill all fields."; m.style.color = "var(--error)"; return; }
+            const n = document.getElementById('reg-name').value.trim();
+            const e = document.getElementById('reg-email').value.trim();
+            const p = document.getElementById('reg-pass').value;
+            const d = document.getElementById('reg-domain').value.trim();
+            const m = document.getElementById('reg-msg');
+
+            if (!n || !e || !p || !d) { m.textContent = "Please fill all fields."; m.style.color = "var(--error)"; return; }
+
             m.innerHTML = '<div class="loader"></div>';
-            const { error } = await sb.auth.signUp({ email: e, password: p });
+            const { error } = await sb.auth.signUp({
+                email: e,
+                password: p,
+                options: {
+                    data: {
+                        full_name: n,
+                        domain: d
+                    }
+                }
+            });
+
             if (error) { m.textContent = error.message; m.style.color = "var(--error)"; }
-            else { m.textContent = "Check email or sign in."; m.style.color = "var(--success)"; setTimeout(() => toggleAuth('signin'), 3000); }
+            else {
+                m.textContent = "Account created! You can now Sign In.";
+                m.style.color = "var(--success)";
+                setTimeout(() => toggleAuth('signin'), 2500);
+            }
         }
     </script>
 </body>

@@ -26,17 +26,12 @@
         /* Modern Gradient Background */
         .bg-mesh { position: fixed; inset: 0; z-index: -1; background: radial-gradient(circle at 0% 0%, rgba(255, 149, 51, 0.12) 0%, transparent 40%), radial-gradient(circle at 100% 100%, rgba(255, 149, 51, 0.08) 0%, transparent 40%); }
 
-        /* Auth Screen */
-        #auth-overlay { position: fixed; inset: 0; background: var(--bg); display: flex; align-items: center; justify-content: center; z-index: 9999; padding: 24px; }
         .auth-card {
             background: var(--card); width: 100%; max-width: 440px; padding: 60px 45px; border-radius: 40px; border: 1px solid var(--border);
             box-shadow: 0 24px 64px -12px rgba(0,0,0,0.5); position: relative; text-align: center;
             animation: slideUp 0.8s cubic-bezier(0.16, 1, 0.3, 1);
         }
         @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-
-        .auth-card h2 { font-family: 'Outfit', sans-serif; font-size: 2rem; font-weight: 600; margin-bottom: 12px; color: #fff; }
-        .auth-card p.lead { color: var(--text-dim); margin-bottom: 40px; font-size: 0.95rem; font-weight: 400; line-height: 1.6; }
 
         .group { margin-bottom: 24px; text-align: left; }
         .group label { display: block; font-size: 0.75rem; font-weight: 600; color: var(--orange); letter-spacing: 0.5px; margin-bottom: 10px; margin-left: 4px; opacity: 0.9; }
@@ -169,8 +164,6 @@
                 checkSession();
             } catch (err) {
                 console.error("Initialization error:", err);
-                const msg = document.getElementById('login-msg');
-                if (msg) msg.textContent = "Error: System connection failed.";
             }
         });
 
@@ -184,7 +177,7 @@
             if (pError || !profile) {
                 userRole = 'owner';
                 activeOwnerId = user.id;
-                showDomainSetup();
+                showApp(); // Just show app, editor works even if empty
                 return;
             }
 
@@ -195,18 +188,16 @@
                 document.getElementById('btn-copy-code').classList.remove('hidden');
                 await setupContextSwitcher();
 
-                // If an admin/dev enters directly without a selected owner,
-                // default to their own profile to show the editor.
                 if (!activeOwnerId) {
                     activeOwnerId = user.id;
                     activeDomain = profile.domain;
-                    document.getElementById('view-domain-title').textContent = activeDomain || "Personal Workspace";
+                    document.getElementById('view-domain-title').textContent = activeDomain || "Admin Workspace";
                 }
                 showApp();
             } else {
                 activeOwnerId = user.id;
                 activeDomain = profile.domain;
-                if (!activeDomain) showDomainSetup(); else showApp();
+                showApp();
             }
         }
 
@@ -251,21 +242,16 @@
             loadGallery();
         }
 
-        function showDomainSetup() {
-            document.getElementById('auth-overlay').classList.add('hidden');
-            document.getElementById('domain-init-overlay').classList.remove('hidden');
-        }
-
         function showApp() {
-            document.getElementById('auth-overlay').classList.add('hidden');
-            document.getElementById('domain-init-overlay').classList.add('hidden');
-            document.getElementById('main-app').classList.remove('hidden');
-            document.getElementById('top-nav').classList.remove('hidden');
+            const main = document.getElementById('main-app');
+            const nav = document.getElementById('top-nav');
+            if (main) main.classList.remove('hidden');
+            if (nav) nav.classList.remove('hidden');
             document.getElementById('user-email').textContent = user.email;
 
             if (activeOwnerId) {
                 if (userRole === 'owner') {
-                    document.getElementById('view-domain-title').textContent = activeDomain;
+                    document.getElementById('view-domain-title').textContent = activeDomain || "My Gallery";
                 }
                 loadGallery();
             }
