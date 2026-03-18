@@ -5,16 +5,20 @@
 CREATE TABLE IF NOT EXISTS public.profiles (
     id UUID REFERENCES auth.users ON DELETE CASCADE PRIMARY KEY,
     email TEXT,
+    full_name TEXT DEFAULT NULL,
     domain TEXT DEFAULT NULL,
     role TEXT DEFAULT 'owner',
     updated_at TIMESTAMPTZ DEFAULT now()
 );
 
--- Migración: Agregar columna email si no existe
+-- Migración: Agregar columnas si no existen
 DO $$
 BEGIN
   IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema='public' AND table_name='profiles' AND column_name='email') THEN
     ALTER TABLE public.profiles ADD COLUMN email TEXT;
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema='public' AND table_name='profiles' AND column_name='full_name') THEN
+    ALTER TABLE public.profiles ADD COLUMN full_name TEXT;
   END IF;
 END $$;
 
@@ -127,3 +131,6 @@ CREATE TRIGGER on_auth_user_created
 -- 2. Después de que Francisco se registre de nuevo en adminWeb.html,
 -- para ponerlo como ADMIN, ejecuta esto con su email:
 -- UPDATE public.profiles SET role = 'admin' WHERE id = (SELECT id FROM auth.users WHERE email = 'francisco.menutech@gmail.com');
+
+-- 3. Si ya tienes usuarios pero NO tienen correo en profiles, corre esto una vez:
+-- UPDATE public.profiles p SET email = u.email FROM auth.users u WHERE p.id = u.id AND p.email IS NULL;

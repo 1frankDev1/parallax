@@ -191,7 +191,16 @@
 
             if (userRole === 'admin' || userRole === 'developer') {
                 document.getElementById('btn-panel').classList.remove('hidden');
-                setupContextSwitcher();
+                await setupContextSwitcher();
+
+                // If an admin/dev enters directly without a selected owner,
+                // default to their own profile to show the editor.
+                if (!activeOwnerId) {
+                    activeOwnerId = user.id;
+                    activeDomain = profile.domain;
+                    document.getElementById('view-domain-title').textContent = activeDomain || "Personal Workspace";
+                    showApp();
+                }
             } else {
                 activeOwnerId = user.id;
                 activeDomain = profile.domain;
@@ -206,15 +215,19 @@
 
             let owners = [];
             if (userRole === 'admin') {
-                const { data } = await sb.from('profiles').select('*').eq('role', 'owner');
+                const { data } = await sb.from('profiles').select('*');
                 owners = data || [];
             } else {
-                const { data } = await sb.from('profiles').select('*').neq('id', user.id);
+                // For developers, we need to join with access table (ideally via RPC or view,
+                // but let's do a quick separate fetch for now to keep it simple).
+                const { data: access } = await sb.from('developer_access').select('owner_id').eq('developer_id', user.id);
+                const ids = (access || []).map(a => a.owner_id);
+                const { data } = await sb.from('profiles').select('*').in('id', ids);
                 owners = data || [];
             }
 
             select.innerHTML = '<option value="">-- Select a Client --</option>' +
-                owners.map(o => `<option value="${o.id}" data-domain="${o.domain || ''}">${o.domain || o.id.substring(0,8)}</option>`).join('');
+                owners.map(o => `<option value="${o.id}" data-domain="${o.domain || ''}">${o.full_name || o.email || o.id.substring(0,8)}</option>`).join('');
 
             const passedId = sessionStorage.getItem('mt_edit_owner_id');
             if (passedId) {
@@ -224,7 +237,6 @@
             }
 
             select.onchange = () => switchContext(select.value);
-            showApp();
         }
 
         function switchContext(ownerId) {

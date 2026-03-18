@@ -42,11 +42,12 @@
         .section-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
 
         .user-list { display: flex; flex-direction: column; gap: 16px; margin-bottom: 60px; }
-        .user-card { background: var(--card); border: 1px solid var(--border); border-radius: 24px; padding: 24px 32px; display: grid; grid-template-columns: 1.2fr 1.5fr 1fr auto; align-items: center; gap: 24px; transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
+        .user-card { background: var(--card); border: 1px solid var(--border); border-radius: 24px; padding: 24px 32px; display: grid; grid-template-columns: 1.5fr 1.5fr 1fr auto; align-items: center; gap: 24px; transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
         .user-card:hover { border-color: var(--orange); transform: scale(1.005); box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
 
-        .user-info h3 { font-size: 0.9rem; font-weight: 600; color: #fff; margin-bottom: 4px; overflow: hidden; text-overflow: ellipsis; }
-        .user-info p { font-size: 0.7rem; color: var(--text-dim); font-family: monospace; }
+        .user-info h3 { font-size: 0.95rem; font-weight: 700; color: #fff; margin-bottom: 4px; overflow: hidden; text-overflow: ellipsis; display: flex; align-items: center; gap: 10px; }
+        .user-info .email { font-size: 0.75rem; color: var(--orange); font-weight: 500; }
+        .user-info .uid { font-size: 0.65rem; color: var(--text-dim); font-family: monospace; margin-top: 4px; }
 
         .controls { display: flex; flex-direction: column; gap: 8px; }
         .controls input, .controls select { width: 100%; background: var(--input); border: 1px solid var(--border); border-radius: 12px; padding: 10px 14px; color: #fff; font-size: 0.8rem; transition: all 0.3s; }
@@ -221,11 +222,13 @@
             list.innerHTML = (users || []).map(u => `
                 <div class="user-card">
                     <div class="user-info">
-                        <h3>${u.email || 'No Email'}</h3>
-                        <p>${u.role.toUpperCase()} | ${u.id.substring(0,8)}</p>
+                        <h3>${u.full_name || 'No Name'}</h3>
+                        <div class="email">${u.email || 'No Email'}</div>
+                        <div class="uid">${u.role.toUpperCase()} | ${u.id.substring(0,8)}</div>
                     </div>
                     <div class="controls">
-                        <input type="text" value="${u.domain || ''}" placeholder="No domain assigned" id="dom-${u.id}" ${!isAdminView ? 'disabled' : ''}>
+                        <input type="text" value="${u.full_name || ''}" placeholder="Full Name/Alias" id="name-${u.id}" ${!isAdminView ? 'disabled' : ''}>
+                        <input type="text" value="${u.domain || ''}" placeholder="Target Domain" id="dom-${u.id}" ${!isAdminView ? 'disabled' : ''}>
                         ${isAdminView ? `
                         <select id="role-${u.id}">
                             <option value="owner" ${u.role === 'owner' ? 'selected' : ''}>Owner</option>
@@ -248,8 +251,9 @@
 
         async function updateUser(id) {
             const domain = document.getElementById(`dom-${id}`).value.trim();
+            const full_name = document.getElementById(`name-${id}`).value.trim();
             const role = document.getElementById(`role-${id}`).value;
-            const { error } = await sb.from('profiles').update({ domain, role }).eq('id', id);
+            const { error } = await sb.from('profiles').update({ domain, role, full_name }).eq('id', id);
             if (error) alert("Update error: " + error.message);
             else { alert("User updated successfully"); loadAllUsers(); }
         }
