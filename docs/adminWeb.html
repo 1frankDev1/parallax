@@ -182,20 +182,20 @@
     </div>
 
     <script>
-        const MT_URL = "https://eemqyrysdgasfjlitads.supabase.co";
-        const MT_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVlbXF5cnlzZGdhc2ZsaXRhZHMiLCJyb2xlIjoiYW5vbiIsImlhdCI6MTczNjU0ODUzNSwiZXhwIjoyMDUyMTI0NTM1fQ.xV5YV95CbeAByW9x7qMbe4f86i3_H6n8CstY6wIhdPY";
+        const SB_URL = "https://eemqyrysdgasfjlitads.supabase.co";
+        const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVlbXF5cnlzZGdhc2ZqbGl0YWRzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM3MjA0NDUsImV4cCI6MjA3OTcxODAzNn0.UiyZLqhXSQ1Z_FoL006PDrDYKXbr_pxCOugYTulhdPY";
         let sb = null, user = null, userRole = null, activeOwnerId = null, activeDomain = null;
 
         document.addEventListener('DOMContentLoaded', async () => {
-            initEvents();
             try {
-                const { createClient } = await import("https://esm.sh/@supabase/supabase-js");
-                sb = createClient(MT_URL, MT_KEY);
+                const m = await import("https://esm.sh/@supabase/supabase-js");
+                sb = m.createClient(SB_URL, SB_KEY);
                 checkSession();
-            } catch (err) {
-                console.error("Initialization error:", err);
-                const msg = document.getElementById('login-msg');
-                if (msg) msg.textContent = "Error: System connection failed.";
+                initEvents();
+            } catch (e) {
+                console.error("Supabase init error:", e);
+                const msg = document.getElementById('login-msg') || document.getElementById('reg-msg');
+                if (msg) msg.textContent = "Error initializing connection. Please refresh.";
             }
         });
 
