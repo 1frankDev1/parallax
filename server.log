@@ -21,3 +21,5 @@
 127.0.0.1 - - [18/Mar/2026 07:33:53] "GET /adminPanel.html HTTP/1.1" 200 -
 127.0.0.1 - - [18/Mar/2026 07:33:55] "GET /adminCustomer.html HTTP/1.1" 200 -
 127.0.0.1 - - [18/Mar/2026 07:33:57] "GET /adminWeb.html HTTP/1.1" 200 -
+127.0.0.1 - - [18/Mar/2026 08:33:32] "GET /adminWeb.html HTTP/1.1" 200 -
+127.0.0.1 - - [18/Mar/2026 08:33:33] "GET /adminPanel.html HTTP/1.1" 200 -

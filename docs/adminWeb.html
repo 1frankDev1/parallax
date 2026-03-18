@@ -126,6 +126,7 @@
 
     <div id="top-nav" class="hidden">
         <div id="user-email"></div>
+        <button id="btn-copy-code" class="btn-logout hidden" style="margin-right: 15px; color: var(--orange);">COPY CODE</button>
         <button id="btn-panel" class="btn-logout" style="margin-right: 15px; border-right: 1px solid var(--border); padding-right: 15px;">PANEL</button>
         <button id="btn-logout" class="btn-logout">Logout</button>
     </div>
@@ -191,6 +192,7 @@
 
             if (userRole === 'admin' || userRole === 'developer') {
                 document.getElementById('btn-panel').classList.remove('hidden');
+                document.getElementById('btn-copy-code').classList.remove('hidden');
                 await setupContextSwitcher();
 
                 // If an admin/dev enters directly without a selected owner,
@@ -199,8 +201,8 @@
                     activeOwnerId = user.id;
                     activeDomain = profile.domain;
                     document.getElementById('view-domain-title').textContent = activeDomain || "Personal Workspace";
-                    showApp();
                 }
+                showApp();
             } else {
                 activeOwnerId = user.id;
                 activeDomain = profile.domain;
@@ -260,8 +262,11 @@
             document.getElementById('main-app').classList.remove('hidden');
             document.getElementById('top-nav').classList.remove('hidden');
             document.getElementById('user-email').textContent = user.email;
-            if (userRole === 'owner') {
-                document.getElementById('view-domain-title').textContent = activeDomain;
+
+            if (activeOwnerId) {
+                if (userRole === 'owner') {
+                    document.getElementById('view-domain-title').textContent = activeDomain;
+                }
                 loadGallery();
             }
         }
@@ -270,6 +275,7 @@
         function initEvents() {
             document.getElementById('btn-logout').onclick = () => { if(sb) sb.auth.signOut(); location.reload(); };
             document.getElementById('btn-panel').onclick = () => location.href = "adminPanel.html";
+            document.getElementById('btn-copy-code').onclick = copyGalleryCode;
             document.getElementById('btn-save-domain').onclick = saveDomain;
 
             const dz = document.getElementById('drop-zone'), fi = document.getElementById('file-input');
@@ -319,6 +325,17 @@
         }
         function getBento(i) { const p = ['', 'wide', 'tall', '', 'large', '', 'wide', '']; return p[i % p.length]; }
         window.deleteImage = async (id) => { if(confirm("Confirm deletion?")) { await sb.from('galeria').delete().eq('id', id); loadGallery(); } };
+
+        function copyGalleryCode() {
+            if (!activeDomain) return alert("Assign a domain to this project first.");
+            const snippet = `<!-- Menutech Gallery -->\n<script src="https://menutech.xyz/assets/js/menutechUI.js"><\/script>\n<menutech-gallery domain="${activeDomain}"></menutech-gallery>`;
+            navigator.clipboard.writeText(snippet).then(() => {
+                const btn = document.getElementById('btn-copy-code');
+                const oldText = btn.textContent;
+                btn.textContent = "COPIED!";
+                setTimeout(() => btn.textContent = oldText, 2000);
+            });
+        }
     </script>
 </body>
 </html>
