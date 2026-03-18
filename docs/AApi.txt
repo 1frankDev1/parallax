@@ -1,0 +1,15 @@
+Explicación del error "Invalid API key" y Solución:
+
+1. CAUSA DEL ERROR:
+El error "Invalid API key" ocurría porque existía un desajuste entre la URL del proyecto de Supabase (eemqyrysdgasfjlitads) y la anon key utilizada. Cada proyecto de Supabase tiene una clave única vinculada a su referencia de proyecto específica. Si se usa una clave de un proyecto antiguo con la URL de uno nuevo, Supabase rechaza la conexión por seguridad.
+
+2. SOLUCIÓN:
+He estandarizado las credenciales en todos los archivos del sistema de galería (adminWeb.html, adminCustomer.html, menutechUI.js y supabase.js) utilizando la nueva clave proporcionada que corresponde exactamente al proyecto "eemqyrysdgasfjlitads".
+
+3. ARCHIVOS ACTUALIZADOS:
+- docs/adminWeb.html (Panel de cliente)
+- docs/adminCustomer.html (Consola de administración)
+- docs/assets/js/menutechUI.js (Web Component de la galería)
+- docs/assets/js/supabase.js (Cliente compartido)
+
+Ahora el sistema debería inicializarse correctamente sin errores de autenticación de API.
