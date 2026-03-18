@@ -5,20 +5,22 @@
 CREATE TABLE IF NOT EXISTS public.profiles (
     id UUID REFERENCES auth.users ON DELETE CASCADE PRIMARY KEY,
     email TEXT,
-    full_name TEXT DEFAULT NULL,
+    username TEXT,
     domain TEXT DEFAULT NULL,
     role TEXT DEFAULT 'owner',
     updated_at TIMESTAMPTZ DEFAULT now()
 );
 
--- Migración: Agregar columnas si no existen
+-- Migración: Limpiar y Refrescar
+ALTER TABLE public.profiles DROP COLUMN IF EXISTS full_name;
+
 DO $$
 BEGIN
   IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema='public' AND table_name='profiles' AND column_name='email') THEN
     ALTER TABLE public.profiles ADD COLUMN email TEXT;
   END IF;
-  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema='public' AND table_name='profiles' AND column_name='full_name') THEN
-    ALTER TABLE public.profiles ADD COLUMN full_name TEXT;
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema='public' AND table_name='profiles' AND column_name='username') THEN
+    ALTER TABLE public.profiles ADD COLUMN username TEXT;
   END IF;
 END $$;
 
@@ -110,11 +112,11 @@ CREATE POLICY "Developers manage assigned owners images" ON public.galeria
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS trigger AS $$
 BEGIN
-  INSERT INTO public.profiles (id, email, full_name, domain, role)
+  INSERT INTO public.profiles (id, email, username, domain, role)
   VALUES (
     new.id,
     new.email,
-    (new.raw_user_meta_data->>'full_name'),
+    (new.raw_user_meta_data->>'username'),
     (new.raw_user_meta_data->>'domain'),
     'owner'
   );

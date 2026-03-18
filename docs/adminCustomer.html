@@ -186,9 +186,9 @@
             document.getElementById('user-search').oninput = (e) => {
                 const term = e.target.value.toLowerCase();
                 const filtered = allUsers.filter(u =>
-                    (u.full_name || '').toLowerCase().includes(term) ||
                     (u.username || '').toLowerCase().includes(term) ||
-                    (u.email || '').toLowerCase().includes(term)
+                    (u.email || '').toLowerCase().includes(term) ||
+                    (u.domain || '').toLowerCase().includes(term)
                 );
                 renderList(filtered, 'user-list', true);
             };
@@ -234,15 +234,15 @@
             list.innerHTML = (users || []).map(u => `
                 <div class="user-card">
                     <div class="user-info">
-                        <h3 title="Username: ${u.username || 'N/A'}">
-                            ${u.full_name || 'No Name'}
-                            ${u.username ? `<span style="font-size: 0.7rem; background: rgba(255,149,51,0.1); color: var(--orange); padding: 2px 8px; border-radius: 6px;">@${u.username}</span>` : ''}
+                        <h3 title="User ID: ${u.id}">
+                            ${u.username || 'No Username'}
+                            ${u.domain ? `<span style="font-size: 0.7rem; background: rgba(255,149,51,0.1); color: var(--orange); padding: 2px 8px; border-radius: 6px;">${u.domain}</span>` : ''}
                         </h3>
                         <div class="email">${u.email || 'No Email'}</div>
                         <div class="uid">ID: ${u.id.substring(0,12)}...</div>
                     </div>
                     <div class="controls">
-                        <input type="text" value="${u.full_name || ''}" placeholder="Display Name" id="name-${u.id}" ${!isAdminView ? 'disabled' : ''}>
+                        <input type="text" value="${u.username || ''}" placeholder="Username" id="user-${u.id}" ${!isAdminView ? 'disabled' : ''}>
                         <input type="text" value="${u.domain || ''}" placeholder="Registered Domain" id="dom-${u.id}" ${!isAdminView ? 'disabled' : ''}>
                         ${isAdminView ? `
                         <select id="role-${u.id}">
@@ -266,9 +266,9 @@
 
         async function updateUser(id) {
             const domain = document.getElementById(`dom-${id}`).value.trim();
-            const full_name = document.getElementById(`name-${id}`).value.trim();
+            const username = document.getElementById(`user-${id}`).value.trim();
             const role = document.getElementById(`role-${id}`).value;
-            const { error } = await sb.from('profiles').update({ domain, role, full_name }).eq('id', id);
+            const { error } = await sb.from('profiles').update({ domain, role, username }).eq('id', id);
             if (error) alert("Update error: " + error.message);
             else { alert("User updated successfully"); loadAllUsers(); }
         }
