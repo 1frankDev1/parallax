@@ -6,8 +6,8 @@ class MenutechGallery extends HTMLElement {
     constructor() {
         super();
         this.attachShadow({ mode: 'open' });
-        this.supabaseUrl = "https://ojpyfjgkffmzwvukjagf.supabase.co";
-        this.supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9qcHlmamdrZmZtend2dWtqYWdmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQxNDIwMzYsImV4cCI6MjA3OTcxODAzNn0.dlVYmoMumBse_O1PLBx0FeNITqY4YktefD6l_uonSgo";
+        this.supabaseUrl = "https://eemqyrysdgasfjlitads.supabase.co";
+        this.supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVlbXF5cnlzZGdhc2ZsaXRhZHMiLCJyb2xlIjoiYW5vbiIsImlhdCI6MTczNjU0ODUzNSwiZXhwIjoyMDUyMTI0NTM1fQ.xV5YV95CbeAByW9x7qMbe4f86i3_H6n8CstY6wIhdPY";
     }
 
     static get observedAttributes() {

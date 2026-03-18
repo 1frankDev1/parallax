@@ -1,20 +1,13 @@
 -- SQL para la cuenta de Supabase (eemqyrysdgasfjlitads)
 -- Implementación de Roles Multi-nivel: Owner, Admin, Developer
 
--- 1. Asegurar que la tabla y columnas existen
+-- 1. Tabla de perfiles
 CREATE TABLE IF NOT EXISTS public.profiles (
     id UUID REFERENCES auth.users ON DELETE CASCADE PRIMARY KEY,
     domain TEXT DEFAULT NULL,
+    role TEXT DEFAULT 'owner',
     updated_at TIMESTAMPTZ DEFAULT now()
 );
-
--- Agregar columna role si no existe
-DO $$
-BEGIN
-  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema='public' AND table_name='profiles' AND column_name='role') THEN
-    ALTER TABLE public.profiles ADD COLUMN role TEXT DEFAULT 'owner';
-  END IF;
-END $$;
 
 ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
 
@@ -29,7 +22,18 @@ CREATE TABLE IF NOT EXISTS public.developer_access (
 
 ALTER TABLE public.developer_access ENABLE ROW LEVEL SECURITY;
 
--- 3. Funciones auxiliares SECURITY DEFINER (Bypass RLS)
+-- 3. Tabla 'galeria' para las imágenes
+CREATE TABLE IF NOT EXISTS public.galeria (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    user_id UUID REFERENCES auth.users ON DELETE CASCADE NOT NULL,
+    domain TEXT NOT NULL,
+    image_url TEXT NOT NULL,
+    created_at TIMESTAMPTZ DEFAULT now()
+);
+
+ALTER TABLE public.galeria ENABLE ROW LEVEL SECURITY;
+
+-- 4. Funciones auxiliares SECURITY DEFINER (Bypass RLS para evitar recursión)
 CREATE OR REPLACE FUNCTION public.is_admin()
 RETURNS BOOLEAN AS $$
   SELECT EXISTS (
@@ -46,7 +50,7 @@ RETURNS BOOLEAN AS $$
   );
 $$ LANGUAGE sql SECURITY DEFINER;
 
--- 4. Políticas para 'profiles'
+-- 5. Políticas RLS para 'profiles'
 DROP POLICY IF EXISTS "Users can view their own profile" ON public.profiles;
 CREATE POLICY "Users can view their own profile" ON public.profiles
     FOR SELECT USING (auth.uid() = id);
@@ -63,7 +67,7 @@ DROP POLICY IF EXISTS "Developers can view assigned owners" ON public.profiles;
 CREATE POLICY "Developers can view assigned owners" ON public.profiles
     FOR SELECT USING (public.has_developer_access(id));
 
--- Políticas para 'developer_access'
+-- Políticas RLS para 'developer_access'
 DROP POLICY IF EXISTS "Admins manage developer access" ON public.developer_access;
 CREATE POLICY "Admins manage developer access" ON public.developer_access
     FOR ALL USING (public.is_admin());
@@ -72,31 +76,7 @@ DROP POLICY IF EXISTS "Developers can view their own assignments" ON public.deve
 CREATE POLICY "Developers can view their own assignments" ON public.developer_access
     FOR SELECT USING (developer_id = auth.uid());
 
--- 5. Tabla 'galeria' con acceso multi-tier y DELETE CASCADE
-CREATE TABLE IF NOT EXISTS public.galeria (
-    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-    user_id UUID REFERENCES auth.users ON DELETE CASCADE NOT NULL,
-    domain TEXT NOT NULL,
-    image_url TEXT NOT NULL,
-    created_at TIMESTAMPTZ DEFAULT now()
-);
-
--- MIGRACIÓN: Fix para foreign key existente si falla el borrado
-DO $$
-BEGIN
-    IF EXISTS (
-        SELECT 1 FROM information_schema.table_constraints
-        WHERE constraint_name = 'galeria_user_id_fkey' AND table_name = 'galeria'
-    ) THEN
-        ALTER TABLE public.galeria DROP CONSTRAINT galeria_user_id_fkey;
-        ALTER TABLE public.galeria ADD CONSTRAINT galeria_user_id_fkey
-            FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE;
-    END IF;
-END $$;
-
-ALTER TABLE public.galeria ENABLE ROW LEVEL SECURITY;
-
--- Políticas para 'galeria'
+-- Políticas RLS para 'galeria'
 DROP POLICY IF EXISTS "Public can view images by domain" ON public.galeria;
 CREATE POLICY "Public can view images by domain" ON public.galeria
     FOR SELECT USING (true);
@@ -113,7 +93,7 @@ DROP POLICY IF EXISTS "Developers manage assigned owners images" ON public.galer
 CREATE POLICY "Developers manage assigned owners images" ON public.galeria
     FOR ALL USING (public.has_developer_access(user_id)) WITH CHECK (public.has_developer_access(user_id));
 
--- 6. Trigger para creación de perfil
+-- 6. Trigger para creación automática de perfil al registrarse
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS trigger AS $$
 BEGIN
@@ -132,10 +112,9 @@ CREATE TRIGGER on_auth_user_created
 -- COMANDOS PARA EL USUARIO FRANCISCO (ADMINISTRACIÓN MANUAL)
 -- =================================================================
 
--- 1. Para eliminar al usuario (Ejecutar en el SQL Editor):
--- Esto ahora funcionará gracias al fix del CASCADE arriba.
+-- 1. Para eliminar al usuario (Ejecutar en el SQL Editor si existe):
 -- DELETE FROM auth.users WHERE email = 'francisco.menutech@gmail.com';
 
 -- 2. Después de que Francisco se registre de nuevo en adminWeb.html,
--- para ponerlo como ADMIN, ejecuta esto con su nuevo ID:
+-- para ponerlo como ADMIN, ejecuta esto con su email:
 -- UPDATE public.profiles SET role = 'admin' WHERE id = (SELECT id FROM auth.users WHERE email = 'francisco.menutech@gmail.com');

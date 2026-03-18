@@ -291,7 +291,7 @@
         function initEvents() {
             document.getElementById('btn-signin').onclick = signIn;
             document.getElementById('btn-signup').onclick = signUp;
-            document.getElementById('btn-logout').onclick = () => { sb.auth.signOut(); location.reload(); };
+            document.getElementById('btn-logout').onclick = () => { if(sb) sb.auth.signOut(); location.reload(); };
             document.getElementById('btn-console').onclick = () => location.href = "adminCustomer.html";
             document.getElementById('btn-save-domain').onclick = saveDomain;
 
@@ -304,8 +304,9 @@
         }
 
         async function signIn() {
-            const e = document.getElementById('login-email').value, p = document.getElementById('login-pass').value, m = document.getElementById('login-msg');
-            if (!e || !p) return;
+            const e = document.getElementById('login-email').value.trim(), p = document.getElementById('login-pass').value, m = document.getElementById('login-msg');
+            if (!e || !p) { m.textContent = "Please fill all fields."; m.style.color = "var(--error)"; return; }
+            if (!sb) return alert("System still loading...");
             m.innerHTML = '<div class="loader"></div>';
             const { data, error } = await sb.auth.signInWithPassword({ email: e, password: p });
             if (error) {
@@ -317,8 +318,9 @@
         }
 
         async function signUp() {
-            const e = document.getElementById('reg-email').value, p = document.getElementById('reg-pass').value, m = document.getElementById('reg-msg');
-            if (!e || !p) return;
+            const e = document.getElementById('reg-email').value.trim(), p = document.getElementById('reg-pass').value, m = document.getElementById('reg-msg');
+            if (!e || !p) { m.textContent = "Please fill all fields."; m.style.color = "var(--error)"; return; }
+            if (!sb) return alert("System still loading...");
             m.innerHTML = '<div class="loader"></div>';
             const { error } = await sb.auth.signUp({ email: e, password: p });
             if (error) {
