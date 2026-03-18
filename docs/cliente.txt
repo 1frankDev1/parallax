@@ -134,3 +134,7 @@ CREATE TRIGGER on_auth_user_created
 
 -- 3. Si ya tienes usuarios pero NO tienen correo en profiles, corre esto una vez:
 -- UPDATE public.profiles p SET email = u.email FROM auth.users u WHERE p.id = u.id AND p.email IS NULL;
+
+-- 4. Si te sale el error "Could not find column in schema cache",
+-- corre esto en el SQL Editor para refrescar la API de Supabase:
+-- NOTIFY pgrst, 'reload schema';
