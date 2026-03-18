@@ -167,7 +167,7 @@
         <div id="account-switcher" class="switcher-box hidden">
             <label>Switch Project Context</label>
             <select id="owner-select">
-                <option value="">Loading your own project...</option>
+                <option value="">Loading projects...</option>
             </select>
         </div>
 
@@ -194,17 +194,26 @@
         });
 
         async function checkSession() {
-            const { data: { session } } = await sb.auth.getSession();
+            const { data: { session }, error } = await sb.auth.getSession();
+            if (error) { console.error("Session error:", error); return; }
             if (session) {
                 user = session.user;
-                const { data: profile } = await sb.from('profiles').select('*').eq('id', user.id).single();
+                const { data: profile, error: pError } = await sb.from('profiles').select('*').eq('id', user.id).single();
+
+                if (pError || !profile) {
+                    console.warn("Profile not found, waiting for trigger or manual creation.");
+                    userRole = 'owner';
+                    activeOwnerId = user.id;
+                    showDomainSetup();
+                    return;
+                }
+
                 userRole = profile.role;
 
                 if (userRole === 'admin' || userRole === 'developer') {
                     document.getElementById('btn-console').classList.remove('hidden');
                     setupContextSwitcher();
                 } else {
-                    // Logic for owner
                     activeOwnerId = user.id;
                     activeDomain = profile.domain;
                     if (!activeDomain) showDomainSetup(); else showApp();
@@ -229,7 +238,6 @@
             select.innerHTML = '<option value="">-- Select a Client --</option>' +
                 owners.map(o => `<option value="${o.id}" data-domain="${o.domain || ''}">${o.domain || o.id.substring(0,8)}</option>`).join('');
 
-            // Check if context was passed from adminCustomer.html
             const passedId = sessionStorage.getItem('mt_edit_owner_id');
             if (passedId) {
                 select.value = passedId;
@@ -294,7 +302,11 @@
             if (!e || !p) return;
             m.innerHTML = '<div class="loader"></div>';
             const { data, error } = await sb.auth.signInWithPassword({ email: e, password: p });
-            if (error) { m.textContent = error.message; m.style.color = "var(--error)"; }
+            if (error) {
+                console.error("SignIn error:", error);
+                m.textContent = error.message;
+                m.style.color = "var(--error)";
+            }
             else { location.reload(); }
         }
 
@@ -303,7 +315,11 @@
             if (!e || !p) return;
             m.innerHTML = '<div class="loader"></div>';
             const { error } = await sb.auth.signUp({ email: e, password: p });
-            if (error) { m.textContent = error.message; m.style.color = "var(--error)"; }
+            if (error) {
+                console.error("SignUp error:", error);
+                m.textContent = error.message;
+                m.style.color = "var(--error)";
+            }
             else { m.textContent = "Check email or sign in."; m.style.color = "var(--success)"; setTimeout(() => toggleAuth('signin'), 3000); }
         }
 
@@ -311,7 +327,11 @@
             const v = document.getElementById('init-domain').value.trim(), m = document.getElementById('init-msg');
             if (!v) return;
             const { error } = await sb.from('profiles').upsert({ id: user.id, domain: v });
-            if (error) { m.textContent = "Error saving domain."; m.style.color = "var(--error)"; }
+            if (error) {
+                console.error("SaveDomain error:", error);
+                m.textContent = "Error saving domain.";
+                m.style.color = "var(--error)";
+            }
             else { activeDomain = v; showApp(); }
         }
 
