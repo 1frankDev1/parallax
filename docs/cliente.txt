@@ -110,8 +110,14 @@ CREATE POLICY "Developers manage assigned owners images" ON public.galeria
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS trigger AS $$
 BEGIN
-  INSERT INTO public.profiles (id, email, domain, role)
-  VALUES (new.id, new.email, NULL, 'owner');
+  INSERT INTO public.profiles (id, email, full_name, domain, role)
+  VALUES (
+    new.id,
+    new.email,
+    (new.raw_user_meta_data->>'full_name'),
+    (new.raw_user_meta_data->>'domain'),
+    'owner'
+  );
   RETURN new;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
