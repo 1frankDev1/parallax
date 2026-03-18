@@ -1,0 +1,25 @@
+-- ACTUALIZACIÓN FINAL DEL ESQUEMA
+-- Añadiendo columna 'username' y mejorando triggers
+
+-- 1. Asegurar que la columna existe
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS username TEXT;
+
+-- 2. Actualizar el trigger para capturar el username de la metadata de Auth
+CREATE OR REPLACE FUNCTION public.handle_new_user()
+RETURNS trigger AS $$
+BEGIN
+  INSERT INTO public.profiles (id, email, full_name, username, domain, role)
+  VALUES (
+    new.id,
+    new.email,
+    COALESCE(new.raw_user_meta_data->>'full_name', ''),
+    COALESCE(new.raw_user_meta_data->>'username', SPLIT_PART(new.email, '@', 1)),
+    COALESCE(new.raw_user_meta_data->>'domain', 'undetermined'),
+    'owner'
+  );
+  RETURN new;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- 3. Refrescar API
+NOTIFY pgrst, 'reload schema';

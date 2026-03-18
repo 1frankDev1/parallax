@@ -1,27 +1,23 @@
-127.0.0.1 - - [18/Mar/2026 05:29:11] "GET /adminWeb.html HTTP/1.1" 200 -
-127.0.0.1 - - [18/Mar/2026 05:30:03] "GET /adminWeb.html HTTP/1.1" 200 -
-127.0.0.1 - - [18/Mar/2026 05:30:57] "GET /adminWeb.html HTTP/1.1" 200 -
-127.0.0.1 - - [18/Mar/2026 05:31:49] "GET /adminWeb.html HTTP/1.1" 200 -
-127.0.0.1 - - [18/Mar/2026 05:32:47] "GET /adminWeb.html HTTP/1.1" 200 -
-127.0.0.1 - - [18/Mar/2026 05:33:39] "GET /adminWeb.html HTTP/1.1" 200 -
-127.0.0.1 - - [18/Mar/2026 05:34:37] "GET /adminWeb.html HTTP/1.1" 200 -
-127.0.0.1 - - [18/Mar/2026 05:37:02] "GET /adminWeb.html HTTP/1.1" 200 -
-127.0.0.1 - - [18/Mar/2026 05:37:06] "GET /adminCustomer.html HTTP/1.1" 200 -
-127.0.0.1 - - [18/Mar/2026 05:38:02] "GET /adminCustomer.html HTTP/1.1" 200 -
-127.0.0.1 - - [18/Mar/2026 05:38:03] "GET /adminWeb.html HTTP/1.1" 200 -
-127.0.0.1 - - [18/Mar/2026 05:38:54] "GET /adminWeb.html HTTP/1.1" 200 -
-127.0.0.1 - - [18/Mar/2026 05:39:48] "GET /adminWeb.html HTTP/1.1" 200 -
-127.0.0.1 - - [18/Mar/2026 05:46:34] "GET /adminWeb.html HTTP/1.1" 200 -
-127.0.0.1 - - [18/Mar/2026 06:15:06] "GET /adminWeb.html HTTP/1.1" 200 -
-127.0.0.1 - - [18/Mar/2026 06:59:25] "GET /adminPanel.html HTTP/1.1" 200 -
-127.0.0.1 - - [18/Mar/2026 06:59:28] "GET /adminWeb.html HTTP/1.1" 200 -
-127.0.0.1 - - [18/Mar/2026 07:00:31] "GET /adminPanel.html HTTP/1.1" 200 -
-127.0.0.1 - - [18/Mar/2026 07:00:34] "GET /adminWeb.html HTTP/1.1" 200 -
-127.0.0.1 - - [18/Mar/2026 07:00:37] "GET /adminCustomer.html HTTP/1.1" 200 -
-127.0.0.1 - - [18/Mar/2026 07:33:53] "GET /adminPanel.html HTTP/1.1" 200 -
-127.0.0.1 - - [18/Mar/2026 07:33:55] "GET /adminCustomer.html HTTP/1.1" 200 -
-127.0.0.1 - - [18/Mar/2026 07:33:57] "GET /adminWeb.html HTTP/1.1" 200 -
-127.0.0.1 - - [18/Mar/2026 08:33:32] "GET /adminWeb.html HTTP/1.1" 200 -
-127.0.0.1 - - [18/Mar/2026 08:33:33] "GET /adminPanel.html HTTP/1.1" 200 -
-127.0.0.1 - - [18/Mar/2026 20:49:23] "GET /adminPanel.html HTTP/1.1" 200 -
-127.0.0.1 - - [18/Mar/2026 20:49:27] "GET /adminWeb.html HTTP/1.1" 200 -
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/home/jules/.pyenv/versions/3.12.13/lib/python3.12/http/server.py", line 1329, in <module>
+    test(
+  File "/home/jules/.pyenv/versions/3.12.13/lib/python3.12/http/server.py", line 1276, in test
+    with ServerClass(addr, HandlerClass) as httpd:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/jules/.pyenv/versions/3.12.13/lib/python3.12/socketserver.py", line 457, in __init__
+    self.server_bind()
+  File "/home/jules/.pyenv/versions/3.12.13/lib/python3.12/http/server.py", line 1323, in server_bind
+    return super().server_bind()
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/jules/.pyenv/versions/3.12.13/lib/python3.12/http/server.py", line 140, in server_bind
+    socketserver.TCPServer.server_bind(self)
+  File "/home/jules/.pyenv/versions/3.12.13/lib/python3.12/socketserver.py", line 478, in server_bind
+    self.socket.bind(self.server_address)
+OSError: [Errno 98] Address already in use
+127.0.0.1 - - [18/Mar/2026 22:07:39] "GET /adminPanel.html HTTP/1.1" 200 -
+127.0.0.1 - - [18/Mar/2026 22:07:41] "GET /adminWeb.html HTTP/1.1" 200 -
+127.0.0.1 - - [18/Mar/2026 22:07:42] "GET /adminCustomer.html HTTP/1.1" 200 -
+127.0.0.1 - - [18/Mar/2026 22:09:19] "GET /adminPanel.html HTTP/1.1" 200 -
+127.0.0.1 - - [18/Mar/2026 22:10:47] "GET /adminPanel.html HTTP/1.1" 200 -
