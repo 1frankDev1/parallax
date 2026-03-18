@@ -100,6 +100,9 @@
         <div class="container">
             <div id="admin-tools" class="hidden">
                 <div class="section-title">All Users</div>
+                <div style="margin-bottom: 30px;">
+                    <input type="text" id="user-search" placeholder="Search by name, username or email..." style="width: 100%; max-width: 400px; background: var(--input); border: 1px solid var(--border); border-radius: 14px; padding: 14px 20px; color: #fff;">
+                </div>
                 <div id="user-list" class="user-list"></div>
             </div>
 
@@ -168,18 +171,27 @@
             }
         }
 
+        let allUsers = [];
         async function loadAllUsers() {
             const loader = document.getElementById('loading');
             loader.classList.remove('hidden');
 
-            // First, get emails from auth users list would require admin sdk,
-            // but we can try to get them if the user exists in profiles with more info
-            // or just use the IDs for now as emails are restricted in client SDK for other users.
             const { data, error } = await sb.from('profiles').select('*').order('role', { ascending: true });
             loader.classList.add('hidden');
 
             if (error) return alert("Error loading users: " + error.message);
-            renderList(data, 'user-list', true);
+            allUsers = data || [];
+            renderList(allUsers, 'user-list', true);
+
+            document.getElementById('user-search').oninput = (e) => {
+                const term = e.target.value.toLowerCase();
+                const filtered = allUsers.filter(u =>
+                    (u.full_name || '').toLowerCase().includes(term) ||
+                    (u.username || '').toLowerCase().includes(term) ||
+                    (u.email || '').toLowerCase().includes(term)
+                );
+                renderList(filtered, 'user-list', true);
+            };
         }
 
         async function loadAssignedOwners() {
@@ -222,13 +234,16 @@
             list.innerHTML = (users || []).map(u => `
                 <div class="user-card">
                     <div class="user-info">
-                        <h3>${u.full_name || 'No Name'}</h3>
+                        <h3 title="Username: ${u.username || 'N/A'}">
+                            ${u.full_name || 'No Name'}
+                            ${u.username ? `<span style="font-size: 0.7rem; background: rgba(255,149,51,0.1); color: var(--orange); padding: 2px 8px; border-radius: 6px;">@${u.username}</span>` : ''}
+                        </h3>
                         <div class="email">${u.email || 'No Email'}</div>
-                        <div class="uid">${u.role.toUpperCase()} | ${u.id.substring(0,8)}</div>
+                        <div class="uid">ID: ${u.id.substring(0,12)}...</div>
                     </div>
                     <div class="controls">
-                        <input type="text" value="${u.full_name || ''}" placeholder="Full Name/Alias" id="name-${u.id}" ${!isAdminView ? 'disabled' : ''}>
-                        <input type="text" value="${u.domain || ''}" placeholder="Target Domain" id="dom-${u.id}" ${!isAdminView ? 'disabled' : ''}>
+                        <input type="text" value="${u.full_name || ''}" placeholder="Display Name" id="name-${u.id}" ${!isAdminView ? 'disabled' : ''}>
+                        <input type="text" value="${u.domain || ''}" placeholder="Registered Domain" id="dom-${u.id}" ${!isAdminView ? 'disabled' : ''}>
                         ${isAdminView ? `
                         <select id="role-${u.id}">
                             <option value="owner" ${u.role === 'owner' ? 'selected' : ''}>Owner</option>
@@ -236,14 +251,14 @@
                             <option value="admin" ${u.role === 'admin' ? 'selected' : ''}>Admin</option>
                         </select>` : ''}
                     </div>
-                    <div class="badge-container">
+                    <div class="badge-container" style="text-align: center;">
                         <span class="badge badge-${u.role}">${u.role}</span>
                     </div>
-                    <div class="actions">
-                        ${isAdminView ? `<button class="btn btn-save" onclick="updateUser('${u.id}')">Update</button>` : ''}
-                        ${isAdminView && u.role === 'owner' ? `<button class="btn btn-access" onclick="openAccess('${u.id}')">Access</button>` : ''}
-                        <button class="btn btn-access" onclick="manageGallery('${u.id}', '${u.domain}')">Gallery</button>
-                        ${isAdminView ? `<button class="btn btn-del" onclick="deleteUser('${u.id}')">Del</button>` : ''}
+                    <div class="actions" style="justify-content: flex-end;">
+                        ${isAdminView ? `<button class="btn btn-save" onclick="updateUser('${u.id}')">SAVE</button>` : ''}
+                        ${isAdminView && u.role === 'owner' ? `<button class="btn btn-access" onclick="openAccess('${u.id}')" title="Grant Dev Access">🔐</button>` : ''}
+                        <button class="btn btn-access" onclick="manageGallery('${u.id}', '${u.domain}')">GALLERY</button>
+                        ${isAdminView ? `<button class="btn btn-del" onclick="deleteUser('${u.id}')">✖</button>` : ''}
                     </div>
                 </div>
             `).join('');

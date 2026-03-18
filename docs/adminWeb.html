@@ -91,6 +91,8 @@
         #user-email { font-weight: 700; font-size: 0.85rem; color: var(--orange); }
         .btn-logout { background: none; border: none; color: #fff; font-size: 0.8rem; font-weight: 600; cursor: pointer; opacity: 0.6; transition: 0.3s; }
         .btn-logout:hover { opacity: 1; color: var(--orange); }
+        .btn-copy { background: rgba(255, 149, 51, 0.1); border: 1px solid rgba(255, 149, 51, 0.3); color: var(--orange); padding: 8px 16px; border-radius: 12px; font-size: 0.75rem; font-weight: 700; cursor: pointer; transition: 0.3s; margin-top: 15px; width: 100%; }
+        .btn-copy:hover { background: var(--orange); color: #000; }
 
         .loader { border: 3px solid rgba(255, 149, 51, 0.1); width: 28px; height: 28px; border-radius: 50%; border-left-color: var(--orange); animation: rotate 1s linear infinite; margin: 0 auto; }
         @keyframes rotate { to { transform: rotate(360deg); } }
@@ -121,7 +123,6 @@
 
     <div id="top-nav" class="hidden">
         <div id="user-email"></div>
-        <button id="btn-copy-code" class="btn-logout hidden" style="margin-right: 15px; color: var(--orange);">COPY CODE</button>
         <button id="btn-panel" class="btn-logout" style="margin-right: 15px; border-right: 1px solid var(--border); padding-right: 15px;">PANEL</button>
         <button id="btn-logout" class="btn-logout">Logout</button>
     </div>
@@ -139,6 +140,7 @@
             <select id="owner-select">
                 <option value="">Loading projects...</option>
             </select>
+            <button id="btn-copy-code" class="btn-copy hidden">COPY INTEGRATION CODE</button>
         </div>
 
         <div class="drop-zone" id="drop-zone">
@@ -161,9 +163,10 @@
             try {
                 const { createClient } = await import("https://esm.sh/@supabase/supabase-js");
                 sb = createClient(MT_URL, MT_KEY);
-                checkSession();
+                await checkSession();
             } catch (err) {
                 console.error("Initialization error:", err);
+                document.body.innerHTML = `<div style="padding:40px; text-align:center; font-family:sans-serif; color:white;"><h2>Critical Error</h2><p>${err.message}</p><button onclick="location.reload()" style="padding:10px 20px; margin-top:20px; border-radius:10px; border:none; background:#ff9533; cursor:pointer;">Retry</button></div>`;
             }
         });
 
@@ -220,7 +223,10 @@
             }
 
             select.innerHTML = '<option value="">-- Select a Client --</option>' +
-                owners.map(o => `<option value="${o.id}" data-domain="${o.domain || ''}">${o.full_name || o.email || o.id.substring(0,8)}</option>`).join('');
+                owners.map(o => {
+                    const displayName = o.full_name || o.username || o.email || o.id.substring(0,8);
+                    return `<option value="${o.id}" data-domain="${o.domain || ''}">${displayName}</option>`;
+                }).join('');
 
             const passedId = sessionStorage.getItem('mt_edit_owner_id');
             if (passedId) {
@@ -233,12 +239,21 @@
         }
 
         function switchContext(ownerId) {
-            if (!ownerId) return;
+            const copyBtn = document.getElementById('btn-copy-code');
+            if (!ownerId) {
+                copyBtn.classList.add('hidden');
+                return;
+            }
             const select = document.getElementById('owner-select');
             const option = select.options[select.selectedIndex];
             activeOwnerId = ownerId;
             activeDomain = option.getAttribute('data-domain');
             document.getElementById('view-domain-title').textContent = activeDomain || "No Domain Set";
+
+            if (userRole === 'admin' || userRole === 'developer') {
+                copyBtn.classList.remove('hidden');
+            }
+
             loadGallery();
         }
 
@@ -259,7 +274,10 @@
 
 
         function initEvents() {
-            document.getElementById('btn-logout').onclick = () => { if(sb) sb.auth.signOut(); location.reload(); };
+            document.getElementById('btn-logout').onclick = async () => {
+                if(sb) await sb.auth.signOut();
+                location.href = "adminPanel.html";
+            };
             document.getElementById('btn-panel').onclick = () => location.href = "adminPanel.html";
             document.getElementById('btn-copy-code').onclick = copyGalleryCode;
             document.getElementById('btn-save-domain').onclick = saveDomain;
@@ -301,7 +319,12 @@
         async function loadGallery() {
             if (!activeOwnerId) return;
             const g = document.getElementById('gallery-grid');
-            const { data } = await sb.from('galeria').select('*').eq('user_id', activeOwnerId).order('created_at', { ascending: false });
+            g.innerHTML = '<div class="loader"></div>';
+            const { data, error } = await sb.from('galeria').select('*').eq('user_id', activeOwnerId).order('created_at', { ascending: false });
+            if (error) {
+                g.innerHTML = `<p style="color: var(--error); text-align:center; width: 100%; grid-column: 1/-1;">Error loading gallery: ${error.message}</p>`;
+                return;
+            }
             g.innerHTML = (data || []).map((it, i) => `
                 <div class="card ${getBento(i)}">
                     <img src="${it.image_url}" loading="lazy">
