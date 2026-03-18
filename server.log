@@ -21,3 +21,4 @@ OSError: [Errno 98] Address already in use
 127.0.0.1 - - [18/Mar/2026 22:07:42] "GET /adminCustomer.html HTTP/1.1" 200 -
 127.0.0.1 - - [18/Mar/2026 22:09:19] "GET /adminPanel.html HTTP/1.1" 200 -
 127.0.0.1 - - [18/Mar/2026 22:10:47] "GET /adminPanel.html HTTP/1.1" 200 -
+127.0.0.1 - - [18/Mar/2026 22:52:18] "GET /adminPanel.html HTTP/1.1" 200 -

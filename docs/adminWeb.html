@@ -224,7 +224,7 @@
 
             select.innerHTML = '<option value="">-- Select a Client --</option>' +
                 owners.map(o => {
-                    const displayName = o.full_name || o.username || o.email || o.id.substring(0,8);
+                    const displayName = `${o.username || 'User'} (${o.email || o.id.substring(0,8)})`;
                     return `<option value="${o.id}" data-domain="${o.domain || ''}">${displayName}</option>`;
                 }).join('');
 
