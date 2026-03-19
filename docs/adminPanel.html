@@ -154,16 +154,15 @@
         </div>
     </div>
 
-    <script>
-        const MT_URL = "https://eemqyrysdgasfjlitads.supabase.co";
-        const MT_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVlbXF5cnlzZGdhc2ZqbGl0YWRzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM3MjA0NDUsImV4cCI6MjA4OTI5NjQ0NX0.UiyZLqhXSQ1Z_FoL006PDrDYKXbr_pxCOugYTulhdPY";
+    <script type="module">
+        import { MT_CONFIG } from './assets/js/config.js';
         let sb = null, user = null;
 
         document.addEventListener('DOMContentLoaded', async () => {
             initEvents();
             try {
                 const { createClient } = await import("https://esm.sh/@supabase/supabase-js");
-                sb = createClient(MT_URL, MT_KEY);
+                sb = createClient(MT_CONFIG.SUPABASE_URL, MT_CONFIG.SUPABASE_KEY);
                 checkSession();
             } catch (err) {
                 console.error("Init error:", err);

@@ -2,36 +2,28 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Gallery Integration Guide</title>
-    <style>
-        body { font-family: 'Inter', sans-serif; background: #0b0c10; color: #fff; padding: 40px; line-height: 1.6; }
-        .container { max-width: 800px; margin: 0 auto; background: #14161d; padding: 40px; border-radius: 24px; border: 1px solid #2d333f; }
-        code { background: #1a1d26; color: #ff9533; padding: 4px 8px; border-radius: 6px; font-family: monospace; }
-        pre { background: #1a1d26; padding: 20px; border-radius: 12px; border: 1px solid #2d333f; overflow-x: auto; }
-        h1 { color: #ff9533; }
-        .preview { margin-top: 40px; border-top: 1px solid #2d333f; padding-top: 40px; }
-    </style>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gallery Component | Menutech</title>
+    <!--
+        INSTRUCCIONES PARA EL CLIENTE:
+        1. Copia este código y pégalo en el HTML de tu sitio web.
+        2. Asegúrate de cambiar el atributo 'domain' por tu dominio registrado.
+    -->
+
+    <!-- Importar el componente de Menutech -->
+    <script src="https://menutech.services/assets/js/menutechUI.js"></script>
 </head>
-<body>
-    <div class="container">
-        <h1>Gallery Integration</h1>
-        <p>To display your gallery on any website, follow these two simple steps:</p>
+<body style="margin:0; background: transparent;">
 
-        <h3>1. Include the script</h3>
-        <p>Add this script tag inside your <code>&lt;head&gt;</code> or at the end of your <code>&lt;body&gt;</code>:</p>
-        <pre>&lt;script src="https://menutech.xyz/assets/js/menutechUI.js"&gt;&lt;/script&gt;</pre>
+    <!-- Elemento de la Galería (Bento Grid) -->
+    <menutech-gallery domain="example.com"></menutech-gallery>
 
-        <h3>2. Add the custom element</h3>
-        <p>Place this tag exactly where you want the gallery to appear. Replace <code>yourdomain.com</code> with the domain registered in the Admin Panel.</p>
-        <pre>&lt;menutech-gallery domain="yourdomain.com"&gt;&lt;/menutech-gallery&gt;</pre>
-
-        <div class="preview">
-            <h3>Live Preview (Example)</h3>
-            <!-- The component will look like this -->
-            <div style="border: 2px dashed #2d333f; border-radius: 24px; padding: 20px; text-align: center; color: #94a3b8;">
-                [ The responsive Bento grid gallery will render here ]
-            </div>
+    <!--
+        Nota: Puedes envolver el componente en un div para controlar su ancho, por ejemplo:
+        <div style="max-width: 1200px; margin: 0 auto;">
+            <menutech-gallery domain="tusitio.com"></menutech-gallery>
         </div>
-    </div>
+    -->
+
 </body>
 </html>

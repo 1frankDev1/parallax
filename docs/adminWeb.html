@@ -59,14 +59,39 @@
         header h1 { font-family: 'Outfit', sans-serif; font-size: 3.2rem; font-weight: 600; letter-spacing: -1.5px; margin-bottom: 6px; }
         header .tag { color: var(--orange); font-weight: 700; text-transform: uppercase; font-size: 0.8rem; letter-spacing: 4px; opacity: 0.8; }
 
-        .switcher-box { max-width: 400px; margin: 0 auto 60px auto; background: var(--card); border: 1px solid var(--border); padding: 20px; border-radius: 24px; text-align: left; }
-        .switcher-box label { display: block; font-size: 0.7rem; font-weight: 700; color: var(--orange); text-transform: uppercase; margin-bottom: 10px; margin-left: 10px; }
-        .switcher-box select { width: 100%; background: var(--input); border: 1px solid var(--border); border-radius: 14px; padding: 12px 16px; color: #fff; font-size: 0.9rem; }
+        /* Scalable UI Layout */
+        .dashboard-layout { display: flex; min-height: calc(100vh - 160px); gap: 40px; }
+
+        .sidebar { width: 340px; flex-shrink: 0; display: flex; flex-direction: column; gap: 30px; }
+        .main-content { flex: 1; min-width: 0; }
+
+        .search-box { background: var(--card); border: 1px solid var(--border); border-radius: 28px; padding: 24px; }
+        .search-box label { display: block; font-size: 0.7rem; font-weight: 700; color: var(--orange); text-transform: uppercase; margin-bottom: 15px; margin-left: 5px; }
+        .search-box input { width: 100%; margin-bottom: 15px; }
+
+        .client-list { max-height: 400px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; padding-right: 5px; }
+        .client-list::-webkit-scrollbar { width: 4px; }
+        .client-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
+
+        .client-item { padding: 14px 18px; border-radius: 16px; background: var(--input); border: 1px solid var(--border); cursor: pointer; transition: 0.3s; }
+        .client-item:hover { border-color: var(--orange); }
+        .client-item.active { border-color: var(--orange); background: rgba(255,149,51,0.08); }
+        .client-item .name { font-weight: 700; font-size: 0.85rem; display: block; }
+        .client-item .domain { font-size: 0.7rem; color: var(--text-dim); }
+
+        /* Tabs */
+        .tabs { display: flex; gap: 10px; margin-bottom: 40px; background: var(--card); padding: 8px; border-radius: 20px; border: 1px solid var(--border); align-self: flex-start; }
+        .tab-btn { padding: 12px 24px; border-radius: 14px; border: none; background: none; color: var(--text-dim); font-weight: 700; font-size: 0.8rem; cursor: pointer; transition: 0.3s; }
+        .tab-btn.active { background: var(--orange); color: #000; }
+        .tab-btn:hover:not(.active) { color: #fff; background: rgba(255,255,255,0.05); }
+
+        .component-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+        .component-header h2 { font-family: 'Outfit', sans-serif; font-size: 1.8rem; }
 
         .drop-zone {
-            width: 100%; height: 260px; border-radius: 36px; border: 2px dashed var(--border); background: var(--card);
+            width: 100%; height: 200px; border-radius: 36px; border: 2px dashed var(--border); background: var(--card);
             display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
-            margin-bottom: 80px;
+            margin-bottom: 40px;
         }
         .drop-zone:hover { border-color: var(--orange); background: rgba(255, 149, 51, 0.03); transform: scale(1.01); }
         .drop-zone p { font-weight: 600; font-size: 1.1rem; color: #fff; }
@@ -130,39 +155,73 @@
     <div class="container hidden" id="main-app">
         <header>
             <div class="tag">Management Portal</div>
-            <h1>Gallery Manager</h1>
+            <h1>Admin Workspace</h1>
             <p id="view-domain-title" style="font-weight: 700; color: var(--orange); font-size: 0.85rem; letter-spacing: 1px;"></p>
         </header>
 
-        <!-- Admin/Dev account switcher -->
-        <div id="account-switcher" class="switcher-box hidden">
-            <label>Switch Project Context</label>
-            <select id="owner-select">
-                <option value="">Loading projects...</option>
-            </select>
-            <button id="btn-copy-code" class="btn-copy hidden">COPY INTEGRATION CODE</button>
-        </div>
+        <div class="dashboard-layout">
+            <!-- Sidebar with Searchable List -->
+            <div class="sidebar" id="sidebar">
+                <div class="search-box">
+                    <label>Find Project</label>
+                    <input type="text" id="client-search" placeholder="Domain or Name...">
+                    <div class="client-list" id="client-list">
+                        <!-- Items injected here -->
+                    </div>
+                </div>
 
-        <div class="drop-zone" id="drop-zone">
-            <p>Upload Images</p>
-            <span>Click to select or drag files here</span>
-            <input type="file" id="file-input" class="hidden" accept="image/*" multiple>
-        </div>
+                <div id="project-info" class="switcher-box hidden" style="width: 100%; margin: 0;">
+                    <label>Active Project</label>
+                    <div id="active-project-name" style="font-weight: 700; padding: 10px 15px; background: var(--input); border-radius: 12px; border: 1px solid var(--border);">None Selected</div>
+                </div>
+            </div>
 
-        <div id="upload-status" style="text-align:center; margin-bottom:40px; font-weight: 600; font-size: 0.9rem;"></div>
-        <div class="bento" id="gallery-grid"></div>
+            <div class="main-content">
+                <div class="tabs">
+                    <button class="tab-btn active" onclick="switchTab('gallery')">GALLERY</button>
+                    <button class="tab-btn" onclick="switchTab('about')">ABOUT</button>
+                    <button class="tab-btn" onclick="switchTab('nav')">NAVIGATION</button>
+                </div>
+
+                <!-- Gallery Section -->
+                <div id="section-gallery">
+                    <div class="component-header">
+                        <h2>Gallery Images</h2>
+                        <button id="btn-copy-code" class="btn-copy hidden" style="width: auto; margin-top: 0; padding: 12px 24px;">COPY INTEGRATION CODE</button>
+                    </div>
+
+                    <div class="drop-zone" id="drop-zone">
+                        <p>Upload Images</p>
+                        <span>Click to select or drag files here</span>
+                        <input type="file" id="file-input" class="hidden" accept="image/*" multiple>
+                    </div>
+
+                    <div id="upload-status" style="text-align:center; margin-bottom:40px; font-weight: 600; font-size: 0.9rem;"></div>
+                    <div class="bento" id="gallery-grid"></div>
+                </div>
+
+                <!-- Placeholders for future modules -->
+                <div id="section-about" class="hidden">
+                    <div class="component-header"><h2>About Component</h2></div>
+                    <p style="color: var(--text-dim)">Module coming soon...</p>
+                </div>
+                <div id="section-nav" class="hidden">
+                    <div class="component-header"><h2>Navigation Component</h2></div>
+                    <p style="color: var(--text-dim)">Module coming soon...</p>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <script>
-        const MT_URL = "https://eemqyrysdgasfjlitads.supabase.co";
-        const MT_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVlbXF5cnlzZGdhc2ZqbGl0YWRzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM3MjA0NDUsImV4cCI6MjA4OTI5NjQ0NX0.UiyZLqhXSQ1Z_FoL006PDrDYKXbr_pxCOugYTulhdPY";
+    <script type="module">
+        import { MT_CONFIG } from './assets/js/config.js';
         let sb = null, user = null, userRole = null, activeOwnerId = null, activeDomain = null;
 
         document.addEventListener('DOMContentLoaded', async () => {
             initEvents();
             try {
                 const { createClient } = await import("https://esm.sh/@supabase/supabase-js");
-                sb = createClient(MT_URL, MT_KEY);
+                sb = createClient(MT_CONFIG.SUPABASE_URL, MT_CONFIG.SUPABASE_KEY);
                 await checkSession();
             } catch (err) {
                 console.error("Initialization error:", err);
@@ -204,57 +263,83 @@
             }
         }
 
+        let allOwners = [];
         async function setupContextSwitcher() {
-            const switcher = document.getElementById('account-switcher');
-            const select = document.getElementById('owner-select');
-            switcher.classList.remove('hidden');
+            if (userRole === 'owner') {
+                document.getElementById('sidebar').classList.add('hidden');
+                return;
+            }
 
-            let owners = [];
+            const list = document.getElementById('client-list');
+            const search = document.getElementById('client-search');
+
             if (userRole === 'admin') {
                 const { data } = await sb.from('profiles').select('*');
-                owners = data || [];
+                allOwners = data || [];
             } else {
-                // For developers, we need to join with access table (ideally via RPC or view,
-                // but let's do a quick separate fetch for now to keep it simple).
                 const { data: access } = await sb.from('developer_access').select('owner_id').eq('developer_id', user.id);
                 const ids = (access || []).map(a => a.owner_id);
                 const { data } = await sb.from('profiles').select('*').in('id', ids);
-                owners = data || [];
+                allOwners = data || [];
             }
 
-            select.innerHTML = '<option value="">-- Select a Client --</option>' +
-                owners.map(o => {
-                    const displayName = `${o.username || 'User'} (${o.email || o.id.substring(0,8)})`;
-                    return `<option value="${o.id}" data-domain="${o.domain || ''}">${displayName}</option>`;
-                }).join('');
+            renderOwners(allOwners);
+
+            search.oninput = () => {
+                const term = search.value.toLowerCase();
+                const filtered = allOwners.filter(o =>
+                    (o.username || '').toLowerCase().includes(term) ||
+                    (o.domain || '').toLowerCase().includes(term) ||
+                    (o.email || '').toLowerCase().includes(term)
+                );
+                renderOwners(filtered);
+            };
 
             const passedId = sessionStorage.getItem('mt_edit_owner_id');
             if (passedId) {
-                select.value = passedId;
                 sessionStorage.removeItem('mt_edit_owner_id');
                 switchContext(passedId);
             }
+        }
 
-            select.onchange = () => switchContext(select.value);
+        function renderOwners(owners) {
+            const list = document.getElementById('client-list');
+            list.innerHTML = owners.map(o => `
+                <div class="client-item ${activeOwnerId === o.id ? 'active' : ''}" onclick="switchContext('${o.id}')">
+                    <span class="name">${o.username || 'User'}</span>
+                    <span class="domain">${o.domain || o.email || o.id.substring(0,8)}</span>
+                </div>
+            `).join('');
         }
 
         function switchContext(ownerId) {
             const copyBtn = document.getElementById('btn-copy-code');
-            if (!ownerId) {
-                copyBtn.classList.add('hidden');
-                return;
-            }
-            const select = document.getElementById('owner-select');
-            const option = select.options[select.selectedIndex];
+            const owner = allOwners.find(o => o.id === ownerId);
+            if (!owner) return;
+
             activeOwnerId = ownerId;
-            activeDomain = option.getAttribute('data-domain');
+            activeDomain = owner.domain;
+
             document.getElementById('view-domain-title').textContent = activeDomain || "No Domain Set";
+            document.getElementById('active-project-name').textContent = owner.username || owner.email;
+            document.getElementById('project-info').classList.remove('hidden');
 
             if (userRole === 'admin' || userRole === 'developer') {
                 copyBtn.classList.remove('hidden');
             }
 
+            renderOwners(allOwners);
             loadGallery();
+        }
+
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.querySelector(`.tab-btn[onclick="switchTab('${tabId}')"]`).classList.add('active');
+
+            ['gallery', 'about', 'nav'].forEach(t => {
+                document.getElementById(`section-${t}`).classList.add('hidden');
+            });
+            document.getElementById(`section-${tabId}`).classList.remove('hidden');
         }
 
         function showApp() {
@@ -308,8 +393,10 @@
             const s = document.getElementById('upload-status');
             s.innerHTML = '<div class="loader"></div><p style="margin-top:10px">Uploading...</p>';
             for (const f of files) {
-                const fd = new FormData(); fd.append('file', f); fd.append('upload_preset', 'Tragalero');
-                const res = await fetch('https://api.cloudinary.com/v1_1/dbbjxhvz5/image/upload', { method: 'POST', body: fd });
+                const fd = new FormData();
+                fd.append('file', f);
+                fd.append('upload_preset', MT_CONFIG.CLOUDINARY.UPLOAD_PRESET);
+                const res = await fetch(`https://api.cloudinary.com/v1_1/${MT_CONFIG.CLOUDINARY.CLOUD_NAME}/image/upload`, { method: 'POST', body: fd });
                 const d = await res.json();
                 await sb.from('galeria').insert([{ user_id: activeOwnerId, domain: activeDomain || 'undetermined', image_url: d.secure_url }]);
             }

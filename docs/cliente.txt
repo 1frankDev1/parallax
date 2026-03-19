@@ -24,8 +24,6 @@ BEGIN
   END IF;
 END $$;
 
-ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
-
 -- 2. Tabla de acceso para developers
 CREATE TABLE IF NOT EXISTS public.developer_access (
     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
@@ -34,8 +32,6 @@ CREATE TABLE IF NOT EXISTS public.developer_access (
     created_at TIMESTAMPTZ DEFAULT now(),
     UNIQUE(developer_id, owner_id)
 );
-
-ALTER TABLE public.developer_access ENABLE ROW LEVEL SECURITY;
 
 -- 3. Tabla 'galeria' para las imágenes
 CREATE TABLE IF NOT EXISTS public.galeria (
@@ -46,69 +42,7 @@ CREATE TABLE IF NOT EXISTS public.galeria (
     created_at TIMESTAMPTZ DEFAULT now()
 );
 
-ALTER TABLE public.galeria ENABLE ROW LEVEL SECURITY;
-
--- 4. Funciones auxiliares SECURITY DEFINER (Bypass RLS para evitar recursión)
-CREATE OR REPLACE FUNCTION public.is_admin()
-RETURNS BOOLEAN AS $$
-  SELECT EXISTS (
-    SELECT 1 FROM public.profiles
-    WHERE id = auth.uid() AND role = 'admin'
-  );
-$$ LANGUAGE sql SECURITY DEFINER;
-
-CREATE OR REPLACE FUNCTION public.has_developer_access(target_owner_id UUID)
-RETURNS BOOLEAN AS $$
-  SELECT EXISTS (
-    SELECT 1 FROM public.developer_access
-    WHERE developer_id = auth.uid() AND owner_id = target_owner_id
-  );
-$$ LANGUAGE sql SECURITY DEFINER;
-
--- 5. Políticas RLS para 'profiles'
-DROP POLICY IF EXISTS "Users can view their own profile" ON public.profiles;
-CREATE POLICY "Users can view their own profile" ON public.profiles
-    FOR SELECT USING (auth.uid() = id);
-
-DROP POLICY IF EXISTS "Users can manage their own profile" ON public.profiles;
-CREATE POLICY "Users can manage their own profile" ON public.profiles
-    FOR ALL USING (auth.uid() = id) WITH CHECK (auth.uid() = id);
-
-DROP POLICY IF EXISTS "Admins can manage all profiles" ON public.profiles;
-CREATE POLICY "Admins can manage all profiles" ON public.profiles
-    FOR ALL USING (public.is_admin());
-
-DROP POLICY IF EXISTS "Developers can view assigned owners" ON public.profiles;
-CREATE POLICY "Developers can view assigned owners" ON public.profiles
-    FOR SELECT USING (public.has_developer_access(id));
-
--- Políticas RLS para 'developer_access'
-DROP POLICY IF EXISTS "Admins manage developer access" ON public.developer_access;
-CREATE POLICY "Admins manage developer access" ON public.developer_access
-    FOR ALL USING (public.is_admin());
-
-DROP POLICY IF EXISTS "Developers can view their own assignments" ON public.developer_access;
-CREATE POLICY "Developers can view their own assignments" ON public.developer_access
-    FOR SELECT USING (developer_id = auth.uid());
-
--- Políticas RLS para 'galeria'
-DROP POLICY IF EXISTS "Public can view images by domain" ON public.galeria;
-CREATE POLICY "Public can view images by domain" ON public.galeria
-    FOR SELECT USING (true);
-
-DROP POLICY IF EXISTS "Owners manage their own images" ON public.galeria;
-CREATE POLICY "Owners manage their own images" ON public.galeria
-    FOR ALL USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);
-
-DROP POLICY IF EXISTS "Admins manage all images" ON public.galeria;
-CREATE POLICY "Admins manage all images" ON public.galeria
-    FOR ALL USING (public.is_admin());
-
-DROP POLICY IF EXISTS "Developers manage assigned owners images" ON public.galeria;
-CREATE POLICY "Developers manage assigned owners images" ON public.galeria
-    FOR ALL USING (public.has_developer_access(user_id)) WITH CHECK (public.has_developer_access(user_id));
-
--- 6. Trigger para creación automática de perfil al registrarse
+-- 4. Trigger para creación automática de perfil al registrarse
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS trigger AS $$
 BEGIN
@@ -146,3 +80,16 @@ CREATE TRIGGER on_auth_user_created
 -- 4. Si te sale el error "Could not find column in schema cache",
 -- corre esto en el SQL Editor para refrescar la API de Supabase:
 -- NOTIFY pgrst, 'reload schema';
+
+-- =================================================================
+-- MANUAL USER DELETION (SUPABASE SQL EDITOR ONLY)
+-- =================================================================
+-- Use these commands ONLY if you need to completely reset a user.
+-- Warning: This is a permanent action.
+
+-- Step 1: Delete from public profiles (already possible via UI)
+-- DELETE FROM public.profiles WHERE email = 'target@email.com';
+
+-- Step 2: Delete from auth.users (requires SQL Editor or Admin SDK)
+-- Note: Replace with the actual email.
+-- DELETE FROM auth.users WHERE email = 'target@email.com';

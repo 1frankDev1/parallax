@@ -1,0 +1,61 @@
+SUPABASE SECURITY RECOMMENDATIONS (ROW LEVEL SECURITY)
+=========================================================
+
+The client explicitly requested "no RLS" for the initial setup in cliente.txt.
+However, for a production environment where multiple users/domains are managed,
+applying RLS is CRITICAL to prevent users from seeing or modifying each other's data.
+
+Below are the recommended RLS policies to make the system secure.
+You can run these in the Supabase SQL Editor if you decide to enable security.
+
+-- 1. Enable RLS on all tables
+ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.developer_access ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.galeria ENABLE ROW LEVEL SECURITY;
+
+-- 2. Helper Functions (Security Definer to bypass recursion)
+CREATE OR REPLACE FUNCTION public.is_admin()
+RETURNS BOOLEAN AS $$
+  SELECT EXISTS (
+    SELECT 1 FROM public.profiles
+    WHERE id = auth.uid() AND role = 'admin'
+  );
+$$ LANGUAGE sql SECURITY DEFINER;
+
+CREATE OR REPLACE FUNCTION public.has_developer_access(target_owner_id UUID)
+RETURNS BOOLEAN AS $$
+  SELECT EXISTS (
+    SELECT 1 FROM public.developer_access
+    WHERE developer_id = auth.uid() AND owner_id = target_owner_id
+  );
+$$ LANGUAGE sql SECURITY DEFINER;
+
+-- 3. Profiles Policies
+CREATE POLICY "Users can view/manage their own profile"
+ON public.profiles FOR ALL USING (auth.uid() = id);
+
+CREATE POLICY "Admins manage all profiles"
+ON public.profiles FOR ALL USING (public.is_admin());
+
+CREATE POLICY "Developers view assigned owners"
+ON public.profiles FOR SELECT USING (public.has_developer_access(id));
+
+-- 4. Developer Access Policies
+CREATE POLICY "Admins manage developer access"
+ON public.developer_access FOR ALL USING (public.is_admin());
+
+CREATE POLICY "Developers view their assignments"
+ON public.developer_access FOR SELECT USING (developer_id = auth.uid());
+
+-- 5. Gallery Policies
+CREATE POLICY "Public can view images by domain"
+ON public.galeria FOR SELECT USING (true);
+
+CREATE POLICY "Owners manage their own images"
+ON public.galeria FOR ALL USING (auth.uid() = user_id);
+
+CREATE POLICY "Admins manage all images"
+ON public.galeria FOR ALL USING (public.is_admin());
+
+CREATE POLICY "Developers manage assigned owners images"
+ON public.galeria FOR ALL USING (public.has_developer_access(user_id));

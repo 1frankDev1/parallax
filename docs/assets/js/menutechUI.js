@@ -6,8 +6,11 @@ class MenutechGallery extends HTMLElement {
     constructor() {
         super();
         this.attachShadow({ mode: 'open' });
-        this.supabaseUrl = "https://eemqyrysdgasfjlitads.supabase.co";
-        this.supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVlbXF5cnlzZGdhc2ZqbGl0YWRzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM3MjA0NDUsImV4cCI6MjA4OTI5NjQ0NX0.UiyZLqhXSQ1Z_FoL006PDrDYKXbr_pxCOugYTulhdPY";
+        this.config = {
+            url: "https://eemqyrysdgasfjlitads.supabase.co",
+            key: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVlbXF5cnlzZGdhc2ZqbGl0YWRzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM3MjA0NDUsImV4cCI6MjA4OTI5NjQ0NX0.UiyZLqhXSQ1Z_FoL006PDrDYKXbr_pxCOugYTulhdPY"
+        };
+        this.supabase = null;
     }
 
     static get observedAttributes() {
@@ -21,14 +24,24 @@ class MenutechGallery extends HTMLElement {
     }
 
     async connectedCallback() {
+        await this.initSupabase();
         this.render();
     }
 
-    async fetchImages(domain) {
+    async initSupabase() {
+        if (this.supabase) return;
         try {
             const { createClient } = await import("https://esm.sh/@supabase/supabase-js");
-            const supabase = createClient(this.supabaseUrl, this.supabaseKey);
-            const { data, error } = await supabase
+            this.supabase = createClient(this.config.url, this.config.key);
+        } catch (err) {
+            console.error("MenutechGallery Supabase Init Error:", err);
+        }
+    }
+
+    async fetchImages(domain) {
+        if (!this.supabase) await this.initSupabase();
+        try {
+            const { data, error } = await this.supabase
                 .from('galeria')
                 .select('image_url')
                 .eq('domain', domain)
@@ -37,7 +50,7 @@ class MenutechGallery extends HTMLElement {
             if (error) throw error;
             return data || [];
         } catch (err) {
-            console.error("MenutechGallery Error:", err);
+            console.error("MenutechGallery Fetch Error:", err);
             return [];
         }
     }
