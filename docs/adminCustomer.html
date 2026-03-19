@@ -112,6 +112,16 @@
             </div>
 
             <div id="loading" class="loader"></div>
+
+            <div style="margin-top: 60px; padding: 30px; border-radius: 24px; background: rgba(239, 68, 68, 0.05); border: 1px solid rgba(239, 68, 68, 0.2);">
+                <h4 style="color: var(--error); margin-bottom: 10px; font-size: 0.9rem;">⚠️ Important: User Deletion</h4>
+                <p style="color: var(--text-dim); font-size: 0.8rem; line-height: 1.5;">
+                    The <b>✖ (Delete)</b> button removes the user's data and profile from this system.
+                    However, their <b>Auth Account</b> persists in Supabase for security reasons.
+                    To allow a user to re-register with the same email, you must also delete them from the
+                    <a href="https://supabase.com/dashboard/project/eemqyrysdgasfjlitads/auth/users" target="_blank" style="color: var(--orange); text-decoration: none; font-weight: 700;">Supabase Auth Dashboard</a>.
+                </p>
+            </div>
         </div>
     </div>
 
@@ -128,15 +138,14 @@
         </div>
     </div>
 
-    <script>
-        const MT_URL = "https://eemqyrysdgasfjlitads.supabase.co";
-        const MT_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVlbXF5cnlzZGdhc2ZqbGl0YWRzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM3MjA0NDUsImV4cCI6MjA4OTI5NjQ0NX0.UiyZLqhXSQ1Z_FoL006PDrDYKXbr_pxCOugYTulhdPY";
+    <script type="module">
+        import { MT_CONFIG } from './assets/js/config.js';
         let sb = null, user = null, userRole = null, activeOwnerId = null;
 
         document.addEventListener('DOMContentLoaded', async () => {
             try {
                 const { createClient } = await import("https://esm.sh/@supabase/supabase-js");
-                sb = createClient(MT_URL, MT_KEY);
+                sb = createClient(MT_CONFIG.SUPABASE_URL, MT_CONFIG.SUPABASE_KEY);
                 checkAuth();
             } catch (err) {
                 console.error("Initialization error:", err);
