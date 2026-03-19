@@ -155,7 +155,7 @@
     </div>
 
     <script type="module">
-        import { MT_CONFIG } from '../assets/js/config.js';
+        import { MT_CONFIG } from './config.js';
         let sb = null, user = null;
 
         document.addEventListener('DOMContentLoaded', async () => {
@@ -190,17 +190,19 @@
             }
         }
 
-        function toggleAuth(mode) {
+        window.toggleAuth = (mode) => {
             document.getElementById('signin-box').classList.add('hidden');
             document.getElementById('signup-box').classList.add('hidden');
             document.getElementById(mode + '-box').classList.remove('hidden');
-        }
+        };
 
         function initEvents() {
             document.getElementById('btn-signin').onclick = signIn;
             document.getElementById('btn-signup').onclick = signUp;
-            document.getElementById('btn-logout').onclick = async () => { await sb.auth.signOut(); location.reload(); };
+            document.getElementById('btn-logout').onclick = logout;
         }
+
+        window.logout = async () => { await sb.auth.signOut(); location.reload(); };
 
         async function signIn() {
             const e = document.getElementById('login-email').value.trim(), p = document.getElementById('login-pass').value, m = document.getElementById('login-msg');

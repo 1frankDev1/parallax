@@ -192,7 +192,7 @@
     </div>
 
     <script type="module">
-        import { MT_CONFIG } from '../assets/js/config.js';
+        import { MT_CONFIG } from './config.js';
         let sb = null, user = null, userRole = null, activeOwnerId = null, activeDomain = null;
 
         document.addEventListener('DOMContentLoaded', async () => {
@@ -276,7 +276,7 @@
             const passedId = sessionStorage.getItem('mt_edit_owner_id');
             if (passedId) {
                 sessionStorage.removeItem('mt_edit_owner_id');
-                switchContext(passedId);
+                window.switchContext(passedId);
             }
         }
 
@@ -290,7 +290,7 @@
             `).join('');
         }
 
-        function switchContext(ownerId) {
+        window.switchContext = (ownerId) => {
             const copyBtn = document.getElementById('btn-copy-code');
             const owner = allOwners.find(o => o.id === ownerId);
             if (!owner) return;
@@ -392,7 +392,7 @@
 
         function copyGalleryCode() {
             if (!activeDomain) return alert("Assign a domain to this project first.");
-            const snippet = `<!-- Menutech Gallery -->\n<script src="https://menutech.services/assets/js/menutechUI.js"><\/script>\n<menutech-gallery domain="${activeDomain}"></menutech-gallery>`;
+            const snippet = `<!-- Menutech Gallery -->\n<script src="https://menutech.services/migrar/menutechUI.js"><\/script>\n<menutech-gallery domain="${activeDomain}"></menutech-gallery>`;
             navigator.clipboard.writeText(snippet).then(() => {
                 const btn = document.getElementById('btn-copy-code');
                 const oldText = btn.textContent;
