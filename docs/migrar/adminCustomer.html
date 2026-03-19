@@ -87,7 +87,7 @@
     <div id="app" class="hidden">
         <header>
             <div style="display: flex; align-items: center;">
-                <button onclick="location.href='adminPanel.html'" class="btn-back">PANEL</button>
+                <button onclick="location.href='index.html'" class="btn-back">PANEL</button>
                 <h1>Console</h1>
             </div>
             <div style="display: flex; align-items: center; gap: 20px;">
@@ -139,7 +139,7 @@
     </div>
 
     <script type="module">
-        import { MT_CONFIG } from './assets/js/config.js';
+        import { MT_CONFIG } from '../assets/js/config.js';
         let sb = null, user = null, userRole = null, activeOwnerId = null;
 
         document.addEventListener('DOMContentLoaded', async () => {
@@ -155,7 +155,7 @@
 
         async function checkAuth() {
             const { data: { session }, error: sError } = await sb.auth.getSession();
-            if (sError || !session) { location.href = "adminPanel.html"; return; }
+            if (sError || !session) { location.href = "index.html"; return; }
 
             user = session.user;
             const { data, error } = await sb.from('profiles').select('role').eq('id', user.id).single();
@@ -207,7 +207,6 @@
             const loader = document.getElementById('loading');
             loader.classList.remove('hidden');
 
-            // Step 1: Get the IDs of owners this developer has access to
             const { data: accessData, error: accessError } = await sb
                 .from('developer_access')
                 .select('owner_id')
@@ -225,7 +224,6 @@
                 return;
             }
 
-            // Step 2: Fetch the profiles for those specific owners
             const { data, error } = await sb
                 .from('profiles')
                 .select('*')
@@ -238,7 +236,7 @@
             renderList(data, 'assigned-list', false);
         }
 
-        function renderList(users, targetId, isAdminView) {
+        window.renderList = function(users, targetId, isAdminView) {
             const list = document.getElementById(targetId);
             list.innerHTML = (users || []).map(u => `
                 <div class="user-card">
@@ -273,7 +271,7 @@
             `).join('');
         }
 
-        async function updateUser(id) {
+        window.updateUser = async function(id) {
             const domain = document.getElementById(`dom-${id}`).value.trim();
             const username = document.getElementById(`user-${id}`).value.trim();
             const role = document.getElementById(`role-${id}`).value;
@@ -282,7 +280,7 @@
             else { alert("User updated successfully"); loadAllUsers(); }
         }
 
-        async function deleteUser(id) {
+        window.deleteUser = async function(id) {
             if (confirm("Delete profile?")) {
                 const { error } = await sb.from('profiles').delete().eq('id', id);
                 if (error) alert("Deletion error: " + error.message);
@@ -290,13 +288,13 @@
             }
         }
 
-        function manageGallery(id, domain) {
+        window.manageGallery = function(id, domain) {
             sessionStorage.setItem('mt_edit_owner_id', id);
             sessionStorage.setItem('mt_edit_domain', domain);
             location.href = "adminWeb.html";
         }
 
-        async function openAccess(ownerId) {
+        window.openAccess = async function(ownerId) {
             activeOwnerId = ownerId;
             document.getElementById('access-modal').classList.remove('hidden');
             const { data: devs } = await sb.from('profiles').select('*').eq('role', 'developer');
@@ -312,9 +310,9 @@
             `).join('');
         }
 
-        function closeModal() { document.getElementById('access-modal').classList.add('hidden'); }
+        window.closeModal = function() { document.getElementById('access-modal').classList.add('hidden'); }
 
-        async function saveAccess() {
+        window.saveAccess = async function() {
             const checks = document.querySelectorAll('.dev-chk');
             await sb.from('developer_access').delete().eq('owner_id', activeOwnerId);
 
@@ -330,10 +328,10 @@
             } else {
                 alert("Access cleared");
             }
-            closeModal();
+            window.closeModal();
         }
 
-        async function logout() { await sb.auth.signOut(); location.href = "adminPanel.html"; }
+        window.logout = async function() { await sb.auth.signOut(); location.href = "index.html"; }
     </script>
 </body>
 </html>
