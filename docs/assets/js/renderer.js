@@ -43,26 +43,35 @@
   // ------------------------------
   let session = null;
 
-  // --- INICIO: Corrección de parpadeo ---
-  // Esta verificación se ejecuta de inmediato para evitar que el panel de login
-  // parpadee al cargar la página si ya existe una sesión.
-  (function checkSessionAndToggleLogin() {
+  // --- INICIO: Seguridad Global ---
+  // Esta verificación se ejecuta de inmediato para asegurar que el usuario esté logueado
+  // y redirigir si intenta acceder a una página protegida sin sesión.
+  (function checkGlobalSecurity() {
     const saved = localStorage.getItem("session");
-    const loginOverlay = document.getElementById("login-overlay");
+    const path = window.location.pathname;
+    const isIndex = path.endsWith("index.html") || path === "/" || path.endsWith("/");
 
     if (saved) {
       session = JSON.parse(saved);
-      if (loginOverlay) {
-        loginOverlay.style.display = "none";
-      }
+      // Si hay sesión y estamos en index, ocultamos el overlay si existe
+      document.addEventListener("DOMContentLoaded", () => {
+        const loginOverlay = document.getElementById("login-overlay");
+        if (loginOverlay) loginOverlay.style.display = "none";
+      });
     } else {
-      // Si no hay sesión, nos aseguramos de que el panel sea visible en la página de inicio.
-      if (loginOverlay && (window.location.pathname.endsWith("index.html") || window.location.pathname === "/")) {
-        loginOverlay.style.display = "flex";
+      // Si no hay sesión y NO estamos en index, redirigir
+      if (!isIndex) {
+        window.location.href = "index.html";
+      } else {
+        // En index sin sesión, asegurar que el login sea visible
+        document.addEventListener("DOMContentLoaded", () => {
+          const loginOverlay = document.getElementById("login-overlay");
+          if (loginOverlay) loginOverlay.style.display = "flex";
+        });
       }
     }
   })();
-  // --- FIN: Corrección de parpadeo ---
+  // --- FIN: Seguridad Global ---
 
   // ------------------------------
   // DOM ready
@@ -562,32 +571,63 @@
   }
 
   // ------------------------------
-  // checkAccessHours (igual que tu versión)
+  // checkAccessHours (Enforzada y Autoinyectada)
   // ------------------------------
   function checkAccessHours(role) {
-    const timeLockOverlay = document.getElementById("time-lock-overlay");
-    if (!timeLockOverlay) return true;
+    // Roles exentos de restricción horaria
+    const exemptRoles = ["Admin", "owner"];
 
-    if (role === "Admin") {
-      timeLockOverlay.style.display = "none";
-      return true;
-    }
+    const isExempt = exemptRoles.some(r => role === r || (role && role.startsWith("Admin")));
 
     const now = new Date();
     const day = now.getDay();
     const hour = now.getHours();
     let isAllowed = false;
 
+    // Horario: L-V 6am-6pm, S 7am-3pm
     if (day >= 1 && day <= 5 && hour >= 6 && hour < 18) {
       isAllowed = true;
     } else if (day === 6 && hour >= 7 && hour < 15) {
       isAllowed = true;
     }
 
-    if (isAllowed) timeLockOverlay.style.display = "none";
-    else timeLockOverlay.style.display = "flex";
+    // Los admins/owners siempre tienen acceso
+    if (isExempt) isAllowed = true;
 
-    return true;
+    let timeLockOverlay = document.getElementById("time-lock-overlay");
+
+    if (!isAllowed) {
+      // Si no existe el overlay, lo inyectamos dinámicamente
+      if (!timeLockOverlay) {
+        timeLockOverlay = document.createElement("div");
+        timeLockOverlay.id = "time-lock-overlay";
+        timeLockOverlay.className = "time-lock-overlay";
+        timeLockOverlay.style.cssText = `
+          position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+          background: rgba(0, 0, 0, 0.95); backdrop-filter: blur(10px);
+          display: flex; justify-content: center; align-items: center;
+          text-align: center; z-index: 99999; color: white; font-family: sans-serif;
+        `;
+        timeLockOverlay.innerHTML = `
+          <div style="padding: 20px; border: 1px solid #ff8c00; border-radius: 20px; background: rgba(0,0,0,0.5);">
+            <h2 style="font-size: 2rem; color: #ff8c00; margin-bottom: 10px;">Fuera de Horario Laboral</h2>
+            <p style="font-size: 1.2rem; margin-bottom: 20px;">El acceso está restringido a tu horario de trabajo.</p>
+            <button onclick="window.appLogout()" style="background: #ff8c00; border: none; color: white; padding: 10px 20px; border-radius: 10px; cursor: pointer; font-weight: bold;">Cerrar Sesión</button>
+          </div>
+        `;
+        document.body.appendChild(timeLockOverlay);
+      }
+      timeLockOverlay.style.display = "flex";
+      // Bloquear scroll si está restringido
+      document.body.style.overflow = "hidden";
+    } else {
+      if (timeLockOverlay) {
+        timeLockOverlay.style.display = "none";
+        document.body.style.overflow = "";
+      }
+    }
+
+    return isAllowed;
   }
 
   // Re-run checkAccessHours cada minuto
