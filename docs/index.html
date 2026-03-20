@@ -12,6 +12,11 @@
     <link rel="icon" type="image/png" sizes="192x192" href="./assets/img/Diseño%20sin%20título%20(8).png"> 
     <link rel="icon" type="image/png" sizes="500x500" href="./assets/img/mks%20(9).png"> 
   <style> 
+    :root {
+      --brand-color: #ff8c00;
+      --brand-hover: #ffa733;
+      --brand-glow: rgba(255, 140, 0, 0.4);
+    }
     body { 
       font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif; 
       background: #464646; 
@@ -25,9 +30,9 @@
     } 
     h1 { 
       margin-top: 20px; 
-      color: #00bcd4; 
+      color: var(--brand-color);
       font-size: 1.8rem; 
-      text-shadow: 0 0 8px rgba(0, 188, 212, 0.4); 
+      text-shadow: 0 0 8px var(--brand-glow);
     } 
     .search-bar { 
       width: 90%; 
@@ -139,14 +144,14 @@
     } 
     .progress-bar { 
       height: 12px; 
-      background: #ff7a00; 
+      background: var(--brand-color);
       width: 0%; 
       border-radius: 10px; 
       transition: width 0.2s ease; 
     } 
     .update-btn { 
       margin-top: 20px; 
-      background: #ff7a00; 
+      background: var(--brand-color);
       color: #fff; 
       border: none; 
       padding: 12px 18px; 
@@ -156,7 +161,7 @@
       width: 100%; 
     } 
     .update-btn:hover { 
-      background: #e86e00; 
+      background: var(--brand-hover);
     } 
     @keyframes fadeIn { 
       from { opacity: 0; transform: scale(0.9); } 
@@ -257,12 +262,12 @@
   outline: 2px solid #58a6ff; 
 } 
  
-/* BOTÓN LOGIN (Ahora naranja) */ 
+/* BOTÓN LOGIN */
 .login-btn { 
   margin-top: 18px; 
   width: 100%; 
   padding: 12px; 
-  background: #ff8c00;     /* NARANJA corporativo */ 
+  background: var(--brand-color);
   border: none; 
   color: #fff; 
   font-size: 15px; 
@@ -273,7 +278,7 @@
    min-width: 120px; 
 } 
 .login-btn:hover { 
-  background: #ffa733;       /* Naranja más claro */ 
+  background: var(--brand-hover);
 } 
  
 /* Loader dentro del botón */ 
@@ -400,7 +405,7 @@
 /* botón cerrar sesión */ 
 .logout-btn { 
   width: 100%; 
-  background: #ff8c00; 
+  background: var(--brand-color);
   padding: 10px; 
   border: none; 
   color: white; 
@@ -410,7 +415,7 @@
   font-size: 14px; 
 } 
 .logout-btn:hover { 
-  background: #ffa733; 
+  background: var(--brand-hover);
 } 
 @keyframes vibrate { 
   0%   { transform: translate(0); } 
@@ -662,7 +667,7 @@
 
 .time-lock-overlay h2 {
     font-size: 2rem;
-    color: #ff8c00;
+    color: var(--brand-color);
 }
 
 .time-lock-overlay p {
@@ -718,11 +723,7 @@
     <menutech-chatbot></menutech-chatbot> 
     <menutech-tools></menutech-tools>
  
-  <h1></br></h1> 
- 
-  <div class="search-bar"> 
-    <input type="text" id="searchInput" placeholder="Buscar..." onkeyup="filterGrid()"> 
-  </div> 
+  <h1 style="color: white; margin-top: 20px; font-size: 1.8rem; text-align: center;">Administracion <span style="color: #87CEEB;">Circle Center</span></h1>
  
   <div class="grid-container" id="gridContainer"></div> 
  
@@ -783,6 +784,13 @@
         <img id="imgViewerImg" src=""> 
     </div> 
 </div> 
+
+<!-- BRAND SWITCHER -->
+<div id="brand-switcher" style="position: fixed; bottom: 20px; right: 20px; display: flex; gap: 15px; z-index: 9999; background: rgba(0,0,0,0.5); padding: 10px; border-radius: 30px; backdrop-filter: blur(5px); border: 1px solid rgba(255,255,255,0.2);">
+  <a href="index.html" style="width: 24px; height: 24px; background: #ff8c00; border-radius: 50%; border: 2px solid white; display: block; box-shadow: 0 0 5px rgba(0,0,0,0.5); transition: transform 0.2s;" title="Menutech" onmouseover="this.style.transform='scale(1.2)'" onmouseout="this.style.transform='scale(1)'"></a>
+  <a href="wisbePanel.html" style="width: 24px; height: 24px; background: #007bff; border-radius: 50%; border: 2px solid white; display: block; box-shadow: 0 0 5px rgba(0,0,0,0.5); transition: transform 0.2s;" title="Wisbe" onmouseover="this.style.transform='scale(1.2)'" onmouseout="this.style.transform='scale(1)'"></a>
+  <a href="tragaleroPanel.html" style="width: 24px; height: 24px; background: #ffcc00; border-radius: 50%; border: 2px solid white; display: block; box-shadow: 0 0 5px rgba(0,0,0,0.5); transition: transform 0.2s;" title="Tragalero" onmouseover="this.style.transform='scale(1.2)'" onmouseout="this.style.transform='scale(1)'"></a>
+</div>
  
 <script> 
 const items = [ 
@@ -801,14 +809,8 @@ const items = [
 ]; 
  
  
-// FILTRAR TILES 
-document.getElementById("searchInput").addEventListener("input", function() { 
-    const query = this.value.toLowerCase(); 
-    document.querySelectorAll(".tile").forEach(tile => { 
-        const text = tile.textContent.toLowerCase(); 
-        tile.style.display = text.includes(query) ? "flex" : "none"; 
-    }); 
-}); 
+// FILTRAR TILES (Deshabilitado - Búsqueda eliminada)
+// document.getElementById("searchInput").addEventListener("input", function() { ... });
  
  
 document.addEventListener('DOMContentLoaded', () => { 

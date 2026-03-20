@@ -49,21 +49,24 @@
   (function checkGlobalSecurity() {
     const saved = localStorage.getItem("session");
     const path = window.location.pathname;
-    const isIndex = path.endsWith("index.html") || path === "/" || path.endsWith("/");
+    const isPublic = path.endsWith("index.html") ||
+                    path.endsWith("wisbePanel.html") ||
+                    path.endsWith("tragaleroPanel.html") ||
+                    path === "/" || path.endsWith("/");
 
     if (saved) {
       session = JSON.parse(saved);
-      // Si hay sesión y estamos en index, ocultamos el overlay si existe
+      // Si hay sesión y estamos en una página pública, ocultamos el overlay si existe
       document.addEventListener("DOMContentLoaded", () => {
         const loginOverlay = document.getElementById("login-overlay");
         if (loginOverlay) loginOverlay.style.display = "none";
       });
     } else {
-      // Si no hay sesión y NO estamos en index, redirigir
-      if (!isIndex) {
+      // Si no hay sesión y NO estamos en una página pública, redirigir
+      if (!isPublic) {
         window.location.href = "index.html";
       } else {
-        // En index sin sesión, asegurar que el login sea visible
+        // En página pública sin sesión, asegurar que el login sea visible
         document.addEventListener("DOMContentLoaded", () => {
           const loginOverlay = document.getElementById("login-overlay");
           if (loginOverlay) loginOverlay.style.display = "flex";
@@ -609,10 +612,10 @@
           text-align: center; z-index: 99999; color: white; font-family: sans-serif;
         `;
         timeLockOverlay.innerHTML = `
-          <div style="padding: 20px; border: 1px solid #ff8c00; border-radius: 20px; background: rgba(0,0,0,0.5);">
-            <h2 style="font-size: 2rem; color: #ff8c00; margin-bottom: 10px;">Fuera de Horario Laboral</h2>
+          <div style="padding: 20px; border: 1px solid var(--brand-color, #ff8c00); border-radius: 20px; background: rgba(0,0,0,0.5);">
+            <h2 style="font-size: 2rem; color: var(--brand-color, #ff8c00); margin-bottom: 10px;">Fuera de Horario Laboral</h2>
             <p style="font-size: 1.2rem; margin-bottom: 20px;">El acceso está restringido a tu horario de trabajo.</p>
-            <button onclick="window.appLogout()" style="background: #ff8c00; border: none; color: white; padding: 10px 20px; border-radius: 10px; cursor: pointer; font-weight: bold;">Cerrar Sesión</button>
+            <button onclick="window.appLogout()" style="background: var(--brand-color, #ff8c00); border: none; color: white; padding: 10px 20px; border-radius: 10px; cursor: pointer; font-weight: bold;">Cerrar Sesión</button>
           </div>
         `;
         document.body.appendChild(timeLockOverlay);
@@ -862,8 +865,8 @@
         <!-- ICONO DE NOTIFICACIONES -->
         <div id="notification-icon-container" class="hidden" style="position: fixed; top: 15px; right: 80px; z-index: 2000; cursor: pointer; display: flex; align-items: center;">
             <div style="background: #ffffff !important; border-radius: 50%; width: 42px; height: 42px; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 10px rgba(0,0,0,0.3); transition: transform 0.25s; position: relative;">
-                <svg id="notification-icon" viewBox="0 0 24 24" style="width: 26px; height: 26px; fill: #ff8c00 !important; display: block !important;">
-                    <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z" fill="#ff8c00"/>
+                <svg id="notification-icon" viewBox="0 0 24 24" style="width: 26px; height: 26px; color: var(--brand-color, #ff8c00) !important; fill: currentColor !important; display: block !important;">
+                    <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z" fill="currentColor"/>
                 </svg>
                 <span id="notification-badge" class="hidden" style="position: absolute; top: -5px; right: -5px; background: #ff0000; color: white; border-radius: 10px; padding: 2px 8px; font-size: 10px; font-weight: bold; box-shadow: 0 0 5px rgba(0,0,0,0.3); z-index: 2001; min-width: 18px; text-align: center;">0</span>
             </div>
