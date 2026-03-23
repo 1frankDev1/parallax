@@ -1096,6 +1096,7 @@ model-viewer {
                 btn.onclick = async (e) => {
                     e.stopPropagation();
                     clearTimeout(closeTimeout);
+                    popup.style.opacity = '';
                     popup.style.pointerEvents = '';
                     const vid = btn.dataset.viewerId || (btn.id === 'slideshow-zoom-toggle' ? 'slideshow' : null);
                     const mainCell = btn.closest('.model-cell');
@@ -1225,15 +1226,6 @@ model-viewer {
             popup.onclick = (e) => {
                 if (e.target === popup) handleClose();
             };
-
-            // Allow clicking the model-viewer directly to open popup
-            document.querySelectorAll('.model-cell model-viewer, .model-cell canvas').forEach(el => {
-                el.style.cursor = 'pointer';
-                el.onclick = () => {
-                    const btn = el.closest('.model-cell').querySelector('.zoom-toggle');
-                    if (btn) btn.click();
-                };
-            });
 
         });
     </script>
