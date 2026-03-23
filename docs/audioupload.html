@@ -586,12 +586,38 @@ document.getElementById("neoNavHome").addEventListener("click", () => {
     window.location.href = "index.html"; // Cambia por tu ruta principal
 });
 /* ---------------------------------------------------------  
-   SUPABASE CONFIG (NO MODIFICAR)  
+   SUPABASE CONFIG
 --------------------------------------------------------- */  
-const SUPABASE_URL = "https://ojpyfjgkffmzwvukjagf.supabase.co";  
-const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9qcHlmamdrZmZtend2dWtqYWdmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQxNDIwMzYsImV4cCI6MjA3OTcxODAzNn0.dlVYmoMumBse_O1PLBx0FeNITqY4YktefD6l_uonSgo";  
+const SUPABASE_URL = "https://eemqyrysdgasfjlitads.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVlbXF5cnlzZGdhc2ZqbGl0YWRzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM3MjA0NDUsImV4cCI6MjA4OTI5NjQ0NX0.UiyZLqhXSQ1Z_FoL006PDrDYKXbr_pxCOugYTulhdPY";
   
 const client = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);  
+
+/* ---------------------------------------------------------
+   CLOUDINARY CONFIG
+--------------------------------------------------------- */
+const CLOUDINARY_CLOUD_NAME = "dbbjxhvz5";
+const CLOUDINARY_UPLOAD_PRESET = "Tragalero";
+
+async function uploadToCloudinary(file) {
+    const url = `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/auto/upload`;
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
+
+    try {
+        const response = await fetch(url, {
+            method: 'POST',
+            body: formData
+        });
+        if (!response.ok) throw new Error('Error al subir a Cloudinary');
+        const data = await response.json();
+        return data.secure_url;
+    } catch (error) {
+        console.error('Cloudinary Error:', error);
+        throw error;
+    }
+}
   
 /* ---------------------------------------------------------  
    UI HELPERS: Twitch-like toasts  
@@ -663,7 +689,6 @@ clearBtn.addEventListener('click', ()=>{
   
 /* ---------------------------------------------------------  
    UPLOAD  
-   (mantuve toda la lógica de Supabase exactamente)  
 --------------------------------------------------------- */  
 document.getElementById("uploadBtn").addEventListener("click", async () => {  
   
@@ -682,38 +707,32 @@ document.getElementById("uploadBtn").addEventListener("click", async () => {
     }  
   
     document.getElementById("status").textContent = "Subiendo...";  
-  
-    const filePath = `${Date.now()}-${selectedFile.name}`;  
-  
-    const { error: uploadError } = await client  
-        .storage.from("audios")  
-        .upload(filePath, selectedFile);  
-  
-    if (uploadError) {  
+
+    try {
+        const fileUrl = await uploadToCloudinary(selectedFile);
+
+        const { error: insertError } = await client.from("audio_items").insert({
+            title,
+            description,
+            category,
+            filename: selectedFile.name,
+            file_url: fileUrl
+        });
+
+        if (insertError) throw insertError;
+
+        showTwitchToast("Audio subido correctamente", "success", selectedFile.name);
+    } catch (err) {
+        console.error(err);
         Swal.fire({  
             title: "Error al subir",  
-            text: "No se pudo subir el archivo. Revisa tu conexión.",  
+            text: "No se pudo subir el archivo. Revisa tu conexión o configuración.",
             icon: "error",  
             customClass: { popup: "swal2-glass" }  
         });  
-        return;  
-    }  
-  
-    const { data: urlData } = client  
-        .storage.from("audios")  
-        .getPublicUrl(filePath);  
-  
-    const fileUrl = urlData.publicUrl;  
-  
-    await client.from("audio_items").insert({  
-        title,  
-        description,  
-        category,  
-        filename: selectedFile.name,  
-        file_url: fileUrl  
-    });  
-  
-    showTwitchToast("Audio subido correctamente", "success", selectedFile.name);  
+        document.getElementById("status").textContent = "Error en la subida.";
+        return;
+    }
     Swal.fire({  
         title: "Subida completa",  
         text: "Tu audio se subió correctamente.",  
@@ -985,15 +1004,6 @@ function renderList(arr) {
   
             if (!result.isConfirmed) return;  
   
-            const { data } = await client  
-                .from("audio_items")  
-                .select("*")  
-                .eq("id", item.id)  
-                .single();  
-  
-            const path = data.file_url.split("/audios/")[1];  
-  
-            await client.storage.from("audios").remove([path]);  
             await client.from("audio_items").delete().eq("id", item.id);  
   
             showTwitchToast('Pista eliminada', 'success', item.title);  
