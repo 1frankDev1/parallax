@@ -1,0 +1,13 @@
+Confirmación de Funcionamiento - Manuales Menutech
+
+Se ha verificado y actualizado el sistema de manuales con las siguientes mejoras:
+
+1. Subida a Cloudinary: Todos los archivos subidos desde adminManual.html ahora se procesan a través de Cloudinary (Cloud Name: dbbjxhvz5, Preset: Tragalero), asegurando una gestión de archivos eficiente y escalable.
+2. Referencia en Base de Datos: Las URLs de Cloudinary se guardan correctamente en la columna 'source_url' de la tabla 'manual_content' en Supabase.
+3. Categorización: Se añadió la columna 'category' a la tabla 'manual_content' para permitir la clasificación del contenido (General, CS, Closers, Openers).
+4. Filtros de Categoría:
+   - adminManual.html: Permite asignar una categoría al crear/editar y filtrar la lista de gestión.
+   - manual.html: Incluye un filtro en la barra lateral para que los usuarios puedan navegar por categorías específicas.
+5. Ver Archivo Original: En manual.html, cada entrada ahora cuenta con un botón "Ver archivo original" que abre el PDF, imagen o video directamente desde su fuente en Cloudinary en una nueva pestaña.
+
+El sistema es robusto y cumple con los requerimientos de visualización tanto procesada (texto/imágenes extraídas) como directa (archivo original).

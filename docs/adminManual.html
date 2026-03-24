@@ -243,6 +243,15 @@
                         <label>URL / Fuente (Opcional si arrastras un archivo abajo)</label>
                         <input type="text" id="source" placeholder="https://youtube.com/...">
                     </div>
+                    <div class="input-group">
+                        <label>Categoría</label>
+                        <select id="category" required>
+                            <option value="General">General</option>
+                            <option value="CS">CS (Customer Service)</option>
+                            <option value="Closers">Closers</option>
+                            <option value="Openers">Openers</option>
+                        </select>
+                    </div>
                 </div>
 
                 <div class="input-group" style="margin-top: 20px;">
@@ -262,10 +271,21 @@
         </div>
 
         <div id="content-list">
+            <div style="margin-bottom: 20px; display: flex; gap: 10px; align-items: center;">
+                <label>Filtrar por Categoría:</label>
+                <select id="filter-category" onchange="filterItems()" style="padding: 8px; border-radius: 5px; background: #444; color: #fff;">
+                    <option value="all">Todas</option>
+                    <option value="General">General</option>
+                    <option value="CS">CS (Customer Service)</option>
+                    <option value="Closers">Closers</option>
+                    <option value="Openers">Openers</option>
+                </select>
+            </div>
             <table class="content-table">
                 <thead>
                     <tr>
                         <th>Título</th>
+                        <th>Categoría</th>
                         <th>Tipo</th>
                         <th>Acciones</th>
                     </tr>
@@ -409,6 +429,30 @@
 
         let itemsData = [];
 
+        window.filterItems = function() {
+            const filterValue = document.getElementById('filter-category').value;
+            renderTable(filterValue === 'all' ? itemsData : itemsData.filter(item => item.category === filterValue));
+        };
+
+        function renderTable(data) {
+            const tbody = document.getElementById('content-table-body');
+            tbody.innerHTML = '';
+
+            data.forEach((item) => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${item.title}</td>
+                    <td>${item.category || 'General'}</td>
+                    <td><span class="type-badge type-${item.type}">${item.type}</span></td>
+                    <td>
+                        <button class="action-btn" onclick="editItem('${item.id}')" style="background-color: #00bcd4;">Editar</button>
+                        <button class="action-btn delete-btn" onclick="deleteItem('${item.id}', '${item.source_url}')">Eliminar</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
         async function loadItems() {
             const client = await initSupabase();
             if (!client) return;
@@ -424,21 +468,7 @@
             }
 
             itemsData = data;
-            const tbody = document.getElementById('content-table-body');
-            tbody.innerHTML = '';
-
-            data.forEach((item) => {
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td>${item.title}</td>
-                    <td><span class="type-badge type-${item.type}">${item.type}</span></td>
-                    <td>
-                        <button class="action-btn" onclick="editItem('${item.id}')" style="background-color: #00bcd4;">Editar</button>
-                        <button class="action-btn delete-btn" onclick="deleteItem('${item.id}', '${item.source_url}')">Eliminar</button>
-                    </td>
-                `;
-                tbody.appendChild(tr);
-            });
+            renderTable(data);
         }
 
         window.editItem = function(id) {
@@ -448,6 +478,7 @@
             document.getElementById('edit-id').value = item.id;
             document.getElementById('title').value = item.title;
             document.getElementById('source').value = item.source_url;
+            document.getElementById('category').value = item.category || 'General';
             document.getElementById('description').value = item.description;
 
             const formTitle = document.querySelector('.form-container h2');
@@ -489,11 +520,14 @@
             if (!confirm("¿Estás seguro de eliminar este contenido?")) return;
             const client = await initSupabase();
 
-            // Si el archivo está en nuestro storage, intentar borrarlo
+            // Si el archivo está en nuestro storage (Supabase), intentar borrarlo
             if (sourceUrl && sourceUrl.includes('/storage/v1/object/public/manual/')) {
                 const fileName = sourceUrl.split('/').pop();
                 await client.storage.from('manual').remove([fileName]);
             }
+            // Nota: El borrado de Cloudinary requeriría una firma (API Key/Secret),
+            // generalmente se hace desde el backend o via upload_preset si está configurado.
+            // Dado que usamos unsigned uploads, nos enfocamos en la limpieza de la DB.
 
             const { error } = await client
                 .from('manual_content')
@@ -503,6 +537,23 @@
             if (error) console.error("Error al eliminar:", error);
             else loadItems();
         };
+
+        async function uploadToCloudinary(file) {
+            const CLOUDINARY_CLOUD_NAME = "dbbjxhvz5";
+            const CLOUDINARY_UPLOAD_PRESET = "Tragalero";
+            const url = `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/auto/upload`;
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
+
+            const response = await fetch(url, {
+                method: 'POST',
+                body: formData
+            });
+            if (!response.ok) throw new Error('Error al subir a Cloudinary');
+            const data = await response.json();
+            return data.secure_url;
+        }
 
         function detectType(file, sourceUrl) {
             if (file) {
@@ -534,27 +585,15 @@
             let file = fileInput.files.length > 0 ? fileInput.files[0] : null;
 
             if (file) {
-                const fileExt = file.name.split('.').pop();
-                const fileName = `${Math.random().toString(36).substring(2)}.${fileExt}`;
-                const filePath = fileName;
-
-                const { data: uploadData, error: uploadError } = await client.storage
-                    .from('manual')
-                    .upload(filePath, file);
-
-                if (uploadError) {
-                    console.error("Error al subir archivo:", uploadError);
+                try {
+                    source_url = await uploadToCloudinary(file);
+                } catch (uploadError) {
+                    console.error("Error al subir archivo a Cloudinary:", uploadError);
                     alert("Error al subir archivo: " + uploadError.message);
                     btn.disabled = false;
                     btn.innerText = "Guardar Contenido";
                     return;
                 }
-
-                const { data: urlData } = client.storage
-                    .from('manual')
-                    .getPublicUrl(filePath);
-
-                source_url = urlData.publicUrl;
             }
 
             const contentType = detectType(file, source_url);
@@ -562,6 +601,7 @@
                 title: document.getElementById('title').value,
                 type: contentType,
                 source_url: source_url,
+                category: document.getElementById('category').value,
                 description: document.getElementById('description').value
             };
 
