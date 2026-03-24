@@ -1,9 +1,9 @@
 (function() {
     // === HACER EL NAV ARRASTRABLE ===
-    const nav = document.querySelector('.neo-nav-container');
-    const hint = document.getElementById('dragHint');
+    const mtNeoNav = document.querySelector('.neo-nav-container');
+    const dragHintEl = document.getElementById('dragHint');
 
-    if (!nav) return;
+    if (!mtNeoNav) return;
 
     let offsetX = 0;
     let offsetY = 0;
@@ -14,22 +14,22 @@
     const savedY = localStorage.getItem('neoNavY');
 
     if (savedX && savedY) {
-        nav.style.left = savedX + "px";
-        nav.style.top = savedY + "px";
-        nav.style.bottom = "auto";
-        nav.style.transform = "none";
+        mtNeoNav.style.left = savedX + "px";
+        mtNeoNav.style.top = savedY + "px";
+        mtNeoNav.style.bottom = "auto";
+        mtNeoNav.style.transform = "none";
     }
 
     // Mostrar hint solo primera vez
-    if (!localStorage.getItem("seenNavDragHint") && hint) {
+    if (!localStorage.getItem("seenNavDragHint") && dragHintEl) {
         setTimeout(() => {
-            hint.style.opacity = "1";
-            hint.classList.add("pulsing");
+            dragHintEl.style.opacity = "1";
+            dragHintEl.classList.add("pulsing");
 
             // Pequeño movimiento animado del nav (para indicar que se mueve)
             if (typeof TinyAnimate !== 'undefined') {
-                TinyAnimate.animate(nav, "bottom", 20, 30, 600, "easeInOutSine", () => {
-                    TinyAnimate.animate(nav, "bottom", 30, 20, 600, "easeInOutSine");
+                TinyAnimate.animate(mtNeoNav, "bottom", 20, 30, 600, "easeInOutSine", () => {
+                    TinyAnimate.animate(mtNeoNav, "bottom", 30, 20, 600, "easeInOutSine");
                 });
             }
 
@@ -37,19 +37,19 @@
     }
 
     // Iniciar arrastre
-    nav.addEventListener('mousedown', (e) => {
+    mtNeoNav.addEventListener('mousedown', (e) => {
         dragging = true;
 
-        offsetX = e.clientX - nav.offsetLeft;
-        offsetY = e.clientY - nav.offsetTop;
+        offsetX = e.clientX - mtNeoNav.offsetLeft;
+        offsetY = e.clientY - mtNeoNav.offsetTop;
 
-        nav.style.transition = "none";
+        mtNeoNav.style.transition = "none";
 
         // Ocultar hint en cuanto empiece a mover
         if (!localStorage.getItem("seenNavDragHint")) {
-            if (hint) {
-                hint.style.opacity = "0";
-                hint.classList.remove("pulsing");
+            if (dragHintEl) {
+                dragHintEl.style.opacity = "0";
+                dragHintEl.classList.remove("pulsing");
             }
             localStorage.setItem("seenNavDragHint", "true");
         }
@@ -62,13 +62,13 @@
         let y = e.clientY - offsetY;
 
         // Limitar a pantalla
-        x = Math.max(0, Math.min(window.innerWidth - nav.offsetWidth, x));
-        y = Math.max(0, Math.min(window.innerHeight - nav.offsetHeight, y));
+        x = Math.max(0, Math.min(window.innerWidth - mtNeoNav.offsetWidth, x));
+        y = Math.max(0, Math.min(window.innerHeight - mtNeoNav.offsetHeight, y));
 
-        nav.style.left = x + "px";
-        nav.style.top = y + "px";
-        nav.style.bottom = "auto";
-        nav.style.transform = "none";
+        mtNeoNav.style.left = x + "px";
+        mtNeoNav.style.top = y + "px";
+        mtNeoNav.style.bottom = "auto";
+        mtNeoNav.style.transform = "none";
     });
 
     document.addEventListener('mouseup', () => {
@@ -76,10 +76,10 @@
         dragging = false;
 
         // Guardar posición
-        localStorage.setItem('neoNavX', nav.offsetLeft);
-        localStorage.setItem('neoNavY', nav.offsetTop);
+        localStorage.setItem('neoNavX', mtNeoNav.offsetLeft);
+        localStorage.setItem('neoNavY', mtNeoNav.offsetTop);
 
-        nav.style.transition = "";
+        mtNeoNav.style.transition = "";
     });
 
     // Botón Atrás
