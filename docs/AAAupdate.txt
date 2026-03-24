@@ -17,6 +17,17 @@ NOTIFY pgrst, 'reload schema';
 
 -- Agregar columna category a manual_content
 -- Configuración de la tabla manual_content (Ejecutar TODO junto)
+-- Asegura que ambas columnas de categoría y sección existan para máxima compatibilidad
 ALTER TABLE public.manual_content ADD COLUMN IF NOT EXISTS category TEXT DEFAULT 'General';
+ALTER TABLE public.manual_content ADD COLUMN IF NOT EXISTS section TEXT DEFAULT 'General';
 ALTER TABLE public.manual_content ADD COLUMN IF NOT EXISTS description TEXT;
+
+-- Habilitar políticas de edición (UPDATE) si no existen
+DO $$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'Permitir actualización pública' AND tablename = 'manual_content') THEN
+        CREATE POLICY "Permitir actualización pública" ON public.manual_content FOR UPDATE USING (true) WITH CHECK (true);
+    END IF;
+END $$;
+
 NOTIFY pgrst, 'reload schema';

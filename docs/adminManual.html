@@ -448,7 +448,7 @@
 
         window.filterItems = function() {
             const filterValue = document.getElementById('filter-category').value;
-            renderTable(filterValue === 'all' ? itemsData : itemsData.filter(item => (item.category || 'General') === filterValue));
+            renderTable(filterValue === 'all' ? itemsData : itemsData.filter(item => (item.category || item.section || 'General') === filterValue));
         };
 
         function renderTable(data) {
@@ -459,7 +459,7 @@
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
                     <td>${item.title}</td>
-                    <td>${item.category || 'General'}</td>
+                    <td>${item.category || item.section || 'General'}</td>
                     <td><span class="type-badge type-${item.type}">${item.type}</span></td>
                     <td>
                         <button class="action-btn" onclick="editItem('${item.id}')" style="background-color: #00bcd4;">Editar</button>
@@ -495,7 +495,7 @@
             document.getElementById('edit-id').value = item.id;
             document.getElementById('title').value = item.title;
             document.getElementById('source').value = item.source_url;
-            document.getElementById('category').value = item.category || 'General';
+            document.getElementById('category').value = item.category || item.section || 'General';
             document.getElementById('description').value = item.description;
 
             const formTitle = document.querySelector('.form-container h2');
@@ -647,11 +647,13 @@
             }
 
             const contentType = detectType(file, source_url);
+            const categoryVal = document.getElementById('category').value;
             const payload = {
                 title: document.getElementById('title').value,
                 type: contentType,
                 source_url: source_url,
-                category: document.getElementById('category').value,
+                category: categoryVal,
+                section: categoryVal, // Sync with section for compatibility
                 description: document.getElementById('description').value
             };
 
