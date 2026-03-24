@@ -1,52 +1,16 @@
--- SQL para la creación de las tablas necesarias (audio_items y notificaciones)
--- Este script maneja la creación de las tablas y las políticas de seguridad de forma segura.
-
--- 1. Crear la tabla de audios si no existe
-CREATE TABLE IF NOT EXISTS public.audio_items (
-    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+-- Creación de la tabla audio_items si no existe
+CREATE TABLE IF NOT EXISTS audio_items (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    created_at TIMESTAMPTZ DEFAULT now(),
     title TEXT NOT NULL,
     description TEXT,
-    category TEXT DEFAULT 'General',
+    category TEXT,
     filename TEXT,
-    file_url TEXT NOT NULL,
-    created_at TIMESTAMPTZ DEFAULT now()
+    file_url TEXT NOT NULL
 );
 
--- 2. Habilitar RLS para audios
-ALTER TABLE public.audio_items ENABLE ROW LEVEL SECURITY;
+-- Habilitar RLS (Opcional, según preferencia del usuario)
+-- ALTER TABLE audio_items ENABLE ROW LEVEL SECURITY;
 
--- 3. Eliminar políticas existentes de audios para evitar errores de duplicado
-DROP POLICY IF EXISTS "Permitir lectura pública" ON public.audio_items;
-DROP POLICY IF EXISTS "Permitir inserción pública" ON public.audio_items;
-DROP POLICY IF EXISTS "Permitir actualización pública" ON public.audio_items;
-DROP POLICY IF EXISTS "Permitir eliminación pública" ON public.audio_items;
-
--- 4. Crear las políticas de audios
-CREATE POLICY "Permitir lectura pública" ON public.audio_items FOR SELECT USING (true);
-CREATE POLICY "Permitir inserción pública" ON public.audio_items FOR INSERT WITH CHECK (true);
-CREATE POLICY "Permitir actualización pública" ON public.audio_items FOR UPDATE USING (true);
-CREATE POLICY "Permitir eliminación pública" ON public.audio_items FOR DELETE USING (true);
-
--- 5. Crear la tabla de notificaciones si no existe (para evitar errores 404 en renderer.js)
-CREATE TABLE IF NOT EXISTS public.notificaciones (
-    id BIGSERIAL PRIMARY KEY,
-    emisor TEXT NOT NULL,
-    mensaje TEXT NOT NULL,
-    tipo_destino TEXT DEFAULT 'all', -- 'all', 'roles', 'users'
-    destinos JSONB DEFAULT '[]'::jsonb,
-    created_at TIMESTAMPTZ DEFAULT now()
-);
-
--- 6. Habilitar RLS para notificaciones
-ALTER TABLE public.notificaciones ENABLE ROW LEVEL SECURITY;
-
--- 7. Eliminar políticas existentes de notificaciones
-DROP POLICY IF EXISTS "Permitir lectura pública notificaciones" ON public.notificaciones;
-DROP POLICY IF EXISTS "Permitir inserción pública notificaciones" ON public.notificaciones;
-
--- 8. Crear las políticas de notificaciones
-CREATE POLICY "Permitir lectura pública notificaciones" ON public.notificaciones FOR SELECT USING (true);
-CREATE POLICY "Permitir inserción pública notificaciones" ON public.notificaciones FOR INSERT WITH CHECK (true);
-
--- 9. Refrescar el esquema para la API
+-- Notificar al esquema (Útil si se cambian nombres de columnas existentes)
 NOTIFY pgrst, 'reload schema';
