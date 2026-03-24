@@ -24,7 +24,7 @@
           "https://eemqyrysdgasfjlitads.supabase.co",
           "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVlbXF5cnlzZGdhc2ZqbGl0YWRzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM3MjA0NDUsImV4cCI6MjA4OTI5NjQ0NX0.UiyZLqhXSQ1Z_FoL006PDrDYKXbr_pxCOugYTulhdPY"
         );
-        window.supabase = supabase;
+        window.mtSupabase = supabase;
         console.log("Supabase inicializado correctamente");
         break;
       } catch (err) {

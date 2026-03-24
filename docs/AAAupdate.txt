@@ -1,4 +1,7 @@
 -- SQL para la creación de la tabla de audios (audio_items)
+-- Este script maneja la creación de la tabla y las políticas de seguridad de forma segura.
+
+-- 1. Crear la tabla si no existe
 CREATE TABLE IF NOT EXISTS public.audio_items (
     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
     title TEXT NOT NULL,
@@ -9,15 +12,20 @@ CREATE TABLE IF NOT EXISTS public.audio_items (
     created_at TIMESTAMPTZ DEFAULT now()
 );
 
--- Habilitar RLS (Row Level Security)
+-- 2. Habilitar RLS
 ALTER TABLE public.audio_items ENABLE ROW LEVEL SECURITY;
 
--- Políticas para la tabla (Permitir lectura y cambios a todos por simplicidad en este entorno)
--- Nota: En producción, se recomienda restringir el acceso según el rol del usuario.
+-- 3. Eliminar políticas existentes para evitar errores de duplicado
+DROP POLICY IF EXISTS "Permitir lectura pública" ON public.audio_items;
+DROP POLICY IF EXISTS "Permitir inserción pública" ON public.audio_items;
+DROP POLICY IF EXISTS "Permitir actualización pública" ON public.audio_items;
+DROP POLICY IF EXISTS "Permitir eliminación pública" ON public.audio_items;
+
+-- 4. Crear las políticas
 CREATE POLICY "Permitir lectura pública" ON public.audio_items FOR SELECT USING (true);
 CREATE POLICY "Permitir inserción pública" ON public.audio_items FOR INSERT WITH CHECK (true);
 CREATE POLICY "Permitir actualización pública" ON public.audio_items FOR UPDATE USING (true);
 CREATE POLICY "Permitir eliminación pública" ON public.audio_items FOR DELETE USING (true);
 
--- Notificar a PostgREST para refrescar el esquema
+-- 5. Refrescar el esquema para la API
 NOTIFY pgrst, 'reload schema';
