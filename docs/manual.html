@@ -264,7 +264,7 @@
 
             const filteredData = currentFilter === 'all'
                 ? manualData
-                : manualData.filter(item => (item.category || 'General') === currentFilter);
+                : manualData.filter(item => (item.category || item.section || 'General') === currentFilter);
 
             if (filteredData.length === 0) {
                 titlesList.innerHTML = '<div class="index-item" style="font-size: 0.8rem; opacity: 0.7;">No hay contenido</div>';

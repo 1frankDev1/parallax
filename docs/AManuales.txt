@@ -7,10 +7,10 @@ Se han realizado las siguientes mejoras y verificaciones en el sistema de manual
    - Todos los archivos subidos desde 'adminManual.html' se envían ahora a Cloudinary (Cloud Name: dbbjxhvz5, Preset: Tragalero).
    - El sistema detecta automáticamente si es Imagen, Video o PDF.
 
-2. Referencia en Base de Datos:
+2. Referencia en Base de Datos y Compatibilidad:
    - La URL de Cloudinary se guarda en la tabla 'manual_content' en la columna 'source_url'.
-   - Se ha añadido soporte para 'category' (CS, Closers, Openers, General).
-   - Se ha añadido soporte para 'description' para texto adicional.
+   - Se ha mejorado el soporte para categorías: el sistema ahora es compatible con las columnas 'category' y 'section' simultáneamente.
+   - Si una columna falta o está vacía, el sistema usa la otra, asegurando que tus archivos siempre muestren la categoría correcta (CS, Closers, Openers, General).
 
 3. Visualización (manual.html):
    - Se ha agregado un filtro por categoría en la barra lateral.
@@ -21,14 +21,20 @@ Se han realizado las siguientes mejoras y verificaciones en el sistema de manual
    - Se ha corregido el color del texto en la tabla para asegurar que sea blanco y legible sobre el fondo oscuro.
    - Se han integrado alertas profesionales con SweetAlert2.
 
-SOLUCIÓN A ERRORES DE ESQUEMA (Missing Column 'category'):
----------------------------------------------------------
-Si al intentar guardar recibes un error que dice "column 'category' does not exist", es porque el caché de Supabase aún no reconoce los cambios.
-
-Para solucionarlo, copia y ejecuta TODO este bloque de código en el "SQL Editor" de tu Dashboard de Supabase:
+SOLUCIÓN A ERRORES DE CATEGORÍA / ESQUEMA:
+-----------------------------------------
+Si al intentar guardar recibes un error sobre columnas faltantes, o si las categorías no se muestran como esperas, por favor ejecuta este bloque en el "SQL Editor" de Supabase:
 
 ALTER TABLE public.manual_content ADD COLUMN IF NOT EXISTS category TEXT DEFAULT 'General';
+ALTER TABLE public.manual_content ADD COLUMN IF NOT EXISTS section TEXT DEFAULT 'General';
 ALTER TABLE public.manual_content ADD COLUMN IF NOT EXISTS description TEXT;
+-- Asegura que los permisos de actualización estén activos
+DO $$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'Permitir actualización pública' AND tablename = 'manual_content') THEN
+        CREATE POLICY "Permitir actualización pública" ON public.manual_content FOR UPDATE USING (true) WITH CHECK (true);
+    END IF;
+END $$;
 NOTIFY pgrst, 'reload schema';
 
-Esto forzará a Supabase a reconocer las nuevas columnas inmediatamente.
+Esto sincronizará la base de datos con las nuevas funciones de filtrado.
