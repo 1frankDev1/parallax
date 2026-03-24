@@ -16,7 +16,7 @@ CREATE TABLE IF NOT EXISTS audio_items (
 NOTIFY pgrst, 'reload schema';
 
 -- Agregar columna category a manual_content
-ALTER TABLE public.manual_content ADD COLUMN IF NOT EXISTS category TEXT;
-
--- Recargar esquema
+-- Configuración de la tabla manual_content (Ejecutar TODO junto)
+ALTER TABLE public.manual_content ADD COLUMN IF NOT EXISTS category TEXT DEFAULT 'General';
+ALTER TABLE public.manual_content ADD COLUMN IF NOT EXISTS description TEXT;
 NOTIFY pgrst, 'reload schema';

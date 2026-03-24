@@ -1,16 +1,34 @@
 Confirmación de Funcionamiento - Manuales Menutech
+================================================
 
-Se ha verificado y actualizado el sistema de manuales con las siguientes mejoras y correcciones:
+Se han realizado las siguientes mejoras y verificaciones en el sistema de manuales:
 
-1. Subida a Cloudinary: Todos los archivos subidos desde adminManual.html ahora se procesan a través de Cloudinary (Cloud Name: dbbjxhvz5, Preset: Tragalero), asegurando una gestión de archivos eficiente y escalable.
-2. Referencia en Base de Datos: Las URLs de Cloudinary se guardan correctamente en la columna 'source_url' de la tabla 'manual_content' en Supabase.
-3. Categorización: Se añadió la columna 'category' a la tabla 'manual_content' para permitir la clasificación del contenido (General, CS, Closers, Openers).
-4. Filtros de Categoría:
-   - adminManual.html: Permite asignar una categoría al crear/editar y filtrar la lista de gestión. Maneja robustamente valores nulos/indefinidos.
-   - manual.html: Incluye un filtro en la barra lateral para que los usuarios puedan navegar por categorías específicas.
-5. Ver Archivo Original: En manual.html, cada entrada ahora cuenta con un botón "Ver archivo original" ubicado al INICIO de la tarjeta de contenido para asegurar visibilidad inmediata.
-6. Notificaciones Profesionales: Se integró SweetAlert2 en adminManual.html para proporcionar popups de confirmación y error elegantes y profesionales.
-7. Resolución de Errores de Esquema: Si encuentras el error "Could not find the 'category' column in the schema cache", es crucial recargar el cache de PostgREST en Supabase.
-   - Ejecuta este comando en el Editor SQL de Supabase: NOTIFY pgrst, 'reload schema';
+1. Subida a Cloudinary:
+   - Todos los archivos subidos desde 'adminManual.html' se envían ahora a Cloudinary (Cloud Name: dbbjxhvz5, Preset: Tragalero).
+   - El sistema detecta automáticamente si es Imagen, Video o PDF.
 
-El sistema es robusto y cumple con los requerimientos de visualización tanto procesada (texto/imágenes extraídas) como directa (archivo original).
+2. Referencia en Base de Datos:
+   - La URL de Cloudinary se guarda en la tabla 'manual_content' en la columna 'source_url'.
+   - Se ha añadido soporte para 'category' (CS, Closers, Openers, General).
+   - Se ha añadido soporte para 'description' para texto adicional.
+
+3. Visualización (manual.html):
+   - Se ha agregado un filtro por categoría en la barra lateral.
+   - Se ha implementado el botón "Ver archivo original" que abre el PDF, Imagen o Video directamente en una nueva pestaña.
+   - Este botón ahora es "sticky" (permanece visible al hacer scroll) para mayor comodidad.
+
+4. Interfaz Administrativa (adminManual.html):
+   - Se ha corregido el color del texto en la tabla para asegurar que sea blanco y legible sobre el fondo oscuro.
+   - Se han integrado alertas profesionales con SweetAlert2.
+
+SOLUCIÓN A ERRORES DE ESQUEMA (Missing Column 'category'):
+---------------------------------------------------------
+Si al intentar guardar recibes un error que dice "column 'category' does not exist", es porque el caché de Supabase aún no reconoce los cambios.
+
+Para solucionarlo, copia y ejecuta TODO este bloque de código en el "SQL Editor" de tu Dashboard de Supabase:
+
+ALTER TABLE public.manual_content ADD COLUMN IF NOT EXISTS category TEXT DEFAULT 'General';
+ALTER TABLE public.manual_content ADD COLUMN IF NOT EXISTS description TEXT;
+NOTIFY pgrst, 'reload schema';
+
+Esto forzará a Supabase a reconocer las nuevas columnas inmediatamente.
