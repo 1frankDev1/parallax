@@ -264,7 +264,7 @@
 
             const filteredData = currentFilter === 'all'
                 ? manualData
-                : manualData.filter(item => item.category === currentFilter);
+                : manualData.filter(item => (item.category || 'General') === currentFilter);
 
             if (filteredData.length === 0) {
                 titlesList.innerHTML = '<div class="index-item" style="font-size: 0.8rem; opacity: 0.7;">No hay contenido</div>';
@@ -340,7 +340,7 @@
         function getOriginalFileButton(url) {
             if (!url) return '';
             return `
-                <div style="margin-top: 20px; display: flex; justify-content: flex-end;">
+                <div style="margin-bottom: 20px; display: flex; justify-content: flex-end;">
                     <a href="${url}" target="_blank" style="text-decoration: none;">
                         <button style="background: #ff9533; color: #000; border: none; padding: 10px 20px; border-radius: 10px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: transform 0.2s;">
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
@@ -366,9 +366,9 @@
             document.getElementById('main-content').innerHTML = `
                 <div class="modern-container">
                     <div class="modern-card">
+                        ${getOriginalFileButton(item.source_url)}
                         <h1 class="modern-header">${cleanText(item.title)}</h1>
                         ${formatModernContent(content)}
-                        ${getOriginalFileButton(item.source_url)}
                     </div>
                 </div>
             `;
@@ -378,11 +378,11 @@
             document.getElementById('main-content').innerHTML = `
                 <div class="modern-container">
                     <div class="modern-card">
+                        ${getOriginalFileButton(item.source_url)}
                         <h1 class="modern-header">${cleanText(item.title)}</h1>
                         <img src="${item.source_url}" class="modern-image">
                         <div class="modern-divider"></div>
                         ${formatModernContent(item.description)}
-                        ${getOriginalFileButton(item.source_url)}
                     </div>
                 </div>
             `;
@@ -393,9 +393,9 @@
             mainContent.innerHTML = `
                 <div class="modern-container">
                     <div class="modern-card">
+                        ${getOriginalFileButton(item.source_url)}
                         <h1 class="modern-header">${cleanText(item.title)}</h1>
                         <div id="pdf-container"></div>
-                        ${getOriginalFileButton(item.source_url)}
                     </div>
                 </div>
             `;
@@ -461,11 +461,11 @@
             document.getElementById('main-content').innerHTML = `
                 <div class="modern-container">
                     <div class="modern-card">
+                        ${getOriginalFileButton(item.source_url)}
                         <h1 class="modern-header">${cleanText(item.title)}</h1>
                         ${videoHTML}
                         <div class="modern-divider"></div>
                         ${formatModernContent(item.description)}
-                        ${getOriginalFileButton(item.source_url)}
                     </div>
                 </div>
             `;

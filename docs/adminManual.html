@@ -318,7 +318,23 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tiny-animate/1.1.0/tinyanimate.min.js"></script>
     <script src="./assets/js/badge.js"></script>
     <script src="https://menutech.xyz/menutechUI.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="./assets/js/renderer.js"></script>
+    <style>
+        /* SweetAlert2 glass style override */
+        .swal2-glass {
+            background: rgba(30, 32, 48, 0.95) !important;
+            backdrop-filter: blur(10px) !important;
+            color: #f0f0f0 !important;
+            border: 1px solid rgba(255, 255, 255, 0.1) !important;
+            border-radius: 20px !important;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5) !important;
+        }
+        .swal2-glass .swal2-title { color: #00bcd4 !important; }
+        .swal2-glass .swal2-html-container { color: #ccc !important; }
+        .swal2-glass .swal2-confirm { background: #ff8c00 !important; border-radius: 8px !important; }
+        .swal2-glass .swal2-cancel { background: #555 !important; border-radius: 8px !important; }
+    </style>
     <script>
         let supabase = null;
         let isInitializing = false;
@@ -431,7 +447,7 @@
 
         window.filterItems = function() {
             const filterValue = document.getElementById('filter-category').value;
-            renderTable(filterValue === 'all' ? itemsData : itemsData.filter(item => item.category === filterValue));
+            renderTable(filterValue === 'all' ? itemsData : itemsData.filter(item => (item.category || 'General') === filterValue));
         };
 
         function renderTable(data) {
@@ -517,7 +533,18 @@
         }
 
         window.deleteItem = async function(id, sourceUrl) {
-            if (!confirm("¿Estás seguro de eliminar este contenido?")) return;
+            const result = await Swal.fire({
+                title: '¿Estás seguro?',
+                text: "No podrás revertir esta acción.",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Sí, eliminar',
+                cancelButtonText: 'Cancelar',
+                customClass: { popup: 'swal2-glass' }
+            });
+
+            if (!result.isConfirmed) return;
+
             const client = await initSupabase();
 
             // Si el archivo está en nuestro storage (Supabase), intentar borrarlo
@@ -534,8 +561,25 @@
                 .delete()
                 .eq('id', id);
 
-            if (error) console.error("Error al eliminar:", error);
-            else loadItems();
+            if (error) {
+                console.error("Error al eliminar:", error);
+                Swal.fire({
+                    title: 'Error',
+                    text: "No se pudo eliminar el contenido: " + error.message,
+                    icon: 'error',
+                    customClass: { popup: 'swal2-glass' }
+                });
+            } else {
+                Swal.fire({
+                    title: 'Eliminado',
+                    text: "El contenido ha sido eliminado correctamente.",
+                    icon: 'success',
+                    timer: 2000,
+                    showConfirmButton: false,
+                    customClass: { popup: 'swal2-glass' }
+                });
+                loadItems();
+            }
         };
 
         async function uploadToCloudinary(file) {
@@ -589,7 +633,12 @@
                     source_url = await uploadToCloudinary(file);
                 } catch (uploadError) {
                     console.error("Error al subir archivo a Cloudinary:", uploadError);
-                    alert("Error al subir archivo: " + uploadError.message);
+                    Swal.fire({
+                        title: 'Error al subir',
+                        text: uploadError.message,
+                        icon: 'error',
+                        customClass: { popup: 'swal2-glass' }
+                    });
                     btn.disabled = false;
                     btn.innerText = "Guardar Contenido";
                     return;
@@ -621,7 +670,16 @@
 
             if (error) {
                 console.error("Error al guardar metadata:", error);
-                alert("Error al guardar en base de datos: " + error.message);
+                let errorMsg = error.message;
+                if (errorMsg.includes("column") && errorMsg.includes("schema cache")) {
+                    errorMsg = "Error de esquema: La base de datos no reconoce la columna 'category'. Por favor, recarga el esquema en Supabase ejecutando: NOTIFY pgrst, 'reload schema';";
+                }
+                Swal.fire({
+                    title: 'Error al guardar',
+                    text: errorMsg,
+                    icon: 'error',
+                    customClass: { popup: 'swal2-glass' }
+                });
             } else {
                 const popup = document.getElementById('popup');
                 popup.innerText = editId ? "Contenido actualizado exitosamente" : "Contenido guardado exitosamente";
