@@ -1,13 +1,16 @@
 Confirmación de Funcionamiento - Manuales Menutech
 
-Se ha verificado y actualizado el sistema de manuales con las siguientes mejoras:
+Se ha verificado y actualizado el sistema de manuales con las siguientes mejoras y correcciones:
 
 1. Subida a Cloudinary: Todos los archivos subidos desde adminManual.html ahora se procesan a través de Cloudinary (Cloud Name: dbbjxhvz5, Preset: Tragalero), asegurando una gestión de archivos eficiente y escalable.
 2. Referencia en Base de Datos: Las URLs de Cloudinary se guardan correctamente en la columna 'source_url' de la tabla 'manual_content' en Supabase.
 3. Categorización: Se añadió la columna 'category' a la tabla 'manual_content' para permitir la clasificación del contenido (General, CS, Closers, Openers).
 4. Filtros de Categoría:
-   - adminManual.html: Permite asignar una categoría al crear/editar y filtrar la lista de gestión.
+   - adminManual.html: Permite asignar una categoría al crear/editar y filtrar la lista de gestión. Maneja robustamente valores nulos/indefinidos.
    - manual.html: Incluye un filtro en la barra lateral para que los usuarios puedan navegar por categorías específicas.
-5. Ver Archivo Original: En manual.html, cada entrada ahora cuenta con un botón "Ver archivo original" que abre el PDF, imagen o video directamente desde su fuente en Cloudinary en una nueva pestaña.
+5. Ver Archivo Original: En manual.html, cada entrada ahora cuenta con un botón "Ver archivo original" ubicado al INICIO de la tarjeta de contenido para asegurar visibilidad inmediata.
+6. Notificaciones Profesionales: Se integró SweetAlert2 en adminManual.html para proporcionar popups de confirmación y error elegantes y profesionales.
+7. Resolución de Errores de Esquema: Si encuentras el error "Could not find the 'category' column in the schema cache", es crucial recargar el cache de PostgREST en Supabase.
+   - Ejecuta este comando en el Editor SQL de Supabase: NOTIFY pgrst, 'reload schema';
 
 El sistema es robusto y cumple con los requerimientos de visualización tanto procesada (texto/imágenes extraídas) como directa (archivo original).
