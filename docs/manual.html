@@ -340,11 +340,11 @@
         function getOriginalFileButton(url) {
             if (!url) return '';
             return `
-                <div style="margin-bottom: 20px; display: flex; justify-content: flex-end;">
+                <div style="position: sticky; top: 0; z-index: 100; margin-bottom: 30px; display: flex; justify-content: flex-end; background: rgba(30, 32, 48, 0.8); backdrop-filter: blur(5px); padding: 15px; border-radius: 15px; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 4px 20px rgba(0,0,0,0.4);">
                     <a href="${url}" target="_blank" style="text-decoration: none;">
-                        <button style="background: #ff9533; color: #000; border: none; padding: 10px 20px; border-radius: 10px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: transform 0.2s;">
+                        <button style="background: #ff9533; color: #000; border: none; padding: 12px 24px; border-radius: 10px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 10px; transition: all 0.3s; box-shadow: 0 4px 15px rgba(255, 149, 51, 0.3);">
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
-                            Ver archivo original
+                            VER ARCHIVO ORIGINAL
                         </button>
                     </a>
                 </div>
