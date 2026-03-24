@@ -166,8 +166,20 @@
                 <h3>Manuales</h3>
                 <button id="collapse-btn">−</button>
             </div>
-            <div id="indexer-content">
-                <!-- Titles dynamically populated -->
+            <div id="indexer-content" style="padding-top: 0;">
+                <div style="padding: 15px; border-bottom: 1px solid rgba(255,255,255,0.1); margin-bottom: 10px;">
+                    <label style="display: block; font-size: 0.8rem; color: #ff9533; margin-bottom: 5px; font-weight: 600;">Filtrar Categoría</label>
+                    <select id="category-filter" onchange="filterByCategory()" style="width: 100%; padding: 8px; border-radius: 8px; background: rgba(0,0,0,0.3); color: #fff; border: 1px solid rgba(255,255,255,0.1); cursor: pointer;">
+                        <option value="all">Todas</option>
+                        <option value="General">General</option>
+                        <option value="CS">CS</option>
+                        <option value="Closers">Closers</option>
+                        <option value="Openers">Openers</option>
+                    </select>
+                </div>
+                <div id="titles-list">
+                    <!-- Titles dynamically populated -->
+                </div>
             </div>
         </div>
 
@@ -239,6 +251,36 @@
             return paragraphs.map(p => `<p class="modern-text">${p}</p>`).join('');
         }
 
+        let currentFilter = 'all';
+
+        window.filterByCategory = function() {
+            currentFilter = document.getElementById('category-filter').value;
+            renderTitles();
+        };
+
+        function renderTitles() {
+            const titlesList = document.getElementById('titles-list');
+            titlesList.innerHTML = '';
+
+            const filteredData = currentFilter === 'all'
+                ? manualData
+                : manualData.filter(item => item.category === currentFilter);
+
+            if (filteredData.length === 0) {
+                titlesList.innerHTML = '<div class="index-item" style="font-size: 0.8rem; opacity: 0.7;">No hay contenido</div>';
+                return;
+            }
+
+            filteredData.forEach((item) => {
+                const originalIndex = manualData.findIndex(i => i.id === item.id);
+                const itemDiv = document.createElement('div');
+                itemDiv.className = 'index-item';
+                itemDiv.innerText = cleanText(item.title);
+                itemDiv.onclick = () => selectItem(originalIndex);
+                titlesList.appendChild(itemDiv);
+            });
+        }
+
         async function loadContent() {
             const client = await initSupabase();
             if (!client) return;
@@ -254,23 +296,7 @@
             }
 
             manualData = data;
-            const indexerContent = document.getElementById('indexer-content');
-            indexerContent.innerHTML = '';
-
-            if (manualData.length === 0) {
-                indexerContent.innerHTML = '<div class="index-item">Archivo vacío</div>';
-                showWelcome();
-                return;
-            }
-
-            manualData.forEach((item, index) => {
-                const itemDiv = document.createElement('div');
-                itemDiv.className = 'index-item';
-                itemDiv.innerText = cleanText(item.title);
-                itemDiv.onclick = () => selectItem(index);
-                indexerContent.appendChild(itemDiv);
-            });
-
+            renderTitles();
             showWelcome();
         }
 
@@ -296,8 +322,9 @@
             const item = manualData[index];
             if (!item) return;
 
-            document.querySelectorAll('.index-item').forEach((div, i) => {
-                div.classList.toggle('active', i === index);
+            // Highlight in sidebar (need to find the div in titles-list that corresponds to this item)
+            document.querySelectorAll('#titles-list .index-item').forEach((div) => {
+                div.classList.toggle('active', div.innerText === cleanText(item.title));
             });
 
             const mainContent = document.getElementById('main-content');
@@ -308,6 +335,20 @@
             else if (item.type === 'text') await renderText(item);
             else if (item.type === 'video') renderVideo(item);
             else showWelcome();
+        }
+
+        function getOriginalFileButton(url) {
+            if (!url) return '';
+            return `
+                <div style="margin-top: 20px; display: flex; justify-content: flex-end;">
+                    <a href="${url}" target="_blank" style="text-decoration: none;">
+                        <button style="background: #ff9533; color: #000; border: none; padding: 10px 20px; border-radius: 10px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: transform 0.2s;">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+                            Ver archivo original
+                        </button>
+                    </a>
+                </div>
+            `;
         }
 
         async function renderText(item) {
@@ -327,6 +368,7 @@
                     <div class="modern-card">
                         <h1 class="modern-header">${cleanText(item.title)}</h1>
                         ${formatModernContent(content)}
+                        ${getOriginalFileButton(item.source_url)}
                     </div>
                 </div>
             `;
@@ -340,6 +382,7 @@
                         <img src="${item.source_url}" class="modern-image">
                         <div class="modern-divider"></div>
                         ${formatModernContent(item.description)}
+                        ${getOriginalFileButton(item.source_url)}
                     </div>
                 </div>
             `;
@@ -352,6 +395,7 @@
                     <div class="modern-card">
                         <h1 class="modern-header">${cleanText(item.title)}</h1>
                         <div id="pdf-container"></div>
+                        ${getOriginalFileButton(item.source_url)}
                     </div>
                 </div>
             `;
@@ -407,10 +451,10 @@
 
         function renderVideo(item) {
             let videoHTML = '';
-            if (item.source_url.includes('youtube.com') || item.source_url.includes('youtu.be')) {
+            if (item.source_url && (item.source_url.includes('youtube.com') || item.source_url.includes('youtu.be'))) {
                 const id = item.source_url.includes('v=') ? item.source_url.split('v=')[1].split('&')[0] : item.source_url.split('/').pop();
                 videoHTML = `<iframe src="https://www.youtube.com/embed/${id}" style="width:100%; aspect-ratio:16/9; border: none; border-radius: 12px;" allowfullscreen></iframe>`;
-            } else {
+            } else if (item.source_url) {
                 videoHTML = `<video controls style="width:100%; border: none; border-radius: 12px;"><source src="${item.source_url}"></video>`;
             }
 
@@ -421,6 +465,7 @@
                         ${videoHTML}
                         <div class="modern-divider"></div>
                         ${formatModernContent(item.description)}
+                        ${getOriginalFileButton(item.source_url)}
                     </div>
                 </div>
             `;

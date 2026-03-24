@@ -14,3 +14,9 @@ CREATE TABLE IF NOT EXISTS audio_items (
 
 -- Notificar al esquema (Útil si se cambian nombres de columnas existentes)
 NOTIFY pgrst, 'reload schema';
+
+-- Agregar columna category a manual_content
+ALTER TABLE public.manual_content ADD COLUMN IF NOT EXISTS category TEXT;
+
+-- Recargar esquema
+NOTIFY pgrst, 'reload schema';
