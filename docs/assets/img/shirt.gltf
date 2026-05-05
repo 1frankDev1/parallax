@@ -22,7 +22,9 @@
                 10,
                 11,
                 12,
-                13
+                13,
+                14,
+                15
             ]
         }
     ],
@@ -136,6 +138,34 @@
         },
         {
             "name" : "Camera.003",
+            "rotation" : [
+                0.483536034822464,
+                0.33687159419059753,
+                -0.20870360732078552,
+                0.7804827094078064
+            ],
+            "translation" : [
+                7.358891487121582,
+                4.958309173583984,
+                6.925790786743164
+            ]
+        },
+        {
+            "name" : "Light.004",
+            "rotation" : [
+                0.16907575726509094,
+                0.7558803558349609,
+                -0.27217137813568115,
+                0.570947527885437
+            ],
+            "translation" : [
+                4.076245307922363,
+                5.903861999511719,
+                -1.0054539442062378
+            ]
+        },
+        {
+            "name" : "Camera.004",
             "rotation" : [
                 0.483536034822464,
                 0.33687159419059753,
@@ -366,7 +396,7 @@
         },
         {
             "componentType" : 5126,
-            "count" : 36285,
+            "count" : 40824,
             "max" : [
                 0.24423092603683472,
                 0.16115614771842957,
@@ -381,12 +411,12 @@
         },
         {
             "componentType" : 5126,
-            "count" : 36285,
+            "count" : 40824,
             "type" : "VEC3"
         },
         {
             "componentType" : 5126,
-            "count" : 36285,
+            "count" : 40824,
             "type" : "VEC2"
         },
         {
@@ -428,23 +458,23 @@
     "bufferViews" : [
         {
             "buffer" : 0,
-            "byteLength" : 305387,
+            "byteLength" : 305171,
             "byteOffset" : 0
         },
         {
             "buffer" : 0,
-            "byteLength" : 343688,
-            "byteOffset" : 305388
+            "byteLength" : 345191,
+            "byteOffset" : 305172
         },
         {
             "buffer" : 0,
-            "byteLength" : 233971,
-            "byteOffset" : 649076
+            "byteLength" : 270680,
+            "byteOffset" : 650364
         },
         {
             "buffer" : 0,
-            "byteLength" : 238794,
-            "byteOffset" : 883048
+            "byteLength" : 239120,
+            "byteOffset" : 921044
         }
     ],
     "samplers" : [
@@ -455,7 +485,7 @@
     ],
     "buffers" : [
         {
-            "byteLength" : 1121844,
+            "byteLength" : 1160164,
             "uri" : "shirt.bin"
         }
     ]
