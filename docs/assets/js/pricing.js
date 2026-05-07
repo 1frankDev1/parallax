@@ -73,14 +73,17 @@ function renderServices() {
 
 window.viewServiceImage = function(name, url) {
     Swal.fire({
-        title: name,
         imageUrl: url,
         imageAlt: name,
         showConfirmButton: false,
-        background: 'rgba(255, 255, 255, 0.9)',
-        backdrop: 'rgba(0,0,0,0.4)',
+        showCloseButton: true,
+        width: '80%',
+        padding: '0',
+        background: 'transparent',
+        backdrop: 'rgba(0,0,0,0.8)',
         customClass: {
-            popup: 'glass-popup'
+            popup: 'image-popup-custom',
+            image: 'large-image-swal'
         }
     });
 };
@@ -109,7 +112,7 @@ function updateTotals() {
 
             summaryList.innerHTML += `
                 <div class="selected-item-mini">
-                    <span>${service.name} ${ (service.id === 'online_orders' && hasSocial) ? '<b style="color:green">(WAIVED)</b>' : (sPrice === 0 && mPrice === 0 ? '<b style="color:green">(FREE)</b>' : '')}</span>
+                    <span>${service.name} ${ (service.id === 'online_orders' && hasSocial) ? '' : (sPrice === 0 && mPrice === 0 ? '<b style="color:green">(FREE)</b>' : '')}</span>
                     <span>$${mPrice.toFixed(2)}/mo</span>
                 </div>
             `;
@@ -256,13 +259,6 @@ async function uploadSummaryImage(clientName, data) {
     let y = 260;
     data.services.forEach(s => {
         ctx.fillText(`• ${s.name}`, 60, y);
-        if (s.is_free) {
-            ctx.fillStyle = 'green';
-            ctx.font = 'italic bold 14px Montserrat, Arial';
-            ctx.fillText(' (WAIVED)', ctx.measureText(`• ${s.name}`).width + 70, y);
-            ctx.fillStyle = '#444444';
-            ctx.font = '16px Montserrat, Arial';
-        }
         y += 25;
     });
 

@@ -396,7 +396,7 @@
 
             let servicesHtml = '';
             pkg.services.forEach(s => {
-                servicesHtml += `<span class="service-pill ${s.is_free ? 'waived' : ''}">${s.name} ${s.is_free ? '(WAIVED)' : ''}</span>`;
+                servicesHtml += `<span class="service-pill ${s.is_free ? 'waived' : ''}">${s.name}</span>`;
             });
 
             document.getElementById('modalContent').innerHTML = `

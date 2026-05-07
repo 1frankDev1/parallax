@@ -9,9 +9,14 @@
 }
 
 .dynamic-pricing-container {
-    padding: 40px 20px;
+    padding: 10px 20px 40px;
     font-family: 'Montserrat', sans-serif;
     color: var(--pricing-text);
+}
+
+.clean-block .block-heading {
+    margin-bottom: 20px !important;
+    padding-top: 20px !important;
 }
 
 .builder-layout {
@@ -218,6 +223,18 @@
 
 .btn-save-package:active {
     transform: translateY(0);
+}
+
+.image-popup-custom {
+    border: none !important;
+    box-shadow: none !important;
+}
+
+.large-image-swal {
+    border-radius: 15px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+    max-height: 85vh !important;
+    object-fit: contain;
 }
 
 /* Selected List in Summary */
