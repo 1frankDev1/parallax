@@ -79,18 +79,20 @@
 
         /* Glass Cards */
         .package-card {
-            background: var(--glass-bg);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid var(--glass-border);
-            border-radius: 20px;
-            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.08);
+            background: white;
+            border-radius: 24px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
             margin-bottom: 25px;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
             overflow: hidden;
             height: 100%;
             display: flex;
             flex-direction: column;
+            border: 1px solid #f0f0f0;
+        }
+        .package-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
         }
         .package-card:hover {
             transform: translateY(-10px);
@@ -104,7 +106,7 @@
         }
 
         .card-header-custom {
-            padding: 25px 25px 15px;
+            padding: 25px;
             display: flex;
             justify-content: space-between;
             align-items: flex-start;
@@ -112,9 +114,21 @@
 
         .card-client-name {
             font-weight: 800;
-            font-size: 1.3rem;
+            font-size: 1.4rem;
             color: #1a1a1a;
             margin: 0;
+            line-height: 1.2;
+        }
+        .package-badge {
+            background: #fdf2e9;
+            color: #ff8c00;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            display: inline-block;
+            margin-bottom: 8px;
         }
 
         .card-date {
@@ -159,39 +173,65 @@
             color: var(--brand-color);
         }
 
-        .btn-action {
+        .card-footer-actions {
+            padding: 0 25px 25px;
+            display: grid;
+            grid-template-columns: 1fr auto auto;
+            gap: 10px;
+        }
+        .btn-view {
             background: #1a1a1a;
             color: white;
             border: none;
-            padding: 12px;
+            padding: 10px;
             border-radius: 12px;
             font-weight: 700;
-            width: 100%;
             transition: all 0.3s;
             display: flex;
             justify-content: center;
             align-items: center;
-            gap: 10px;
+            gap: 8px;
         }
-        .btn-action:hover {
+        .btn-view:hover {
             background: var(--brand-color);
             color: white;
-            transform: scale(1.02);
+        }
+        .btn-circle {
+            width: 42px;
+            height: 42px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid #eee;
+            background: white;
+            color: #666;
+            transition: all 0.3s;
+        }
+        .btn-circle:hover {
+            background: #f8f9fa;
+            color: #1a1a1a;
+            border-color: #ddd;
+        }
+        .btn-delete:hover {
+            background: #fee2e2;
+            color: #dc2626;
+            border-color: #fca5a5;
         }
 
         /* Modal Enhancement */
         .modal-glass {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(20px);
-            border-radius: 25px !important;
-            border: 1px solid var(--glass-border) !important;
+            background: #fff;
+            border-radius: 30px !important;
+            border: none !important;
             overflow: hidden;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25) !important;
         }
         .modal-header-glass {
-            background: #1a1a1a;
-            color: white;
-            border: none;
-            padding: 25px 30px;
+            background: #fff;
+            color: #1a1a1a;
+            border-bottom: 1px solid #f0f0f0;
+            padding: 25px 35px;
         }
         .modal-body-glass {
             padding: 30px;
@@ -359,12 +399,13 @@
                     <div class="package-card">
                         <div class="card-accent"></div>
                         <div class="card-header-custom">
-                            <div>
-                                <h4 class="card-client-name">${p.client_name}</h4>
-                                <div class="card-date">${new Date(p.created_at).toLocaleDateString(undefined, {year: 'numeric', month: 'long', day: 'numeric'})}</div>
+                            <div style="flex: 1;">
+                                <span class="package-badge">${p.package_type || 'Custom'}</span>
+                                <h4 class="card-client-name text-truncate" style="max-width: 220px;">${p.client_name}</h4>
+                                <div class="card-date"><i class="far fa-calendar-alt mr-1"></i> ${new Date(p.created_at).toLocaleDateString()}</div>
                             </div>
-                            <div style="background: rgba(255,140,0,0.1); width: 45px; height: 45px; border-radius: 12px; display: flex; align-items: center; justify-content: center; color: var(--brand-color);">
-                                <i class="fas fa-file-invoice-dollar fa-lg"></i>
+                            <div style="background: #f8f9fa; width: 48px; height: 48px; border-radius: 14px; display: flex; align-items: center; justify-content: center; color: #1a1a1a; border: 1px solid #eee;">
+                                <i class="fas fa-file-invoice-dollar"></i>
                             </div>
                         </div>
                         <div class="card-body-custom">
@@ -378,9 +419,17 @@
                                     <span class="stat-value">$${p.total_monthly.toLocaleString()}</span>
                                 </div>
                             </div>
-                            <button class="btn-action" onclick="viewDetails('${p.id}')">
-                                <span>VIEW DETAILS</span>
-                                <i class="fas fa-arrow-right"></i>
+                        </div>
+                        <div class="card-footer-actions">
+                            <button class="btn-view" onclick="viewDetails('${p.id}')">
+                                <span>DETAILS</span>
+                                <i class="fas fa-chevron-right"></i>
+                            </button>
+                            <button class="btn-circle" onclick="editPackage('${p.id}')" title="Edit">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn-circle btn-delete" onclick="deletePackage('${p.id}')" title="Delete">
+                                <i class="fas fa-trash-alt"></i>
                             </button>
                         </div>
                     </div>
@@ -392,7 +441,15 @@
             const pkg = allPackages.find(p => p.id === id);
             if (!pkg) return;
 
-            document.getElementById('modalClientName').innerHTML = `<i class="fas fa-user-tie mr-2 text-primary"></i> Package for ${pkg.client_name}`;
+            document.getElementById('modalClientName').innerHTML = `
+                <div class="d-flex align-items-center">
+                    <div style="background: var(--brand-color); width: 10px; height: 30px; border-radius: 5px; margin-right: 15px;"></div>
+                    <div>
+                        <h4 style="margin: 0; font-weight: 800;">Package Details</h4>
+                        <p class="text-muted mb-0" style="font-size: 0.9rem; font-weight: 500;">${pkg.client_name} - ${pkg.package_type || 'Custom'}</p>
+                    </div>
+                </div>
+            `;
 
             let servicesHtml = '';
             pkg.services.forEach(s => {
@@ -401,32 +458,43 @@
 
             document.getElementById('modalContent').innerHTML = `
                 <div class="row">
-                    <div class="col-lg-5">
-                        <div class="detail-card">
-                            <h5 style="font-weight: 800; margin-bottom: 20px;">Summary Info</h5>
-                            <div class="mb-3 d-flex justify-content-between">
-                                <span class="text-muted">Created:</span>
-                                <span class="font-weight-600">${new Date(pkg.created_at).toLocaleString()}</span>
-                            </div>
-                            <div class="mb-3 d-flex justify-content-between align-items-center">
-                                <span class="text-muted">Total Setup Fee:</span>
-                                <span class="badge badge-pill badge-primary" style="font-size: 1.1rem; padding: 8px 20px;">$${pkg.total_setup.toLocaleString()}</span>
-                            </div>
-                            <div class="mb-4 d-flex justify-content-between align-items-center">
-                                <span class="text-muted">Total Monthly Fee:</span>
-                                <span class="badge badge-pill badge-success" style="font-size: 1.1rem; padding: 8px 20px;">$${pkg.total_monthly.toLocaleString()}</span>
+                    <div class="col-lg-4">
+                        <div class="detail-card h-100" style="background: #fbfbfb; border: 1px solid #f0f0f0;">
+                            <h5 style="font-weight: 800; margin-bottom: 25px; font-size: 1.1rem;">Quote Overview</h5>
+
+                            <div class="mb-4">
+                                <label class="text-muted d-block small font-weight-bold text-uppercase mb-1">Setup</label>
+                                <div style="font-size: 1.8rem; font-weight: 800; color: #1a1a1a;">$${pkg.total_setup.toLocaleString()}</div>
                             </div>
 
-                            <h6 class="font-weight-800 mt-4 mb-3">Included Services:</h6>
-                            <div class="d-flex flex-wrap">
-                                ${servicesHtml}
+                            <div class="mb-4">
+                                <label class="text-muted d-block small font-weight-bold text-uppercase mb-1">Monthly</label>
+                                <div style="font-size: 1.8rem; font-weight: 800; color: var(--brand-color);">$${pkg.total_monthly.toLocaleString()}</div>
+                            </div>
+
+                            <div class="mb-4 pt-3 border-top">
+                                <label class="text-muted d-block small font-weight-bold text-uppercase mb-2">Services Included</label>
+                                <div class="d-flex flex-wrap">
+                                    ${servicesHtml}
+                                </div>
+                            </div>
+
+                            <div class="mt-auto">
+                                <p class="text-muted small"><i class="far fa-clock mr-1"></i> Generated on ${new Date(pkg.created_at).toLocaleString()}</p>
                             </div>
                         </div>
                     </div>
-                    <div class="col-lg-7">
-                        <h6 class="font-weight-800 mb-3">Visual Quote Asset:</h6>
-                        <div class="quote-img-container">
-                            ${pkg.image_url ? `<img src="${pkg.image_url}" alt="Quote Summary">` : '<div class="p-5 text-center text-muted bg-white">No visual summary available</div>'}
+                    <div class="col-lg-8">
+                        <div class="h-100 d-flex flex-column">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h6 class="font-weight-800 mb-0">Visual Quote Preview</h6>
+                                <a href="${pkg.image_url}" target="_blank" class="btn btn-sm btn-light" style="border-radius: 8px; font-weight: 600;">
+                                    <i class="fas fa-external-link-alt mr-1"></i> Full View
+                                </a>
+                            </div>
+                            <div class="quote-img-container flex-grow-1 d-flex align-items-center justify-content-center" style="background: #f0f0f0; border-radius: 20px; min-height: 400px;">
+                                ${pkg.image_url ? `<img src="${pkg.image_url}" style="max-height: 600px; object-fit: contain; width: 100%; border-radius: 20px;">` : '<div class="p-5 text-center text-muted">No visual summary available</div>'}
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -436,6 +504,59 @@
             document.getElementById('btnDownload').style.display = pkg.image_url ? 'inline-block' : 'none';
 
             $('#packageModal').modal('show');
+        }
+
+        window.deletePackage = async function(id) {
+            const result = await Swal.fire({
+                title: 'Are you sure?',
+                text: "This package will be permanently deleted.",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#ff8c00',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Yes, delete it!',
+                background: '#fff',
+                borderRadius: '20px'
+            });
+
+            if (result.isConfirmed) {
+                try {
+                    const { error } = await supabase
+                        .from('pricing_packages')
+                        .delete()
+                        .eq('id', id);
+
+                    if (error) throw error;
+
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Deleted!',
+                        text: 'Package has been removed.',
+                        showConfirmButton: false,
+                        timer: 1500
+                    });
+
+                    loadPackages();
+                } catch (err) {
+                    Swal.fire('Error', err.message, 'error');
+                }
+            }
+        }
+
+        window.editPackage = function(id) {
+            // Since we don't have a full edit state management yet,
+            // we'll just show a notification or redirect to builder.
+            // For now, let's just alert.
+            Swal.fire({
+                title: 'Edit Package',
+                text: 'This will load the package data back into the builder. Redirecting...',
+                icon: 'info',
+                timer: 2000,
+                showConfirmButton: false
+            });
+            setTimeout(() => {
+                window.location.href = `pricing.html?edit=${id}`;
+            }, 2000);
         }
 
         init();

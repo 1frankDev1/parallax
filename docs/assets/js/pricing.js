@@ -169,8 +169,10 @@ async function savePackage() {
 
     try {
         const hasSocial = selectedServices.has('social_media') || selectedServices.has('smm');
+        const activePreset = document.querySelector('.preset-btn.active')?.dataset.preset || 'custom';
         const packageData = {
             client_name: clientName,
+            package_type: activePreset.charAt(0).toUpperCase() + activePreset.slice(1),
             services: SERVICES.filter(s => selectedServices.has(s.id)).map(s => ({
                 id: s.id,
                 name: s.name,
@@ -189,6 +191,7 @@ async function savePackage() {
             .from('pricing_packages')
             .insert([{
                 client_name: clientName,
+                package_type: packageData.package_type,
                 services: packageData.services,
                 total_setup: packageData.total_setup,
                 total_monthly: packageData.total_monthly,
