@@ -12,22 +12,23 @@
         :root {
             --brand-color: #ff8c00;
             --brand-hover: #ffa733;
-            --glass-bg: rgba(255, 255, 255, 0.7);
-            --glass-border: rgba(255, 255, 255, 0.3);
+            --dark-gray: #1a1a1a;
+            --bg-gray: #f8f9fa;
+            --card-shadow: 0 10px 30px rgba(0,0,0,0.08);
         }
         body {
             font-family: 'Montserrat', sans-serif;
-            background: #f0f2f5;
-            color: #2c3e50;
+            background-color: #f0f2f5;
+            color: #333;
             min-height: 100vh;
         }
         .navbar-custom {
-            background: #161b22;
-            padding: 15px 0;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            background: #111;
+            padding: 1.2rem 0;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
             position: sticky;
             top: 0;
-            z-index: 1000;
+            z-index: 1050;
         }
         .navbar-brand-text {
             color: white;
@@ -37,255 +38,347 @@
         }
         .sky-blue { color: #87CEEB; }
 
-        .main-content {
-            padding: 40px 0;
+        .dashboard-container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 50px 20px;
         }
 
-        .page-title-section {
-            margin-bottom: 40px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 20px;
+        .header-section {
+            text-align: center;
+            margin-bottom: 50px;
+        }
+        .header-section h2 {
+            font-weight: 800;
+            font-size: 2.5rem;
+            color: var(--dark-gray);
         }
 
-        .search-wrapper {
+        /* Search Section */
+        .search-container {
+            max-width: 600px;
+            margin: 0 auto 50px;
             position: relative;
-            max-width: 400px;
-            width: 100%;
         }
         .search-input {
             width: 100%;
-            padding: 12px 20px 12px 45px;
-            border-radius: 30px;
+            padding: 16px 25px 16px 60px;
+            border-radius: 50px;
             border: 1px solid #ddd;
             background: white;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+            font-weight: 600;
             outline: none;
-            transition: all 0.3s;
+            transition: 0.3s;
+            font-size: 1.1rem;
         }
         .search-input:focus {
             border-color: var(--brand-color);
-            box-shadow: 0 4px 20px rgba(255, 140, 0, 0.15);
+            box-shadow: 0 10px 30px rgba(255, 140, 0, 0.15);
         }
         .search-icon {
             position: absolute;
-            left: 18px;
+            left: 25px;
             top: 50%;
             transform: translateY(-50%);
             color: #aaa;
+            font-size: 1.3rem;
         }
 
-        /* Glass Cards */
+        /* Grid */
+        #packages-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 30px;
+        }
+
+        /* Card System */
         .package-card {
             background: white;
-            border-radius: 24px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
-            margin-bottom: 25px;
-            transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
-            overflow: hidden;
-            height: 100%;
+            border-radius: 30px;
+            padding: 30px;
+            box-shadow: var(--card-shadow);
+            border: 1px solid #eee;
+            transition: all 0.3s ease;
             display: flex;
             flex-direction: column;
-            border: 1px solid #f0f0f0;
+            position: relative;
         }
         .package-card:hover {
-            transform: translateY(-10px);
-            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
-        }
-        .package-card:hover {
-            transform: translateY(-10px);
-            box-shadow: 0 15px 45px rgba(255, 140, 0, 0.12);
-            border-color: rgba(255, 140, 0, 0.3);
+            transform: translateY(-8px);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.12);
         }
 
-        .card-accent {
-            height: 6px;
-            background: linear-gradient(90deg, var(--brand-color), var(--brand-hover));
-        }
-
-        .card-header-custom {
-            padding: 25px;
+        .card-header-main {
             display: flex;
             justify-content: space-between;
             align-items: flex-start;
+            margin-bottom: 20px;
         }
-
-        .card-client-name {
+        .client-info-group { flex: 1; }
+        .client-name-display {
             font-weight: 800;
-            font-size: 1.4rem;
-            color: #1a1a1a;
+            font-size: 1.5rem;
             margin: 0;
+            color: #111;
             line-height: 1.2;
         }
-        .package-badge {
-            background: #fdf2e9;
-            color: #ff8c00;
-            padding: 4px 12px;
-            border-radius: 20px;
+        .tier-tag-small {
             font-size: 0.75rem;
-            font-weight: 700;
+            font-weight: 800;
+            color: var(--brand-color);
             text-transform: uppercase;
-            display: inline-block;
-            margin-bottom: 8px;
+            letter-spacing: 0.5px;
+            margin-top: 4px;
+            display: block;
         }
 
-        .card-date {
-            font-size: 0.8rem;
-            color: #888;
-            font-weight: 500;
-            margin-top: 5px;
+        .card-actions-top {
+            display: flex;
+            gap: 10px;
+            margin-left: 15px;
+        }
+        .btn-mini-utility {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            background: #f8f9fa;
+            border: 1px solid #eee;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #666;
+            transition: 0.3s;
+            cursor: pointer;
+        }
+        .btn-mini-utility i { font-size: 1.1rem; }
+        .btn-mini-utility:hover {
+            background: #eee;
+            color: #111;
+            border-color: #ddd;
+        }
+        .btn-mini-delete:hover {
+            background: #fee2e2;
+            color: #dc2626;
+            border-color: #fecaca;
         }
 
-        .card-body-custom {
-            padding: 0 25px 25px;
-            flex-grow: 1;
-        }
-
-        .stats-grid {
+        .pricing-stats-row {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 15px;
-            margin-bottom: 20px;
+            margin: 20px 0;
         }
-
-        .stat-box {
-            background: rgba(0,0,0,0.03);
-            padding: 12px;
-            border-radius: 12px;
+        .stat-chip {
+            background: #fbfbfb;
+            padding: 15px 10px;
+            border-radius: 18px;
             text-align: center;
+            border: 1px solid #f0f0f0;
         }
-
         .stat-label {
             display: block;
-            font-size: 0.7rem;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            color: #777;
-            font-weight: 700;
-            margin-bottom: 5px;
-        }
-
-        .stat-value {
+            font-size: 0.65rem;
             font-weight: 800;
-            font-size: 1.1rem;
-            color: var(--brand-color);
+            color: #aaa;
+            text-transform: uppercase;
+            margin-bottom: 3px;
         }
+        .stat-val {
+            font-size: 1.2rem;
+            font-weight: 800;
+            color: #111;
+        }
+        .stat-val.orange { color: var(--brand-color); }
 
-        .card-footer-actions {
-            padding: 0 25px 25px;
-            display: grid;
-            grid-template-columns: 1fr auto auto;
-            gap: 10px;
-        }
-        .btn-view {
-            background: #1a1a1a;
-            color: white;
+        .btn-full-details {
+            background: #111;
+            color: white !important;
             border: none;
-            padding: 10px;
-            border-radius: 12px;
-            font-weight: 700;
-            transition: all 0.3s;
+            padding: 14px;
+            border-radius: 15px;
+            font-weight: 800;
+            text-transform: uppercase;
+            width: 100%;
+            transition: 0.3s;
+            font-size: 0.9rem;
+            letter-spacing: 1px;
             display: flex;
-            justify-content: center;
             align-items: center;
+            justify-content: center;
             gap: 8px;
+            margin-top: 10px;
         }
-        .btn-view:hover {
+        .btn-full-details:hover {
             background: var(--brand-color);
-            color: white;
-        }
-        .btn-circle {
-            width: 42px;
-            height: 42px;
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border: 1px solid #eee;
-            background: white;
-            color: #666;
-            transition: all 0.3s;
-        }
-        .btn-circle:hover {
-            background: #f8f9fa;
-            color: #1a1a1a;
-            border-color: #ddd;
-        }
-        .btn-delete:hover {
-            background: #fee2e2;
-            color: #dc2626;
-            border-color: #fca5a5;
+            text-decoration: none;
+            transform: scale(1.02);
         }
 
-        /* Modal Enhancement */
-        .modal-glass {
-            background: #fff;
-            border-radius: 30px !important;
-            border: none !important;
+        /* MODAL REDESIGN */
+        .modal-refined-content {
+            border-radius: 35px;
+            border: none;
             overflow: hidden;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25) !important;
+            box-shadow: 0 40px 100px rgba(0,0,0,0.4);
         }
         .modal-header-glass {
-            background: #fff;
-            color: #1a1a1a;
+            background: white;
+            padding: 30px 45px;
             border-bottom: 1px solid #f0f0f0;
-            padding: 25px 35px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
-        .modal-body-glass {
-            padding: 30px;
+        .modal-header-glass h4 {
+            font-weight: 800;
+            margin: 0;
+            font-size: 1.8rem;
+            color: #111;
         }
-        .detail-card {
+        .btn-close-modal-pro {
+            background: #f5f5f5;
+            border: none;
+            width: 46px;
+            height: 46px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: 0.3s;
+            color: #333;
+            font-size: 1.3rem;
+        }
+        .btn-close-modal-pro:hover {
+            background: #e0e0e0;
+            transform: scale(1.1);
+        }
+
+        .modal-body-pro {
+            padding: 40px;
+            background: white;
+        }
+        .sidebar-info-card {
             background: #f9f9f9;
-            border-radius: 20px;
-            padding: 20px;
-            margin-bottom: 20px;
+            padding: 35px;
+            border-radius: 30px;
+            border: 1px solid #eee;
+            height: 100%;
         }
-        .service-pill {
+        .modal-info-bit {
+            margin-bottom: 30px;
+        }
+        .modal-info-title {
+            font-size: 0.75rem;
+            font-weight: 800;
+            color: #bbb;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .modal-info-title::before {
+            content: '';
+            width: 4px;
+            height: 15px;
+            background: var(--brand-color);
+            border-radius: 2px;
+        }
+        .modal-main-text {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: #111;
+        }
+        .modal-price-hero {
+            font-size: 3.2rem;
+            font-weight: 900;
+            color: var(--brand-color);
+            line-height: 1;
+        }
+        .service-pill-mini {
             display: inline-block;
             background: white;
-            padding: 8px 15px;
-            border-radius: 30px;
-            font-size: 0.85rem;
-            font-weight: 600;
-            margin-right: 10px;
-            margin-bottom: 10px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
             border: 1px solid #eee;
-        }
-        .service-pill.waived {
-            border-color: #27ae60;
-            color: #27ae60;
-        }
-
-        .quote-img-container {
-            border-radius: 20px;
-            overflow: hidden;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.15);
-            background: white;
-            line-height: 0;
-        }
-        .quote-img-container img {
-            width: 100%;
-            transition: transform 0.5s;
-        }
-        .quote-img-container:hover img {
-            transform: scale(1.05);
+            padding: 8px 18px;
+            border-radius: 12px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            margin: 0 10px 10px 0;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.03);
         }
 
-        .empty-state {
-            background: white;
-            padding: 60px;
+        .image-display-frame {
+            background: #f0f0f0;
             border-radius: 30px;
-            text-align: center;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.05);
-            grid-column: 1 / -1;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid #ddd;
+            min-height: 600px;
+            box-shadow: inset 0 5px 30px rgba(0,0,0,0.05);
+            position: relative;
         }
-        .empty-state i {
-            font-size: 4rem;
-            color: #eee;
-            margin-bottom: 20px;
+        .image-display-frame img {
+            max-width: 100%;
+            max-height: 800px;
+            object-fit: contain;
+            border-radius: 20px;
+            padding: 10px;
+        }
+
+        .modal-footer-glass {
+            padding: 0 45px 45px;
+            background: white;
+            display: flex;
+            justify-content: flex-end;
+            gap: 20px;
+        }
+        .btn-modal-cancel {
+            background: #f0f0f0;
+            color: #555;
+            border: none;
+            padding: 18px 40px;
+            border-radius: 20px;
+            font-weight: 800;
+            cursor: pointer;
+            transition: 0.3s;
+            font-size: 1rem;
+        }
+        .btn-modal-cancel:hover {
+            background: #e0e0e0;
+            color: #111;
+        }
+        .btn-modal-asset {
+            background: var(--brand-color);
+            color: white !important;
+            border: none;
+            padding: 18px 40px;
+            border-radius: 20px;
+            font-weight: 800;
+            cursor: pointer;
+            transition: 0.3s;
+            box-shadow: 0 10px 25px rgba(255, 140, 0, 0.25);
+            text-decoration: none !important;
+            display: inline-block;
+            font-size: 1rem;
+        }
+        .btn-modal-asset:hover {
+            background: var(--brand-hover);
+            transform: translateY(-4px);
+            box-shadow: 0 15px 35px rgba(255, 140, 0, 0.4);
+        }
+
+        .empty-state-card {
+            text-align: center;
+            padding: 100px 20px;
+            background: white;
+            border-radius: 40px;
+            color: #ccc;
+            grid-column: 1 / -1;
         }
     </style>
 </head>
@@ -297,44 +390,41 @@
         </div>
     </nav>
 
-    <div class="container main-content">
-        <div class="page-title-section">
-            <div>
-                <h2 style="font-weight: 800; margin: 0;">Packages Dashboard</h2>
-                <p class="text-muted mb-0">Management of generated dynamic quotes</p>
-            </div>
-            <div class="search-wrapper">
-                <i class="fas fa-search search-icon"></i>
-                <input type="text" id="search-input" class="search-input" placeholder="Search by name or restaurant...">
-            </div>
+    <div class="dashboard-container">
+        <div class="header-section">
+            <h2>Packages Dashboard</h2>
+            <p class="text-muted font-weight-bold">View and manage generated restaurant quotes</p>
         </div>
 
-        <div id="packages-container" class="row">
+        <div class="search-container">
+            <i class="fas fa-search search-icon"></i>
+            <input type="text" id="search-input" class="search-input" placeholder="Search Client / Restaurant Name...">
+        </div>
+
+        <div id="packages-grid">
             <!-- Loading Spinner -->
             <div class="col-12 text-center p-5">
-                <div class="spinner-border" style="color: var(--brand-color)" role="status">
-                    <span class="sr-only">Loading...</span>
-                </div>
+                <div class="spinner-border" style="color: var(--brand-color); width: 4rem; height: 4rem;" role="status"></div>
             </div>
         </div>
     </div>
 
-    <!-- Details Modal -->
+    <!-- Package Detail Modal -->
     <div class="modal fade" id="packageModal" tabindex="-1" role="dialog" aria-hidden="true">
-        <div class="modal-dialog modal-xl modal-dialog-centered" role="document">
-            <div class="modal-content modal-glass">
-                <div class="modal-header modal-header-glass">
-                    <h5 class="modal-title" id="modalClientName" style="font-weight: 800;">Package Details</h5>
-                    <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
+        <div class="modal-dialog modal-xl modal-dialog-centered">
+            <div class="modal-content modal-refined-content">
+                <div class="modal-header-glass">
+                    <h4 id="modalClientTitle">Summary</h4>
+                    <button type="button" class="btn-close-modal-pro" data-dismiss="modal">
+                        <i class="fas fa-times"></i>
                     </button>
                 </div>
-                <div class="modal-body modal-body-glass" id="modalContent">
-                    <!-- Dynamic Content -->
+                <div class="modal-body-pro" id="modalDataMount">
+                    <!-- Dynamic Body -->
                 </div>
-                <div class="modal-footer border-0 pb-4 pr-4">
-                    <button type="button" class="btn btn-link text-muted" data-dismiss="modal">Close</button>
-                    <a id="btnDownload" href="#" target="_blank" class="btn btn-primary" style="background: var(--brand-color); border: none; border-radius: 12px; padding: 12px 25px; font-weight: 700;">View Original Asset</a>
+                <div class="modal-footer-glass">
+                    <button type="button" class="btn-modal-cancel" data-dismiss="modal">Close</button>
+                    <a id="btnOriginalLink" href="#" target="_blank" class="btn-modal-asset">View Original Asset</a>
                 </div>
             </div>
         </div>
@@ -343,221 +433,151 @@
     <script src="assets/js/jquery.min.js"></script>
     <script src="assets/bootstrap/js/bootstrap.min.js"></script>
     <script src="./assets/js/renderer.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <script type="module">
         import { supabase } from "./assets/js/supabase.js";
-        let allPackages = [];
+        let quoteStore = [];
 
         async function init() {
-            loadPackages();
-
+            fetchData();
             document.getElementById('search-input').addEventListener('input', (e) => {
                 const term = e.target.value.toLowerCase();
-                const filtered = allPackages.filter(p => p.client_name.toLowerCase().includes(term));
-                renderPackages(filtered);
+                renderCards(quoteStore.filter(p => p.client_name.toLowerCase().includes(term)));
             });
         }
 
-        async function loadPackages() {
+        async function fetchData() {
             try {
-                const { data, error } = await supabase
-                    .from('pricing_packages')
-                    .select('*')
-                    .order('created_at', { ascending: false });
-
+                const { data, error } = await supabase.from('pricing_packages').select('*').order('created_at', { ascending: false });
                 if (error) throw error;
-
-                allPackages = data;
-                renderPackages(data);
+                quoteStore = data;
+                renderCards(data);
             } catch (err) {
-                console.error('Error loading packages:', err);
-                document.getElementById('packages-container').innerHTML = `
-                    <div class="col-12 text-center py-5">
-                        <div class="alert alert-danger d-inline-block px-5" style="border-radius: 20px;">
-                           <i class="fas fa-exclamation-triangle mr-2"></i> Error al cargar datos: ${err.message}
-                        </div>
-                    </div>
-                `;
+                document.getElementById('packages-grid').innerHTML = `<div class="alert alert-danger col-12">Error: ${err.message}</div>`;
             }
         }
 
-        function renderPackages(packages) {
-            const container = document.getElementById('packages-container');
-            if (packages.length === 0) {
-                container.innerHTML = `
-                    <div class="empty-state">
-                        <i class="fas fa-folder-open"></i>
-                        <h3>No packages found</h3>
-                        <p class="text-muted">Once you create a package in the builder, it will appear here.</p>
-                    </div>
-                `;
+        function renderCards(pkgs) {
+            const container = document.getElementById('packages-grid');
+            if (pkgs.length === 0) {
+                container.innerHTML = `<div class="empty-state-card"><i class="fas fa-box-open fa-4x mb-4"></i><h3>No Packages Available</h3></div>`;
                 return;
             }
 
-            container.innerHTML = packages.map(p => `
-                <div class="col-lg-4 col-md-6 mb-4">
-                    <div class="package-card">
-                        <div class="card-accent"></div>
-                        <div class="card-header-custom">
-                            <div style="flex: 1;">
-                                <span class="package-badge">${p.package_type || 'Custom'}</span>
-                                <h4 class="card-client-name text-truncate" style="max-width: 220px;">${p.client_name}</h4>
-                                <div class="card-date"><i class="far fa-calendar-alt mr-1"></i> ${new Date(p.created_at).toLocaleDateString()}</div>
-                            </div>
-                            <div style="background: #f8f9fa; width: 48px; height: 48px; border-radius: 14px; display: flex; align-items: center; justify-content: center; color: #1a1a1a; border: 1px solid #eee;">
-                                <i class="fas fa-file-invoice-dollar"></i>
-                            </div>
+            container.innerHTML = pkgs.map(p => `
+                <div class="package-card">
+                    <div class="card-header-main">
+                        <div class="client-info-group">
+                            <h4 class="client-name-text">${p.client_name}</h4>
+                            <span class="tier-tag-small">${p.package_type || 'Custom'}</span>
+                            <div class="date-info"><i class="far fa-calendar-alt"></i> ${new Date(p.created_at).toLocaleDateString()}</div>
                         </div>
-                        <div class="card-body-custom">
-                            <div class="stats-grid">
-                                <div class="stat-box">
-                                    <span class="stat-label">Setup</span>
-                                    <span class="stat-value">$${p.total_setup.toLocaleString()}</span>
-                                </div>
-                                <div class="stat-box">
-                                    <span class="stat-label">Monthly</span>
-                                    <span class="stat-value">$${p.total_monthly.toLocaleString()}</span>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="card-footer-actions">
-                            <button class="btn-view" onclick="viewDetails('${p.id}')">
-                                <span>DETAILS</span>
-                                <i class="fas fa-chevron-right"></i>
-                            </button>
-                            <button class="btn-circle" onclick="editPackage('${p.id}')" title="Edit">
+                        <div class="card-actions-top">
+                            <div class="btn-mini-utility" onclick="onEditPackage('${p.id}')" title="Edit">
                                 <i class="fas fa-edit"></i>
-                            </button>
-                            <button class="btn-circle btn-delete" onclick="deletePackage('${p.id}')" title="Delete">
+                            </div>
+                            <div class="btn-mini-utility btn-mini-delete" onclick="onDeletePackage('${p.id}')" title="Delete">
                                 <i class="fas fa-trash-alt"></i>
-                            </button>
+                            </div>
                         </div>
                     </div>
+
+                    <div class="pricing-stats-row">
+                        <div class="stat-chip">
+                            <span class="stat-label">Setup</span>
+                            <span class="stat-val">$${p.total_setup.toLocaleString()}</span>
+                        </div>
+                        <div class="stat-chip">
+                            <span class="stat-label">Monthly</span>
+                            <span class="stat-val orange">$${p.total_monthly.toLocaleString()}</span>
+                        </div>
+                    </div>
+
+                    <button class="btn-full-details" onclick="triggerDetails('${p.id}')">
+                        <span>Open Package Summary</span>
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
                 </div>
             `).join('');
         }
 
-        window.viewDetails = function(id) {
-            const pkg = allPackages.find(p => p.id === id);
-            if (!pkg) return;
+        window.triggerDetails = function(id) {
+            const p = quoteStore.find(x => x.id === id);
+            if (!p) return;
 
-            document.getElementById('modalClientName').innerHTML = `
-                <div class="d-flex align-items-center">
-                    <div style="background: var(--brand-color); width: 10px; height: 30px; border-radius: 5px; margin-right: 15px;"></div>
-                    <div>
-                        <h4 style="margin: 0; font-weight: 800;">Package Details</h4>
-                        <p class="text-muted mb-0" style="font-size: 0.9rem; font-weight: 500;">${pkg.client_name} - ${pkg.package_type || 'Custom'}</p>
-                    </div>
-                </div>
-            `;
+            document.getElementById('modalClientTitle').innerText = `${p.client_name}`;
 
-            let servicesHtml = '';
-            pkg.services.forEach(s => {
-                servicesHtml += `<span class="service-pill ${s.is_free ? 'waived' : ''}">${s.name}</span>`;
-            });
+            const servicesHtml = p.services.map(s => `<span class="service-pill-mini">${s.name}</span>`).join('');
 
-            document.getElementById('modalContent').innerHTML = `
+            document.getElementById('modalDataMount').innerHTML = `
                 <div class="row">
-                    <div class="col-lg-4">
-                        <div class="detail-card h-100" style="background: #fbfbfb; border: 1px solid #f0f0f0;">
-                            <h5 style="font-weight: 800; margin-bottom: 25px; font-size: 1.1rem;">Quote Overview</h5>
-
-                            <div class="mb-4">
-                                <label class="text-muted d-block small font-weight-bold text-uppercase mb-1">Setup</label>
-                                <div style="font-size: 1.8rem; font-weight: 800; color: #1a1a1a;">$${pkg.total_setup.toLocaleString()}</div>
+                    <div class="col-lg-5">
+                        <div class="sidebar-info-card d-flex flex-column">
+                            <div class="modal-info-bit">
+                                <span class="modal-info-title">Restaurant / Client</span>
+                                <div class="modal-main-text">${p.client_name}</div>
                             </div>
-
-                            <div class="mb-4">
-                                <label class="text-muted d-block small font-weight-bold text-uppercase mb-1">Monthly</label>
-                                <div style="font-size: 1.8rem; font-weight: 800; color: var(--brand-color);">$${pkg.total_monthly.toLocaleString()}</div>
+                            <div class="modal-info-bit">
+                                <span class="modal-info-title">Package Tier</span>
+                                <div class="modal-main-text"><span class="tier-tag-small" style="font-size: 1.1rem; display:inline;">${p.package_type || 'Custom'}</span></div>
                             </div>
-
-                            <div class="mb-4 pt-3 border-top">
-                                <label class="text-muted d-block small font-weight-bold text-uppercase mb-2">Services Included</label>
-                                <div class="d-flex flex-wrap">
-                                    ${servicesHtml}
-                                </div>
+                            <div class="modal-info-bit">
+                                <span class="modal-info-title">Monthly Total</span>
+                                <div class="modal-price-hero">$${p.total_monthly.toLocaleString()}</div>
                             </div>
-
-                            <div class="mt-auto">
-                                <p class="text-muted small"><i class="far fa-clock mr-1"></i> Generated on ${new Date(pkg.created_at).toLocaleString()}</p>
+                            <div class="modal-info-bit">
+                                <span class="modal-info-title">Setup Investment</span>
+                                <div class="modal-main-text" style="font-size: 2.2rem;">$${p.total_setup.toLocaleString()}</div>
+                            </div>
+                            <div class="modal-info-bit mb-0">
+                                <span class="modal-info-title">Services Itemized</span>
+                                <div class="d-flex flex-wrap">${servicesHtml}</div>
+                            </div>
+                            <div class="mt-auto pt-4 border-top">
+                                <p class="text-muted small mb-0 font-weight-bold"><i class="far fa-clock mr-2"></i> Created on ${new Date(p.created_at).toLocaleString()}</p>
                             </div>
                         </div>
                     </div>
-                    <div class="col-lg-8">
-                        <div class="h-100 d-flex flex-column">
-                            <div class="d-flex justify-content-between align-items-center mb-3">
-                                <h6 class="font-weight-800 mb-0">Visual Quote Preview</h6>
-                                <a href="${pkg.image_url}" target="_blank" class="btn btn-sm btn-light" style="border-radius: 8px; font-weight: 600;">
-                                    <i class="fas fa-external-link-alt mr-1"></i> Full View
-                                </a>
-                            </div>
-                            <div class="quote-img-container flex-grow-1 d-flex align-items-center justify-content-center" style="background: #f0f0f0; border-radius: 20px; min-height: 400px;">
-                                ${pkg.image_url ? `<img src="${pkg.image_url}" style="max-height: 600px; object-fit: contain; width: 100%; border-radius: 20px;">` : '<div class="p-5 text-center text-muted">No visual summary available</div>'}
-                            </div>
+                    <div class="col-lg-7 mt-4 mt-lg-0">
+                        <div class="image-display-frame">
+                            ${p.image_url ? `<img src="${p.image_url}" alt="Quote Asset">` : '<div class="text-muted font-weight-bold">Visual Preview Unavailable</div>'}
                         </div>
                     </div>
                 </div>
             `;
 
-            document.getElementById('btnDownload').href = pkg.image_url || '#';
-            document.getElementById('btnDownload').style.display = pkg.image_url ? 'inline-block' : 'none';
+            document.getElementById('btnOriginalLink').href = p.image_url || '#';
+            document.getElementById('btnOriginalLink').style.display = p.image_url ? 'inline-block' : 'none';
 
             $('#packageModal').modal('show');
         }
 
-        window.deletePackage = async function(id) {
-            const result = await Swal.fire({
-                title: 'Are you sure?',
-                text: "This package will be permanently deleted.",
+        window.onDeletePackage = async function(id) {
+            const confirm = await Swal.fire({
+                title: 'Confirm Deletion',
+                text: "Are you sure you want to delete this quote record permanently?",
                 icon: 'warning',
                 showCancelButton: true,
                 confirmButtonColor: '#ff8c00',
-                cancelButtonColor: '#d33',
-                confirmButtonText: 'Yes, delete it!',
-                background: '#fff',
-                borderRadius: '20px'
+                cancelButtonColor: '#aaa',
+                confirmButtonText: 'Yes, Delete It',
+                borderRadius: '30px',
+                padding: '2.5rem'
             });
 
-            if (result.isConfirmed) {
-                try {
-                    const { error } = await supabase
-                        .from('pricing_packages')
-                        .delete()
-                        .eq('id', id);
-
-                    if (error) throw error;
-
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Deleted!',
-                        text: 'Package has been removed.',
-                        showConfirmButton: false,
-                        timer: 1500
-                    });
-
-                    loadPackages();
-                } catch (err) {
-                    Swal.fire('Error', err.message, 'error');
+            if (confirm.isConfirmed) {
+                const { error } = await supabase.from('pricing_packages').delete().eq('id', id);
+                if (!error) {
+                    Swal.fire({ icon: 'success', title: 'Deleted Successfully', showConfirmButton: false, timer: 1500 });
+                    fetchData();
+                } else {
+                    Swal.fire('Error', error.message, 'error');
                 }
             }
         }
 
-        window.editPackage = function(id) {
-            // Since we don't have a full edit state management yet,
-            // we'll just show a notification or redirect to builder.
-            // For now, let's just alert.
-            Swal.fire({
-                title: 'Edit Package',
-                text: 'This will load the package data back into the builder. Redirecting...',
-                icon: 'info',
-                timer: 2000,
-                showConfirmButton: false
-            });
-            setTimeout(() => {
-                window.location.href = `pricing.html?edit=${id}`;
-            }, 2000);
-        }
+        window.onEditPackage = (id) => window.location.href = `pricing.html?edit=${id}`;
 
         init();
     </script>
