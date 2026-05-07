@@ -27,11 +27,48 @@ const PRESETS = {
 
 let selectedServices = new Set(PRESETS.starter);
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
     renderServices();
     updateTotals();
     initEventListeners();
+    await checkEditMode();
 });
+
+async function checkEditMode() {
+    const params = new URLSearchParams(window.location.search);
+    const editId = params.get('edit');
+    if (!editId) return;
+
+    try {
+        const { data, error } = await supabase
+            .from('pricing_packages')
+            .select('*')
+            .eq('id', editId)
+            .single();
+
+        if (error) throw error;
+
+        if (data) {
+            // Populate name
+            document.getElementById('client-name').value = data.client_name;
+
+            // Populate services
+            selectedServices = new Set(data.services.map(s => s.id));
+
+            renderServices();
+            updateTotals();
+
+            // Update save button text
+            const saveBtn = document.getElementById('btn-save-package');
+            if (saveBtn) saveBtn.innerText = 'UPDATE PACKAGE';
+
+            // Store current ID for saving logic
+            window.currentEditId = editId;
+        }
+    } catch (err) {
+        console.error('Error loading package for edit:', err);
+    }
+}
 
 function renderServices() {
     const grid = document.getElementById('services-grid');
@@ -170,6 +207,10 @@ async function savePackage() {
     try {
         const hasSocial = selectedServices.has('social_media') || selectedServices.has('smm');
         const activePreset = document.querySelector('.preset-btn.active')?.dataset.preset || 'custom';
+
+        const cleanSetup = document.getElementById('total-setup').innerText.replace(/[$,]/g, '');
+        const cleanMonthly = document.getElementById('total-monthly').innerText.replace(/[$,]/g, '');
+
         const packageData = {
             client_name: clientName,
             package_type: activePreset.charAt(0).toUpperCase() + activePreset.slice(1),
@@ -178,32 +219,33 @@ async function savePackage() {
                 name: s.name,
                 is_free: s.id === 'online_orders' && hasSocial
             })),
-            total_setup: parseFloat(document.getElementById('total-setup').innerText.replace('$', '').replace(',', '')),
-            total_monthly: parseFloat(document.getElementById('total-monthly').innerText.replace('$', '').replace(',', '')),
-            created_at: new Date().toISOString()
+            total_setup: parseFloat(cleanSetup),
+            total_monthly: parseFloat(cleanMonthly)
         };
 
         // 1. Generate visual summary and upload to Cloudinary
         const imageUrl = await uploadSummaryImage(clientName, packageData);
+        packageData.image_url = imageUrl;
 
-        // 2. Save to Supabase
-        const { error } = await supabase
-            .from('pricing_packages')
-            .insert([{
-                client_name: clientName,
-                package_type: packageData.package_type,
-                services: packageData.services,
-                total_setup: packageData.total_setup,
-                total_monthly: packageData.total_monthly,
-                image_url: imageUrl
-            }]);
+        // 2. Save to Supabase (Upsert or Insert)
+        let result;
+        if (window.currentEditId) {
+            result = await supabase
+                .from('pricing_packages')
+                .update(packageData)
+                .eq('id', window.currentEditId);
+        } else {
+            result = await supabase
+                .from('pricing_packages')
+                .insert([packageData]);
+        }
 
-        if (error) throw error;
+        if (result.error) throw result.error;
 
         Swal.fire({
             icon: 'success',
             title: '¡Éxito!',
-            text: 'Paquete guardado correctamente',
+            text: window.currentEditId ? 'Paquete actualizado correctamente' : 'Paquete guardado correctamente',
             timer: 2000,
             showConfirmButton: false
         });
