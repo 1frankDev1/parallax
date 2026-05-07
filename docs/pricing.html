@@ -22,7 +22,9 @@
 	<link href="https://cdnjs.cloudflare.com/ajax/libs/baguettebox.js/1.10.0/baguetteBox.min.css" rel="stylesheet" />
 	<link href="assets/css/Map-Clean.css" rel="stylesheet" />
 	 <link rel="stylesheet" href="/assets/css/Lightbox-Gallery-baguetteBox.min.css?h=3175ea2a373db4ce2aec072db96e7473">
-	<link href="assets/css/smoothproducts.css" rel="stylesheet" /><!-- Load Facebook SDK for JavaScript -->
+	<link href="assets/css/smoothproducts.css" rel="stylesheet" />
+	<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+	<!-- Load Facebook SDK for JavaScript -->
 	
 	<!-- Global site tag (gtag.js) - Google Analytics -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-E2H5EETSJ7"></script>
@@ -89,7 +91,6 @@ enable-ga="false"
 </div>
 </nav>
 
-<div data-bs-parallax-bg="true" style="height: 500px;background-image: url(&quot;assets/img/Company%2010.jpg&quot;);background-position: center;background-size: cover;"></div>
 
 <!--inicio clase main_table-->
 <main class="page pricing-table-page">
@@ -131,12 +132,11 @@ enable-ga="false"
                     <span class="total-label">Monthly Fee</span>
                     <span id="total-monthly" class="total-amount">$0.00</span>
                 </div>
-                <p class="setup-info">*Setup fees are one-time payments.</p>
             </div>
 
             <div class="save-form">
                 <div class="form-group">
-                    <label for="client-name">Client or Restaurant Name</label>
+                    <label for="client-name">Name</label>
                     <input type="text" id="client-name" class="form-control-custom" placeholder="e.g. Italian Bistro">
                 </div>
                 <button id="btn-save-package" class="btn-save-package">SAVE PACKAGE</button>

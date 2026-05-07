@@ -3,20 +3,20 @@ import { supabase } from "./supabase.js";
 
 // Services Data
 const SERVICES = [
-    { id: 'online_orders', name: 'Online Orders', setup: 322.92, monthly: 96.12, description: 'Platform admin, website template, ordering button, mobile ordering, menu build, cash orders, etc.' },
-    { id: 'local_listing', name: 'Local Listing', setup: 279.72, monthly: 85.32, description: 'Google My Business, Apple iMap, Food Booking, Tripadvisor, Facebook, Instagram, more listings.' },
-    { id: 'social_media', name: 'Facebook / Instagram / Threads', setup: 214.92, monthly: 52.92, description: 'Social Media package 4 post per Month.' },
-    { id: 'smm', name: 'Social Media Marketing', setup: 106.92, monthly: 33.48, description: 'Inviting Blast Through Email, SMS or both.' },
-    { id: 'online_payment', name: 'Online Payment', setup: 106.92, monthly: 48.6, description: 'Online Payment Orders (unlimited).' },
-    { id: 'promotions', name: 'Promotions and Offers', setup: 139.32, monthly: 63.72, description: '8 Integrated promotions and offers (unlimited).' },
-    { id: 'fb_ads', name: 'Facebook Ads', setup: 0, monthly: 20, description: 'Ad management on Facebook and Instagram.' },
-    { id: 'branded_app', name: 'Branded Mobile App', setup: 189.92, monthly: 49.62, description: 'Personalized ordering app for Android and IOS.' },
-    { id: 'website_seo', name: 'Website / SEO / Google Ads', setup: 366.12, monthly: 85.32, description: 'Personalized website, hosting, SEO, Domain registry.' },
-    { id: 'physical_marketing', name: 'Fisical Marketing Kit', setup: 399, monthly: 0, description: 'Table QR Codes, Sheet size Posters, Stickers, Flyers.' },
-    { id: 'delivery_service', name: 'Delivery Service', setup: 214.92, monthly: 85.32, description: 'Delivery Service setup and management.' },
-    { id: 'pos_integration', name: 'POS Platforms Integration', setup: 430.92, monthly: 74.52, description: 'Integration with many POS platforms.' },
-    { id: 'delivery_shipday', name: 'Delivery Services (Shipday)', setup: 290.52, monthly: 132, description: 'Shipday Delivery With Doordash & Uber Drivers.' },
-    { id: 'restaurant_pos', name: 'Individual Restaurant POS', setup: 2498, monthly: 106.92, description: 'Menutech POS Cloud base, Tablet, Printer, Credit card device.' }
+    { id: 'online_orders', name: 'Online Orders', setup: 322.92, monthly: 96.12, image: 'https://menutech.xyz/assets/img/onlineOrders.jpg', description: 'Platform admin, website template, ordering button, mobile ordering, menu build, cash orders, etc.' },
+    { id: 'local_listing', name: 'Local Listing', setup: 279.72, monthly: 85.32, image: 'https://menutech.xyz/assets/img/localListing.jpg', description: 'Google My Business, Apple iMap, Food Booking, Tripadvisor, Facebook, Instagram, more listings.' },
+    { id: 'social_media', name: 'Facebook / Instagram / Threads', setup: 214.92, monthly: 52.92, image: 'https://menutech.xyz/assets/img/socialMedia.jpg', description: 'Social Media package 4 post per Month.' },
+    { id: 'smm', name: 'Social Media Marketing', setup: 106.92, monthly: 33.48, image: 'https://menutech.xyz/assets/img/smm.jpg', description: 'Inviting Blast Through Email, SMS or both.' },
+    { id: 'online_payment', name: 'Online Payment', setup: 106.92, monthly: 48.6, image: 'https://menutech.xyz/assets/img/onlinePayment.jpg', description: 'Online Payment Orders (unlimited).' },
+    { id: 'promotions', name: 'Promotions and Offers', setup: 139.32, monthly: 63.72, image: 'https://menutech.xyz/assets/img/promotionsoffers.jpg', description: '8 Integrated promotions and offers (unlimited).' },
+    { id: 'fb_ads', name: 'Facebook Ads', setup: 0, monthly: 20, image: 'https://menutech.xyz/assets/img/adfb.jpg', description: 'Ad management on Facebook and Instagram.' },
+    { id: 'branded_app', name: 'Branded Mobile App', setup: 189.92, monthly: 49.62, image: 'https://menutech.xyz/assets/img/brandedapp.jpg', description: 'Personalized ordering app for Android and IOS.' },
+    { id: 'website_seo', name: 'Website / SEO / Google Ads', setup: 366.12, monthly: 85.32, image: 'https://menutech.xyz/assets/img/wsg.jpg', description: 'Personalized website, hosting, SEO, Domain registry.' },
+    { id: 'physical_marketing', name: 'Fisical Marketing Kit', setup: 399, monthly: 0, image: 'https://menutech.xyz/assets/img/fmk.jpg', description: 'Table QR Codes, Sheet size Posters, Stickers, Flyers.' },
+    { id: 'delivery_service', name: 'Delivery Service', setup: 214.92, monthly: 85.32, image: 'https://menutech.xyz/assets/img/deliveryservices.jpg', description: 'Delivery Service setup and management.' },
+    { id: 'pos_integration', name: 'POS Platforms Integration', setup: 430.92, monthly: 74.52, image: 'https://menutech.xyz/assets/img/POSpi.jpg', description: 'Integration with many POS platforms.' },
+    { id: 'delivery_shipday', name: 'Delivery Services (Shipday)', setup: 290.52, monthly: 132, image: 'https://menutech.xyz/assets/img/deliveryservices.jpg', description: 'Shipday Delivery With Doordash & Uber Drivers.' },
+    { id: 'restaurant_pos', name: 'Individual Restaurant POS', setup: 2498, monthly: 106.92, image: 'https://menutech.xyz/assets/img/posu.jpg', description: 'Menutech POS Cloud base, Tablet, Printer, Credit card device.' }
 ];
 
 const PRESETS = {
@@ -37,19 +37,24 @@ function renderServices() {
     const grid = document.getElementById('services-grid');
     if (!grid) return;
 
-    grid.innerHTML = SERVICES.map(service => `
-        <div class="service-card ${selectedServices.has(service.id) ? 'active' : ''}" data-id="${service.id}">
-            <div class="service-header">
-                <h3 class="service-name">${service.name}</h3>
-                <div class="service-toggle"></div>
+    grid.innerHTML = SERVICES.map(service => {
+        const titleStyle = service.image ? 'style="color: #ff9533; text-decoration: underline; cursor: pointer;"' : '';
+        const titleOnClick = service.image ? `onclick="event.stopPropagation(); viewServiceImage('${service.name}', '${service.image}')"` : '';
+
+        return `
+            <div class="service-card ${selectedServices.has(service.id) ? 'active' : ''}" data-id="${service.id}">
+                <div class="service-header">
+                    <h3 class="service-name" ${titleStyle} ${titleOnClick}>${service.name}</h3>
+                    <div class="service-toggle"></div>
+                </div>
+                <div class="service-pricing">
+                    <div class="price-item"><span>Setup:</span> <span class="price-value">$${service.setup.toFixed(2)}</span></div>
+                    <div class="price-item"><span>Monthly:</span> <span class="price-value">$${service.monthly.toFixed(2)}</span></div>
+                </div>
+                <p style="font-size: 0.75rem; color: #888; margin-top: 10px;">${service.description}</p>
             </div>
-            <p class="service-pricing">
-                <div class="price-item"><span>Setup:</span> <span class="price-value">$${service.setup.toFixed(2)}</span></div>
-                <div class="price-item"><span>Monthly:</span> <span class="price-value">$${service.monthly.toFixed(2)}</span></div>
-            </p>
-            <p style="font-size: 0.75rem; color: #888; margin-top: 10px;">${service.description}</p>
-        </div>
-    `).join('');
+        `;
+    }).join('');
 
     // Re-attach listeners
     document.querySelectorAll('.service-card').forEach(card => {
@@ -65,6 +70,20 @@ function renderServices() {
         });
     });
 }
+
+window.viewServiceImage = function(name, url) {
+    Swal.fire({
+        title: name,
+        imageUrl: url,
+        imageAlt: name,
+        showConfirmButton: false,
+        background: 'rgba(255, 255, 255, 0.9)',
+        backdrop: 'rgba(0,0,0,0.4)',
+        customClass: {
+            popup: 'glass-popup'
+        }
+    });
+};
 
 function updateTotals() {
     let totalSetup = 0;
@@ -128,7 +147,15 @@ function initEventListeners() {
 async function savePackage() {
     const clientName = document.getElementById('client-name').value;
     if (!clientName) {
-        alert('Por favor ingresa el nombre del cliente o restaurante');
+        Swal.fire({
+            icon: 'info',
+            title: 'Campo Requerido',
+            text: 'Por favor ingresa el Name del cliente o restaurante',
+            timer: 3000,
+            showConfirmButton: false,
+            toast: true,
+            position: 'top-end'
+        });
         return;
     }
 
@@ -151,16 +178,10 @@ async function savePackage() {
             created_at: new Date().toISOString()
         };
 
-        // 1. Generate visual summary (text based for now, could be canvas)
-        const summaryText = `Menutech Quote for ${clientName}\n\nServices:\n` +
-            packageData.services.map(s => `- ${s.name} ${s.is_free ? '(FREE)' : ''}`).join('\n') +
-            `\n\nTotal Setup: $${packageData.total_setup}\nTotal Monthly: $${packageData.total_monthly}`;
-
-        // 2. Upload to Cloudinary (as a "text image" or just a blob)
-        // For simplicity and "looking good", we will create a canvas and upload it
+        // 1. Generate visual summary and upload to Cloudinary
         const imageUrl = await uploadSummaryImage(clientName, packageData);
 
-        // 3. Save to Supabase
+        // 2. Save to Supabase
         const { error } = await supabase
             .from('pricing_packages')
             .insert([{
@@ -173,12 +194,25 @@ async function savePackage() {
 
         if (error) throw error;
 
-        alert('Paquete guardado con éxito!');
-        window.location.href = 'adminPackages.html';
+        Swal.fire({
+            icon: 'success',
+            title: '¡Éxito!',
+            text: 'Paquete guardado correctamente',
+            timer: 2000,
+            showConfirmButton: false
+        });
+
+        setTimeout(() => {
+            window.location.href = 'adminPackages.html';
+        }, 2000);
 
     } catch (err) {
         console.error('Error saving package:', err);
-        alert('Error al guardar el paquete: ' + err.message);
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'No se pudo guardar el paquete: ' + err.message
+        });
     } finally {
         btn.innerText = originalText;
         btn.disabled = false;
@@ -186,7 +220,6 @@ async function savePackage() {
 }
 
 async function uploadSummaryImage(clientName, data) {
-    // Create a canvas to make it look "bonito"
     const canvas = document.createElement('canvas');
     canvas.width = 600;
     canvas.height = 800;
@@ -210,6 +243,7 @@ async function uploadSummaryImage(clientName, data) {
     ctx.fillText(`Date: ${new Date().toLocaleDateString()}`, 50, 170);
 
     ctx.strokeStyle = '#eeeeee';
+    ctx.lineWidth = 1;
     ctx.beginPath();
     ctx.moveTo(50, 190);
     ctx.lineTo(550, 190);
@@ -225,7 +259,7 @@ async function uploadSummaryImage(clientName, data) {
         if (s.is_free) {
             ctx.fillStyle = 'green';
             ctx.font = 'italic bold 14px Montserrat, Arial';
-            ctx.fillText(' (FREE)', ctx.measureText(`• ${s.name}`).width + 70, y);
+            ctx.fillText(' (WAIVED)', ctx.measureText(`• ${s.name}`).width + 70, y);
             ctx.fillStyle = '#444444';
             ctx.font = '16px Montserrat, Arial';
         }
@@ -246,7 +280,6 @@ async function uploadSummaryImage(clientName, data) {
     ctx.font = 'bold 22px Montserrat, Arial';
     ctx.fillText(`Monthly Fee: $${data.total_monthly.toFixed(2)}`, 70, y + 100);
 
-    // Convert to blob
     return new Promise((resolve, reject) => {
         canvas.toBlob(async (blob) => {
             const formData = new FormData();
