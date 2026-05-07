@@ -284,7 +284,7 @@
       }
 
       // Mostrar el tile de notificaciones para admins
-      const notifTile = document.getElementById("tile-18");
+      const notifTile = document.getElementById("tile-19");
       if (notifTile) notifTile.classList.remove("hidden");
     }
 
