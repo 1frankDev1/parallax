@@ -26,6 +26,7 @@ const PRESETS = {
 };
 
 let selectedServices = new Set(PRESETS.starter);
+let currentBaseTier = 'Starter';
 
 document.addEventListener('DOMContentLoaded', async () => {
     renderServices();
@@ -54,6 +55,7 @@ async function checkEditMode() {
 
             // Populate services
             selectedServices = new Set(data.services.map(s => s.id));
+            currentBaseTier = data.package_type || 'Starter';
 
             renderServices();
             updateTotals();
@@ -129,7 +131,6 @@ function updateTotals() {
     let totalSetup = 0;
     let totalMonthly = 0;
     const summaryList = document.getElementById('selected-items-list');
-    const hasSocial = selectedServices.has('social_media') || selectedServices.has('smm');
 
     summaryList.innerHTML = '';
 
@@ -138,18 +139,12 @@ function updateTotals() {
             let sPrice = service.setup;
             let mPrice = service.monthly;
 
-            // Business Rule: Online Orders free if social packages selected
-            if (service.id === 'online_orders' && hasSocial) {
-                sPrice = 0;
-                mPrice = 0;
-            }
-
             totalSetup += sPrice;
             totalMonthly += mPrice;
 
             summaryList.innerHTML += `
                 <div class="selected-item-mini">
-                    <span>${service.name} ${ (service.id === 'online_orders' && hasSocial) ? '' : (sPrice === 0 && mPrice === 0 ? '<b style="color:green">(FREE)</b>' : '')}</span>
+                    <span>${service.name}</span>
                     <span>$${mPrice.toFixed(2)}/mo</span>
                 </div>
             `;
@@ -172,6 +167,7 @@ function initEventListeners() {
     document.querySelectorAll('.preset-btn').forEach(btn => {
         btn.addEventListener('click', () => {
             const presetId = btn.dataset.preset;
+            currentBaseTier = presetId.charAt(0).toUpperCase() + presetId.slice(1);
             selectedServices = new Set(PRESETS[presetId]);
             renderServices();
             updateTotals();
@@ -205,19 +201,15 @@ async function savePackage() {
     btn.disabled = true;
 
     try {
-        const hasSocial = selectedServices.has('social_media') || selectedServices.has('smm');
-        const activePreset = document.querySelector('.preset-btn.active')?.dataset.preset || 'custom';
-
         const cleanSetup = document.getElementById('total-setup').innerText.replace(/[$,]/g, '');
         const cleanMonthly = document.getElementById('total-monthly').innerText.replace(/[$,]/g, '');
 
         const packageData = {
             client_name: clientName,
-            package_type: activePreset.charAt(0).toUpperCase() + activePreset.slice(1),
+            package_type: currentBaseTier,
             services: SERVICES.filter(s => selectedServices.has(s.id)).map(s => ({
                 id: s.id,
-                name: s.name,
-                is_free: s.id === 'online_orders' && hasSocial
+                name: s.name
             })),
             total_setup: parseFloat(cleanSetup),
             total_monthly: parseFloat(cleanMonthly)
@@ -316,10 +308,10 @@ async function uploadSummaryImage(clientName, data) {
     ctx.fillText('TOTALS', 70, y + 40);
 
     ctx.font = '18px Montserrat, Arial';
-    ctx.fillText(`Setup Fee: $${data.total_setup.toFixed(2)}`, 70, y + 70);
+    ctx.fillText(`Setup: $${data.total_setup.toFixed(2)}`, 70, y + 70);
     ctx.fillStyle = '#ff9533';
     ctx.font = 'bold 22px Montserrat, Arial';
-    ctx.fillText(`Monthly Fee: $${data.total_monthly.toFixed(2)}`, 70, y + 100);
+    ctx.fillText(`Monthly: $${data.total_monthly.toFixed(2)}`, 70, y + 100);
 
     return new Promise((resolve, reject) => {
         canvas.toBlob(async (blob) => {
