@@ -409,26 +409,6 @@
         </div>
     </div>
 
-    <!-- Package Detail Modal -->
-    <div class="modal fade" id="packageModal" tabindex="-1" role="dialog" aria-hidden="true">
-        <div class="modal-dialog modal-xl modal-dialog-centered">
-            <div class="modal-content modal-refined-content">
-                <div class="modal-header-glass">
-                    <h4 id="modalClientTitle">Summary</h4>
-                    <button type="button" class="btn-close-modal-pro" data-dismiss="modal">
-                        <i class="fas fa-times"></i>
-                    </button>
-                </div>
-                <div class="modal-body-pro" id="modalDataMount">
-                    <!-- Dynamic Body -->
-                </div>
-                <div class="modal-footer-glass">
-                    <button type="button" class="btn-modal-cancel" data-dismiss="modal">Close</button>
-                    <a id="btnOriginalLink" href="#" target="_blank" class="btn-modal-asset">View Original Asset</a>
-                </div>
-            </div>
-        </div>
-    </div>
 
     <script src="assets/js/jquery.min.js"></script>
     <script src="assets/bootstrap/js/bootstrap.min.js"></script>
@@ -469,9 +449,9 @@
                 <div class="package-card">
                     <div class="card-header-main">
                         <div class="client-info-group">
-                            <h4 class="client-name-text">${p.client_name}</h4>
-                            <span class="tier-tag-small">${p.package_type || 'Custom'}</span>
-                            <div class="date-info"><i class="far fa-calendar-alt"></i> ${new Date(p.created_at).toLocaleDateString()}</div>
+                            <h4 class="client-name-text" style="font-weight: 800; font-size: 1.5rem; margin: 0; color: #111;">${p.client_name}</h4>
+                            <span class="tier-tag-small">${p.package_type || 'Starter'}</span>
+                            <div class="date-info" style="font-size: 0.8rem; color: #999; margin-top: 5px;"><i class="far fa-calendar-alt"></i> ${new Date(p.created_at).toLocaleDateString()}</div>
                         </div>
                         <div class="card-actions-top">
                             <div class="btn-mini-utility" onclick="onEditPackage('${p.id}')" title="Edit">
@@ -506,51 +486,48 @@
             const p = quoteStore.find(x => x.id === id);
             if (!p) return;
 
-            document.getElementById('modalClientTitle').innerText = `${p.client_name}`;
+            if (!p.image_url) {
+                Swal.fire('Error', 'No image asset found for this package', 'error');
+                return;
+            }
 
-            const servicesHtml = p.services.map(s => `<span class="service-pill-mini">${s.name}</span>`).join('');
-
-            document.getElementById('modalDataMount').innerHTML = `
-                <div class="row">
-                    <div class="col-lg-5">
-                        <div class="sidebar-info-card d-flex flex-column">
-                            <div class="modal-info-bit">
-                                <span class="modal-info-title">Restaurant / Client</span>
-                                <div class="modal-main-text">${p.client_name}</div>
-                            </div>
-                            <div class="modal-info-bit">
-                                <span class="modal-info-title">Package Tier</span>
-                                <div class="modal-main-text"><span class="tier-tag-small" style="font-size: 1.1rem; display:inline;">${p.package_type || 'Custom'}</span></div>
-                            </div>
-                            <div class="modal-info-bit">
-                                <span class="modal-info-title">Monthly Total</span>
-                                <div class="modal-price-hero">$${p.total_monthly.toLocaleString()}</div>
-                            </div>
-                            <div class="modal-info-bit">
-                                <span class="modal-info-title">Setup Investment</span>
-                                <div class="modal-main-text" style="font-size: 2.2rem;">$${p.total_setup.toLocaleString()}</div>
-                            </div>
-                            <div class="modal-info-bit mb-0">
-                                <span class="modal-info-title">Services Itemized</span>
-                                <div class="d-flex flex-wrap">${servicesHtml}</div>
-                            </div>
-                            <div class="mt-auto pt-4 border-top">
-                                <p class="text-muted small mb-0 font-weight-bold"><i class="far fa-clock mr-2"></i> Created on ${new Date(p.created_at).toLocaleString()}</p>
-                            </div>
-                        </div>
+            Swal.fire({
+                title: `<span style="font-weight:800; font-size:1.4rem;">${p.client_name}</span><br><span style="font-size:0.9rem; color:var(--brand-color); text-transform:uppercase;">${p.package_type || 'Starter'} Package</span>`,
+                imageUrl: p.image_url,
+                imageAlt: 'Package Quote',
+                width: 'auto',
+                padding: '20px',
+                background: '#fff',
+                showConfirmButton: false,
+                showCloseButton: true,
+                html: `
+                    <div style="margin-top:20px; display:flex; gap:10px; justify-content:center;">
+                        <button onclick="copyToClipboard('${p.image_url}')" class="btn-modal-asset" style="padding:10px 20px; font-size:0.9rem;">
+                            <i class="fas fa-link mr-2"></i> Copy Link
+                        </button>
+                        <a href="${p.image_url}" download="quote_${p.client_name}.png" target="_blank" class="btn-modal-asset" style="padding:10px 20px; font-size:0.9rem; background:#111;">
+                            <i class="fas fa-download mr-2"></i> Download
+                        </a>
                     </div>
-                    <div class="col-lg-7 mt-4 mt-lg-0">
-                        <div class="image-display-frame">
-                            ${p.image_url ? `<img src="${p.image_url}" alt="Quote Asset">` : '<div class="text-muted font-weight-bold">Visual Preview Unavailable</div>'}
-                        </div>
-                    </div>
-                </div>
-            `;
+                `,
+                customClass: {
+                    popup: 'modal-refined-content',
+                    image: 'img-fluid rounded-lg'
+                }
+            });
+        }
 
-            document.getElementById('btnOriginalLink').href = p.image_url || '#';
-            document.getElementById('btnOriginalLink').style.display = p.image_url ? 'inline-block' : 'none';
-
-            $('#packageModal').modal('show');
+        window.copyToClipboard = function(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Link Copied',
+                    toast: true,
+                    position: 'top-end',
+                    showConfirmButton: false,
+                    timer: 2000
+                });
+            });
         }
 
         window.onDeletePackage = async function(id) {
