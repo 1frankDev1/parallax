@@ -1,0 +1,16 @@
+-- Tablas para el sistema de paquetes dinamicos
+CREATE TABLE IF NOT EXISTS pricing_packages (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    created_at TIMESTAMPTZ DEFAULT now(),
+    client_name TEXT NOT NULL,
+    services JSONB NOT NULL,
+    total_setup NUMERIC NOT NULL,
+    total_monthly NUMERIC NOT NULL,
+    image_url TEXT
+);
+
+-- Habilitar acceso publico (ajustar segun politicas del proyecto si es necesario)
+-- Por ahora seguimos el patron de cliente.txt de no usar RLS estricto para facilidad de integracion
+
+-- Recargar esquema para PostgREST
+NOTIFY pgrst, 'reload schema';
