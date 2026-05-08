@@ -55,7 +55,8 @@ async function checkEditMode() {
 
             // Populate services
             selectedServices = new Set(data.services.map(s => s.id));
-            currentBaseTier = data.package_type || 'Starter';
+            // Try to get tier from top-level or from embedded services data
+            currentBaseTier = data.package_type || (data.services && data.services.length > 0 ? data.services[0].tier : 'Starter');
 
             renderServices();
             updateTotals();
@@ -206,10 +207,11 @@ async function savePackage() {
 
         const packageData = {
             client_name: clientName,
-            package_type: currentBaseTier,
+            // Omit top-level package_type to avoid schema cache error
             services: SERVICES.filter(s => selectedServices.has(s.id)).map(s => ({
                 id: s.id,
-                name: s.name
+                name: s.name,
+                tier: currentBaseTier // Workaround: store tier inside services JSONB
             })),
             total_setup: parseFloat(cleanSetup),
             total_monthly: parseFloat(cleanMonthly)
