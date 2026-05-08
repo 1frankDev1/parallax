@@ -265,11 +265,23 @@ async function uploadSummaryImage(clientName, data) {
     canvas.height = 750;
     const ctx = canvas.getContext('2d');
 
-    // Load Logo
+    // Load Logo with timeout to prevent hanging
+    let logoLoaded = false;
     const logo = new Image();
     logo.crossOrigin = "anonymous";
     logo.src = 'https://menutech.services/assets/img/logomt.png';
-    await new Promise(r => logo.onload = r);
+
+    try {
+        await Promise.race([
+            new Promise((resolve, reject) => {
+                logo.onload = () => { logoLoaded = true; resolve(); };
+                logo.onerror = reject;
+            }),
+            new Promise((_, reject) => setTimeout(() => reject(new Error('Logo load timeout')), 5000))
+        ]);
+    } catch (e) {
+        console.warn("Logo failed to load or timed out, continuing without it.", e);
+    }
 
     // Background
     ctx.fillStyle = '#ffffff';
@@ -280,11 +292,20 @@ async function uploadSummaryImage(clientName, data) {
     ctx.fillRect(0, 0, canvas.width, 80);
 
     // Draw Logo in header (Centered)
-    const logoRatio = logo.width / logo.height;
-    const logoH = 50;
-    const logoW = logoH * logoRatio;
-    const logoX = (canvas.width - logoW) / 2;
-    ctx.drawImage(logo, logoX, 15, logoW, logoH);
+    if (logoLoaded) {
+        const logoRatio = logo.width / logo.height;
+        const logoH = 50;
+        const logoW = logoH * logoRatio;
+        const logoX = (canvas.width - logoW) / 2;
+        ctx.drawImage(logo, logoX, 15, logoW, logoH);
+    } else {
+        // Fallback title if logo fails
+        ctx.fillStyle = '#ffffff';
+        ctx.font = 'bold 24px Montserrat, Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText('MENUTECH', canvas.width / 2, 50);
+        ctx.textAlign = 'left'; // Reset
+    }
 
     // Header Content
     ctx.fillStyle = '#111111';
