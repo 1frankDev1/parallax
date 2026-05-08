@@ -186,8 +186,8 @@ async function savePackage() {
     if (!clientName) {
         Swal.fire({
             icon: 'info',
-            title: 'Campo Requerido',
-            text: 'Por favor ingresa el Name del cliente o restaurante',
+            title: 'Required Field',
+            text: 'Please enter the client or restaurant name',
             timer: 3000,
             showConfirmButton: false,
             toast: true,
@@ -238,8 +238,8 @@ async function savePackage() {
 
         Swal.fire({
             icon: 'success',
-            title: '¡Éxito!',
-            text: window.currentEditId ? 'Paquete actualizado correctamente' : 'Paquete guardado correctamente',
+            title: 'Success!',
+            text: window.currentEditId ? 'Package updated successfully' : 'Package saved successfully',
             timer: 2000,
             showConfirmButton: false
         });
