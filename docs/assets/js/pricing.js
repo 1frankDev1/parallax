@@ -262,71 +262,79 @@ async function savePackage() {
 async function uploadSummaryImage(clientName, data) {
     const canvas = document.createElement('canvas');
     canvas.width = 600;
-    canvas.height = 600; // Reduced height to avoid scroll
+    canvas.height = 750;
     const ctx = canvas.getContext('2d');
+
+    // Load Logo
+    const logo = new Image();
+    logo.crossOrigin = "anonymous";
+    logo.src = 'https://menutech.services/assets/img/logomt.png';
+    await new Promise(r => logo.onload = r);
 
     // Background
     ctx.fillStyle = '#ffffff';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    // Sidebar Accent
-    ctx.fillStyle = '#ff8c00';
-    ctx.fillRect(0, 0, 10, canvas.height);
+    // Header Bar (Orange)
+    ctx.fillStyle = '#ff9533';
+    ctx.fillRect(0, 0, canvas.width, 80);
 
+    // Draw Logo in header (Centered)
+    const logoRatio = logo.width / logo.height;
+    const logoH = 50;
+    const logoW = logoH * logoRatio;
+    const logoX = (canvas.width - logoW) / 2;
+    ctx.drawImage(logo, logoX, 15, logoW, logoH);
+
+    // Header Content
     ctx.fillStyle = '#111111';
-    ctx.font = '800 28px Montserrat, Arial';
-    ctx.fillText(clientName.toUpperCase(), 40, 60);
+    ctx.font = '500 18px Montserrat, Arial';
+    ctx.fillText(`Client: ${clientName}`, 40, 130);
+    ctx.fillText(`Date: ${new Date().toLocaleDateString()}`, 40, 160);
 
-    ctx.fillStyle = '#ff8c00';
-    ctx.font = 'bold 14px Montserrat, Arial';
-    ctx.fillText(`${data.package_type.toUpperCase()} PACKAGE`, 40, 85);
-
-    ctx.fillStyle = '#999999';
-    ctx.font = '600 12px Montserrat, Arial';
-    ctx.fillText(`DATE: ${new Date().toLocaleDateString()}`, 40, 110);
-
-    ctx.strokeStyle = '#f0f0f0';
+    ctx.strokeStyle = '#eeeeee';
     ctx.lineWidth = 1;
     ctx.beginPath();
-    ctx.moveTo(40, 135);
-    ctx.lineTo(560, 135);
+    ctx.moveTo(40, 190);
+    ctx.lineTo(560, 190);
     ctx.stroke();
 
     // Services
-    ctx.fillStyle = '#111111';
-    ctx.font = 'bold 16px Montserrat, Arial';
-    ctx.fillText('INCLUDED SERVICES', 40, 170);
+    ctx.fillStyle = '#333333';
+    ctx.font = 'bold 22px Montserrat, Arial';
+    ctx.fillText('Selected Services:', 40, 230);
 
-    ctx.font = '500 14px Montserrat, Arial';
-    ctx.fillStyle = '#444444';
-    let y = 200;
-    const maxServices = 12; // Limit to avoid overflow
+    ctx.font = '500 16px Montserrat, Arial';
+    ctx.fillStyle = '#666666';
+    let y = 265;
+    const maxServices = 14;
     data.services.slice(0, maxServices).forEach(s => {
-        ctx.fillText(`• ${s.name}`, 50, y);
-        y += 22;
+        ctx.fillText(`• ${s.name}`, 55, y);
+        y += 28;
     });
 
-    if (data.services.length > maxServices) {
-        ctx.fillText(`+ ${data.services.length - maxServices} more services...`, 50, y);
+    // Totals Box (Light Gray)
+    const boxY = 600;
+    ctx.fillStyle = '#f7f7f7';
+    if (ctx.roundRect) {
+        ctx.beginPath();
+        ctx.roundRect(40, boxY, 520, 110, 10);
+        ctx.fill();
+    } else {
+        ctx.fillRect(40, boxY, 520, 110);
     }
 
-    // Totals Box
-    const boxY = 460;
-    ctx.fillStyle = '#f8f9fa';
-    ctx.roundRect ? ctx.roundRect(40, boxY, 520, 100, 15) : ctx.fillRect(40, boxY, 520, 100);
-    ctx.fill();
+    ctx.fillStyle = '#333333';
+    ctx.font = 'bold 18px Montserrat, Arial';
+    ctx.fillText('TOTALS', 65, boxY + 35);
 
-    ctx.fillStyle = '#666666';
-    ctx.font = 'bold 12px Montserrat, Arial';
-    ctx.fillText('SETUP INVESTMENT', 70, boxY + 35);
-    ctx.fillText('MONTHLY INVESTMENT', 320, boxY + 35);
+    ctx.font = '600 16px Montserrat, Arial';
+    ctx.fillStyle = '#555555';
+    ctx.fillText(`Setup Fee: $${data.total_setup.toLocaleString()}`, 65, boxY + 65);
 
-    ctx.fillStyle = '#111111';
-    ctx.font = '900 24px Montserrat, Arial';
-    ctx.fillText(`$${data.total_setup.toLocaleString()}`, 70, boxY + 70);
-
-    ctx.fillStyle = '#ff8c00';
-    ctx.fillText(`$${data.total_monthly.toLocaleString()}`, 320, boxY + 70);
+    ctx.fillStyle = '#ff9533';
+    ctx.font = 'bold 20px Montserrat, Arial';
+    ctx.fillText(`Monthly Fee: $${data.total_monthly.toLocaleString()}`, 65, boxY + 95);
 
     return new Promise((resolve, reject) => {
         canvas.toBlob(async (blob) => {
