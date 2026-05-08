@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
     <title>Admin Packages - Menutech</title>
     <link rel="icon" type="image/png" sizes="192x192" href="./assets/img/Diseño%20sin%20título%20(8).png">
-    <link href="assets/bootstrap/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css" rel="stylesheet" />
     <link href="https://fonts.googleapis.com/css?family=Montserrat:400,600,700,800" rel="stylesheet" />
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.12.0/css/all.css">
     <style>
@@ -392,8 +392,7 @@
 
     <div class="dashboard-container">
         <div class="header-section">
-            <h2>Packages Dashboard</h2>
-            <p class="text-muted font-weight-bold">View and manage generated restaurant quotes</p>
+            <img src="https://menutech.services/assets/img/logomt.png" alt="Menutech" style="height: 80px; margin-bottom: 30px;">
         </div>
 
         <div class="search-container">
@@ -410,8 +409,8 @@
     </div>
 
 
-    <script src="assets/js/jquery.min.js"></script>
-    <script src="assets/bootstrap/js/bootstrap.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
     <script src="./assets/js/renderer.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
@@ -492,16 +491,17 @@
             }
 
             Swal.fire({
-                title: `<span style="font-weight:800; font-size:1.4rem;">${p.client_name}</span><br><span style="font-size:0.9rem; color:var(--brand-color); text-transform:uppercase;">${p.package_type || 'Starter'} Package</span>`,
                 imageUrl: p.image_url,
                 imageAlt: 'Package Quote',
-                width: 'auto',
-                padding: '20px',
+                width: '600px',
+                imageWidth: 600,
+                imageHeight: 600,
+                padding: '0',
                 background: '#fff',
                 showConfirmButton: false,
                 showCloseButton: true,
                 html: `
-                    <div style="margin-top:20px; display:flex; gap:10px; justify-content:center;">
+                    <div style="padding: 20px; display:flex; gap:10px; justify-content:center; background: #fff; border-radius: 0 0 35px 35px;">
                         <button onclick="copyToClipboard('${p.image_url}')" class="btn-modal-asset" style="padding:10px 20px; font-size:0.9rem;">
                             <i class="fas fa-link mr-2"></i> Copy Link
                         </button>
@@ -512,7 +512,7 @@
                 `,
                 customClass: {
                     popup: 'modal-refined-content',
-                    image: 'img-fluid rounded-lg'
+                    image: 'img-fluid'
                 }
             });
         }
@@ -540,16 +540,21 @@
                 cancelButtonColor: '#aaa',
                 confirmButtonText: 'Yes, Delete It',
                 borderRadius: '30px',
-                padding: '2.5rem'
+                padding: '2rem'
             });
 
             if (confirm.isConfirmed) {
-                const { error } = await supabase.from('pricing_packages').delete().eq('id', id);
-                if (!error) {
+                try {
+                    const { error } = await supabase.from('pricing_packages').delete().match({ id: id });
+                    if (error) throw error;
+
                     Swal.fire({ icon: 'success', title: 'Deleted Successfully', showConfirmButton: false, timer: 1500 });
-                    fetchData();
-                } else {
-                    Swal.fire('Error', error.message, 'error');
+
+                    // Force refresh store and UI
+                    await fetchData();
+                } catch (err) {
+                    console.error('Delete error:', err);
+                    Swal.fire('Error', err.message, 'error');
                 }
             }
         }
