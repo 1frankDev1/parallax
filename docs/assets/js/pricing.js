@@ -248,10 +248,16 @@ async function savePackage() {
 
     } catch (err) {
         console.error('Error saving package:', err);
+        let errorMsg = err.message;
+
+        if (errorMsg.includes("package_type") && errorMsg.includes("column")) {
+            errorMsg = "Error de Base de Datos: La columna 'package_type' no existe. Por favor ejecuta el SQL proporcionado en el panel de Supabase y recarga el esquema.";
+        }
+
         Swal.fire({
             icon: 'error',
             title: 'Error',
-            text: 'No se pudo guardar el paquete: ' + err.message
+            text: 'No se pudo guardar el paquete: ' + errorMsg
         });
     } finally {
         btn.innerText = originalText;
@@ -364,14 +370,27 @@ async function uploadSummaryImage(clientName, data) {
             formData.append('upload_preset', MT_CONFIG.CLOUDINARY.UPLOAD_PRESET);
 
             try {
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 15000); // 15s timeout for upload
+
                 const resp = await fetch(`https://api.cloudinary.com/v1_1/${MT_CONFIG.CLOUDINARY.CLOUD_NAME}/image/upload`, {
                     method: 'POST',
-                    body: formData
+                    body: formData,
+                    signal: controller.signal
                 });
+
+                clearTimeout(timeoutId);
+
+                if (!resp.ok) {
+                    const errData = await resp.json();
+                    throw new Error(errData.error?.message || 'Cloudinary upload failed');
+                }
+
                 const result = await resp.json();
                 resolve(result.secure_url);
             } catch (err) {
-                reject(err);
+                console.error("Cloudinary error:", err);
+                reject(new Error("Error al subir imagen a la nube (Cloudinary). Verifica tu conexión o el preset. " + err.message));
             }
         }, 'image/png');
     });
