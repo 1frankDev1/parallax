@@ -9,24 +9,14 @@
 }
 
 .dynamic-pricing-container {
-    padding: 10px 20px 40px;
+    padding: 80px 20px 120px; /* Added top padding for login pill and bottom for nav */
     font-family: 'Montserrat', sans-serif;
     color: var(--pricing-text);
 }
 
 .clean-block .block-heading {
     margin-bottom: 20px !important;
-    padding-top: 0 !important;
-}
-
-.clean-block.clean-pricing {
-    padding-top: 0 !important;
-}
-
-.dynamic-pricing-container {
-    padding: 60px 20px 40px;
-    font-family: 'Montserrat', sans-serif;
-    color: var(--pricing-text);
+    padding-top: 0px !important;
 }
 
 .builder-layout {
