@@ -262,56 +262,71 @@ async function savePackage() {
 async function uploadSummaryImage(clientName, data) {
     const canvas = document.createElement('canvas');
     canvas.width = 600;
-    canvas.height = 800;
+    canvas.height = 600; // Reduced height to avoid scroll
     const ctx = canvas.getContext('2d');
 
     // Background
     ctx.fillStyle = '#ffffff';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    // Header
-    ctx.fillStyle = '#ff9533';
-    ctx.fillRect(0, 0, canvas.width, 100);
+    // Sidebar Accent
+    ctx.fillStyle = '#ff8c00';
+    ctx.fillRect(0, 0, 10, canvas.height);
 
-    ctx.fillStyle = '#ffffff';
-    ctx.font = 'bold 30px Montserrat, Arial';
-    ctx.fillText('MENUTECH QUOTE', 50, 60);
+    ctx.fillStyle = '#111111';
+    ctx.font = '800 28px Montserrat, Arial';
+    ctx.fillText(clientName.toUpperCase(), 40, 60);
 
-    ctx.fillStyle = '#444444';
-    ctx.font = '20px Montserrat, Arial';
-    ctx.fillText(`Client: ${clientName}`, 50, 140);
-    ctx.fillText(`Date: ${new Date().toLocaleDateString()}`, 50, 170);
+    ctx.fillStyle = '#ff8c00';
+    ctx.font = 'bold 14px Montserrat, Arial';
+    ctx.fillText(`${data.package_type.toUpperCase()} PACKAGE`, 40, 85);
 
-    ctx.strokeStyle = '#eeeeee';
+    ctx.fillStyle = '#999999';
+    ctx.font = '600 12px Montserrat, Arial';
+    ctx.fillText(`DATE: ${new Date().toLocaleDateString()}`, 40, 110);
+
+    ctx.strokeStyle = '#f0f0f0';
     ctx.lineWidth = 1;
     ctx.beginPath();
-    ctx.moveTo(50, 190);
-    ctx.lineTo(550, 190);
+    ctx.moveTo(40, 135);
+    ctx.lineTo(560, 135);
     ctx.stroke();
 
-    ctx.font = 'bold 22px Montserrat, Arial';
-    ctx.fillText('Selected Services:', 50, 230);
+    // Services
+    ctx.fillStyle = '#111111';
+    ctx.font = 'bold 16px Montserrat, Arial';
+    ctx.fillText('INCLUDED SERVICES', 40, 170);
 
-    ctx.font = '16px Montserrat, Arial';
-    let y = 260;
-    data.services.forEach(s => {
-        ctx.fillText(`• ${s.name}`, 60, y);
-        y += 25;
+    ctx.font = '500 14px Montserrat, Arial';
+    ctx.fillStyle = '#444444';
+    let y = 200;
+    const maxServices = 12; // Limit to avoid overflow
+    data.services.slice(0, maxServices).forEach(s => {
+        ctx.fillText(`• ${s.name}`, 50, y);
+        y += 22;
     });
 
-    y += 20;
-    ctx.fillStyle = '#f9f9f9';
-    ctx.fillRect(50, y, 500, 120);
+    if (data.services.length > maxServices) {
+        ctx.fillText(`+ ${data.services.length - maxServices} more services...`, 50, y);
+    }
 
-    ctx.fillStyle = '#444444';
-    ctx.font = 'bold 20px Montserrat, Arial';
-    ctx.fillText('TOTALS', 70, y + 40);
+    // Totals Box
+    const boxY = 460;
+    ctx.fillStyle = '#f8f9fa';
+    ctx.roundRect ? ctx.roundRect(40, boxY, 520, 100, 15) : ctx.fillRect(40, boxY, 520, 100);
+    ctx.fill();
 
-    ctx.font = '18px Montserrat, Arial';
-    ctx.fillText(`Setup: $${data.total_setup.toFixed(2)}`, 70, y + 70);
-    ctx.fillStyle = '#ff9533';
-    ctx.font = 'bold 22px Montserrat, Arial';
-    ctx.fillText(`Monthly: $${data.total_monthly.toFixed(2)}`, 70, y + 100);
+    ctx.fillStyle = '#666666';
+    ctx.font = 'bold 12px Montserrat, Arial';
+    ctx.fillText('SETUP INVESTMENT', 70, boxY + 35);
+    ctx.fillText('MONTHLY INVESTMENT', 320, boxY + 35);
+
+    ctx.fillStyle = '#111111';
+    ctx.font = '900 24px Montserrat, Arial';
+    ctx.fillText(`$${data.total_setup.toLocaleString()}`, 70, boxY + 70);
+
+    ctx.fillStyle = '#ff8c00';
+    ctx.fillText(`$${data.total_monthly.toLocaleString()}`, 320, boxY + 70);
 
     return new Promise((resolve, reject) => {
         canvas.toBlob(async (blob) => {
