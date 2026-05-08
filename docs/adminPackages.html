@@ -6,6 +6,7 @@
     <title>Admin Packages - Menutech</title>
     <link rel="icon" type="image/png" sizes="192x192" href="./assets/img/Diseño%20sin%20título%20(8).png">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="assets/css/badge.css" rel="stylesheet" />
     <link href="https://fonts.googleapis.com/css?family=Montserrat:400,600,700,800" rel="stylesheet" />
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.12.0/css/all.css">
     <style>
@@ -47,11 +48,6 @@
         .header-section {
             text-align: center;
             margin-bottom: 50px;
-        }
-        .header-section h2 {
-            font-weight: 800;
-            font-size: 2.5rem;
-            color: var(--dark-gray);
         }
 
         /* Search Section */
@@ -384,9 +380,24 @@
 </head>
 <body>
 
+    <!-- ICONO Y BADGE (pildora) -->
+    <img id="login-icon" class="login-icon" src="./assets/img/user.svg">
+    <div id="user-badge" class="user-badge hidden" style="position: fixed;">
+        <div id="badge-username"></div>
+        <div id="badge-role"></div>
+    </div>
+    <div id="badge-menu" class="hidden">
+        <button id="logout-btn" class="logout-btn">Cerrar sesión</button>
+    </div>
+
+    <!-- TU DRAWER -->
+    <menutech-drawer id="main-drawer" class="hidden"></menutech-drawer>
+
     <nav class="navbar-custom">
         <div class="container text-center">
-            <h1 class="navbar-brand-text">Administracion <span class="sky-blue">Circle Center</span></h1>
+             <a href="index.html">
+                <img src="https://menutech.services/assets/img/logomt.png" alt="Menutech" style="height: 50px;">
+             </a>
         </div>
     </nav>
 
@@ -411,6 +422,8 @@
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tiny-animate/1.1.0/tinyanimate.min.js"></script>
+    <script src="./assets/js/badge.js"></script>
     <script src="./assets/js/renderer.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
