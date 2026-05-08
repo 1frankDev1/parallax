@@ -295,10 +295,6 @@ async function uploadSummaryImage(clientName, data) {
     ctx.fillStyle = '#ffffff';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    // Header Bar (Orange)
-    ctx.fillStyle = '#ff9533';
-    ctx.fillRect(0, 0, canvas.width, 80);
-
     // Draw Logo in header (Centered)
     if (logoLoaded) {
         const logoRatio = logo.width / logo.height;
@@ -307,18 +303,21 @@ async function uploadSummaryImage(clientName, data) {
         const logoX = (canvas.width - logoW) / 2;
         ctx.drawImage(logo, logoX, 15, logoW, logoH);
     } else {
-        // Fallback title if logo fails
-        ctx.fillStyle = '#ffffff';
-        ctx.font = 'bold 24px Montserrat, Arial';
-        ctx.textAlign = 'center';
-        ctx.fillText('MENUTECH', canvas.width / 2, 50);
-        ctx.textAlign = 'left'; // Reset
+        // Fallback: Just orange line if logo fails
+        ctx.strokeStyle = '#ff9533';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(canvas.width / 2 - 50, 40);
+        ctx.lineTo(canvas.width / 2 + 50, 40);
+        ctx.stroke();
     }
 
     // Header Content
     ctx.fillStyle = '#111111';
     ctx.font = '500 18px Montserrat, Arial';
-    ctx.fillText(`Client: ${clientName}`, 40, 130);
+    const packageTier = data.services && data.services.length > 0 ? data.services[0].tier : 'Starter';
+    ctx.fillText(`Client: ${clientName}`, 40, 110);
+    ctx.fillText(`Package: ${packageTier}`, 40, 135);
     ctx.fillText(`Date: ${new Date().toLocaleDateString()}`, 40, 160);
 
     ctx.strokeStyle = '#eeeeee';
@@ -359,11 +358,11 @@ async function uploadSummaryImage(clientName, data) {
 
     ctx.font = '600 16px Montserrat, Arial';
     ctx.fillStyle = '#555555';
-    ctx.fillText(`Setup Fee: $${data.total_setup.toLocaleString()}`, 65, boxY + 65);
+    ctx.fillText(`Setup: $${data.total_setup.toLocaleString()}`, 65, boxY + 65);
 
     ctx.fillStyle = '#ff9533';
     ctx.font = 'bold 20px Montserrat, Arial';
-    ctx.fillText(`Monthly Fee: $${data.total_monthly.toLocaleString()}`, 65, boxY + 95);
+    ctx.fillText(`Monthly: $${data.total_monthly.toLocaleString()}`, 65, boxY + 95);
 
     return new Promise((resolve, reject) => {
         canvas.toBlob(async (blob) => {
