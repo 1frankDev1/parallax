@@ -492,7 +492,10 @@
                     <div class="card-header-main">
                         <div class="client-info-group">
                             <h4 class="client-name-text" style="font-weight: 800; font-size: 1.5rem; margin: 0; color: #111;">${p.client_name}</h4>
-                            <span class="tier-tag-small">${p.package_type || (p.services && p.services.length > 0 ? p.services[0].tier : 'Starter')}</span>
+                            <div style="display:flex; gap: 10px; align-items: center; margin-top: 4px;">
+                                <span class="tier-tag-small">${p.package_type || (p.services && p.services.length > 0 ? p.services[0].tier : 'Starter')}</span>
+                                ${p.closer ? `<span class="badge badge-info" style="font-size: 0.65rem; text-transform: uppercase;">${p.closer}</span>` : ''}
+                            </div>
                             <div class="date-info" style="font-size: 0.8rem; color: #999; margin-top: 5px;"><i class="far fa-calendar-alt"></i> ${new Date(p.created_at).toLocaleDateString()}</div>
                         </div>
                         <div class="card-actions-top">
@@ -506,13 +509,15 @@
                     </div>
 
                     <div class="pricing-stats-row">
-                        <div class="stat-chip">
+                        <div class="stat-chip" style="position: relative;">
                             <span class="stat-label">Setup</span>
                             <span class="stat-val">$${p.total_setup.toLocaleString()}</span>
+                            ${p.discount_setup > 0 ? `<span style="position: absolute; top: -10px; right: -5px; background: red; color: white; font-size: 0.6rem; padding: 2px 5px; border-radius: 4px; font-weight: 800; transform: rotate(15deg); border: 1px solid white;">-${p.discount_setup}%</span>` : ''}
                         </div>
-                        <div class="stat-chip">
+                        <div class="stat-chip" style="position: relative;">
                             <span class="stat-label">Monthly</span>
                             <span class="stat-val orange">$${p.total_monthly.toLocaleString()}</span>
+                            ${p.discount_monthly > 0 ? `<span style="position: absolute; top: -10px; right: -5px; background: red; color: white; font-size: 0.6rem; padding: 2px 5px; border-radius: 4px; font-weight: 800; transform: rotate(15deg); border: 1px solid white;">-${p.discount_monthly}%</span>` : ''}
                         </div>
                     </div>
 

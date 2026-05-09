@@ -53,6 +53,11 @@ async function checkEditMode() {
             // Populate name
             document.getElementById('client-name').value = data.client_name;
 
+            // Populate new fields
+            if (data.closer) document.getElementById('closer-select').value = data.closer;
+            if (data.discount_setup) document.getElementById('discount-setup').value = data.discount_setup;
+            if (data.discount_monthly) document.getElementById('discount-monthly').value = data.discount_monthly;
+
             // Populate services
             selectedServices = new Set(data.services.map(s => s.id));
             // Try to get tier from top-level or from embedded services data
@@ -152,8 +157,19 @@ function updateTotals() {
         }
     });
 
-    document.getElementById('total-setup').innerText = `$${totalSetup.toLocaleString('en-US', {minimumFractionDigits: 2})}`;
-    document.getElementById('total-monthly').innerText = `$${totalMonthly.toLocaleString('en-US', {minimumFractionDigits: 2})}`;
+    // Apply discounts
+    const discSetupPerc = parseFloat(document.getElementById('discount-setup')?.value || 0) / 100;
+    const discMonthlyPerc = parseFloat(document.getElementById('discount-monthly')?.value || 0) / 100;
+
+    const discountedSetup = totalSetup * (1 - discSetupPerc);
+    const discountedMonthly = totalMonthly * (1 - discMonthlyPerc);
+
+    document.getElementById('total-setup').innerText = `$${discountedSetup.toLocaleString('en-US', {minimumFractionDigits: 2})}`;
+    document.getElementById('total-monthly').innerText = `$${discountedMonthly.toLocaleString('en-US', {minimumFractionDigits: 2})}`;
+
+    // Animations for stamps
+    handleDiscountStamp('setup', discSetupPerc);
+    handleDiscountStamp('monthly', discMonthlyPerc);
 
     // Highlight presets if matching
     document.querySelectorAll('.preset-btn').forEach(btn => {
@@ -164,7 +180,28 @@ function updateTotals() {
     });
 }
 
+function handleDiscountStamp(type, percentage) {
+    const stamp = document.getElementById(`stamp-${type}`);
+    if (!stamp) return;
+
+    if (percentage > 0) {
+        stamp.innerText = `-${(percentage * 100).toFixed(0)}%`;
+        stamp.classList.remove('hidden');
+        // Reset animation
+        stamp.classList.remove('animate');
+        void stamp.offsetWidth; // trigger reflow
+        stamp.classList.add('animate');
+    } else {
+        stamp.classList.add('hidden');
+        stamp.classList.remove('animate');
+    }
+}
+
 function initEventListeners() {
+    // Listen for discount changes
+    document.getElementById('discount-setup')?.addEventListener('input', updateTotals);
+    document.getElementById('discount-monthly')?.addEventListener('input', updateTotals);
+
     document.querySelectorAll('.preset-btn').forEach(btn => {
         btn.addEventListener('click', () => {
             const presetId = btn.dataset.preset;
@@ -207,6 +244,9 @@ async function savePackage() {
 
         const packageData = {
             client_name: clientName,
+            closer: document.getElementById('closer-select').value,
+            discount_setup: parseFloat(document.getElementById('discount-setup').value || 0),
+            discount_monthly: parseFloat(document.getElementById('discount-monthly').value || 0),
             // Omit top-level package_type to avoid schema cache error
             services: SERVICES.filter(s => selectedServices.has(s.id)).map(s => ({
                 id: s.id,
@@ -316,9 +356,10 @@ async function uploadSummaryImage(clientName, data) {
     ctx.fillStyle = '#111111';
     ctx.font = '500 18px Montserrat, Arial';
     const packageTier = data.services && data.services.length > 0 ? data.services[0].tier : 'Starter';
-    ctx.fillText(`Client: ${clientName}`, 40, 110);
-    ctx.fillText(`Package: ${packageTier}`, 40, 135);
-    ctx.fillText(`Date: ${new Date().toLocaleDateString()}`, 40, 160);
+    ctx.fillText(`Client: ${clientName}`, 40, 100);
+    ctx.fillText(`Package: ${packageTier}`, 40, 125);
+    ctx.fillText(`Closer: ${data.closer || 'N/A'}`, 40, 150);
+    ctx.fillText(`Date: ${new Date().toLocaleDateString()}`, 40, 175);
 
     ctx.strokeStyle = '#eeeeee';
     ctx.lineWidth = 1;
@@ -358,11 +399,15 @@ async function uploadSummaryImage(clientName, data) {
 
     ctx.font = '600 16px Montserrat, Arial';
     ctx.fillStyle = '#555555';
-    ctx.fillText(`Setup: $${data.total_setup.toLocaleString()}`, 65, boxY + 65);
+    let setupText = `Setup: $${data.total_setup.toLocaleString()}`;
+    if (data.discount_setup > 0) setupText += ` (-${data.discount_setup}%)`;
+    ctx.fillText(setupText, 65, boxY + 65);
 
     ctx.fillStyle = '#ff9533';
     ctx.font = 'bold 20px Montserrat, Arial';
-    ctx.fillText(`Monthly: $${data.total_monthly.toLocaleString()}`, 65, boxY + 95);
+    let monthlyText = `Monthly: $${data.total_monthly.toLocaleString()}`;
+    if (data.discount_monthly > 0) monthlyText += ` (-${data.discount_monthly}%)`;
+    ctx.fillText(monthlyText, 65, boxY + 95);
 
     return new Promise((resolve, reject) => {
         canvas.toBlob(async (blob) => {
