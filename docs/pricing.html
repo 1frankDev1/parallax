@@ -7,6 +7,34 @@
 	<link rel="icon" type="image/png" sizes="192x192" href="./assets/img/Diseño%20sin%20título%20(8).png">
 	<link href="assets/css/estilos.css" rel="stylesheet" />
     <link href="assets/css/pricing.css" rel="stylesheet" />
+    <style>
+        .stamp-discount {
+            position: absolute;
+            top: -15px;
+            right: 10px;
+            background: #ff0000;
+            color: white;
+            padding: 4px 10px;
+            border: 2px solid white;
+            border-radius: 4px;
+            font-weight: 900;
+            font-size: 1rem;
+            transform: rotate(-15deg) scale(5);
+            opacity: 0;
+            pointer-events: none;
+            z-index: 10;
+            box-shadow: 0 0 10px rgba(0,0,0,0.3);
+            white-space: nowrap;
+        }
+        .stamp-discount.animate {
+            animation: stamp-anim 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+        @keyframes stamp-anim {
+            0% { transform: rotate(-15deg) scale(5); opacity: 0; }
+            100% { transform: rotate(-15deg) scale(1); opacity: 1; }
+        }
+        .stamp-discount.hidden { display: none; }
+    </style>
     <link rel="stylesheet" href="./assets/css/badge.css">
     <link href="assets/bootstrap/css/bootstrap.min.css" rel="stylesheet" />
 
@@ -116,17 +144,42 @@
             </div>
 
             <div class="summary-total">
-                <div class="summary-row">
+                <div class="summary-row" style="position: relative;">
                     <span class="total-label">Setup</span>
                     <span id="total-setup" class="total-amount">$0.00</span>
+                    <div id="stamp-setup" class="stamp-discount hidden"></div>
                 </div>
-                <div class="summary-row">
+                <div class="summary-row" style="position: relative;">
                     <span class="total-label">Monthly</span>
                     <span id="total-monthly" class="total-amount">$0.00</span>
+                    <div id="stamp-monthly" class="stamp-discount hidden"></div>
                 </div>
             </div>
 
             <div class="save-form">
+                <div class="form-group">
+                    <label>Closer</label>
+                    <select id="closer-select" class="form-control-custom">
+                        <option value="carmona1">Carmona 1</option>
+                        <option value="carmona2">Carmona 2</option>
+                        <option value="carmona3">Carmona 3</option>
+                        <option value="carmona4">Carmona 4</option>
+                    </select>
+                </div>
+                <div class="row">
+                    <div class="col-6">
+                        <div class="form-group">
+                            <label>Disc. Setup %</label>
+                            <input type="number" id="discount-setup" class="form-control-custom" min="0" max="18" value="0">
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="form-group">
+                            <label>Disc. Monthly %</label>
+                            <input type="number" id="discount-monthly" class="form-control-custom" min="0" max="18" value="0">
+                        </div>
+                    </div>
+                </div>
                 <div class="form-group">
                     <label for="client-name">Name</label>
                     <input type="text" id="client-name" class="form-control-custom" placeholder="Name">
