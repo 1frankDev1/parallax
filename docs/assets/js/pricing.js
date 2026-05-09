@@ -394,7 +394,7 @@ async function uploadSummaryImage(clientName, data) {
     const packageTier = data.services && data.services.length > 0 ? data.services[0].tier : 'Starter';
     ctx.fillText(`Client: ${clientName}`, 40, 100);
     ctx.fillText(`Package: ${packageTier}`, 40, 125);
-    ctx.fillText(`Closer: ${data.closer || 'N/A'}`, 40, 150);
+    ctx.fillText(`Specialist: ${data.closer || 'N/A'}`, 40, 150);
     ctx.fillText(`Date: ${new Date().toLocaleDateString()}`, 40, 175);
 
     ctx.strokeStyle = '#eeeeee';
