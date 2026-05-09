@@ -34,6 +34,15 @@
             100% { transform: rotate(-15deg) scale(1); opacity: 1; }
         }
         .stamp-discount.hidden { display: none; }
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+        .shake {
+            animation: shake 0.2s ease-in-out 0s 2;
+            border-color: red !important;
+        }
     </style>
     <link rel="stylesheet" href="./assets/css/badge.css">
     <link href="assets/bootstrap/css/bootstrap.min.css" rel="stylesheet" />
@@ -170,53 +179,13 @@
                     <div class="col-6">
                         <div class="form-group">
                             <label>Disc. Setup %</label>
-                            <select id="discount-setup" class="form-control-custom">
-                                <option value="0">0%</option>
-                                <option value="1">1%</option>
-                                <option value="2">2%</option>
-                                <option value="3">3%</option>
-                                <option value="4">4%</option>
-                                <option value="5">5%</option>
-                                <option value="6">6%</option>
-                                <option value="7">7%</option>
-                                <option value="8">8%</option>
-                                <option value="9">9%</option>
-                                <option value="10">10%</option>
-                                <option value="11">11%</option>
-                                <option value="12">12%</option>
-                                <option value="13">13%</option>
-                                <option value="14">14%</option>
-                                <option value="15">15%</option>
-                                <option value="16">16%</option>
-                                <option value="17">17%</option>
-                                <option value="18">18%</option>
-                            </select>
+                            <input type="number" id="discount-setup" class="form-control-custom" placeholder="%" min="1" max="18">
                         </div>
                     </div>
                     <div class="col-6">
                         <div class="form-group">
                             <label>Disc. Monthly %</label>
-                            <select id="discount-monthly" class="form-control-custom">
-                                <option value="0">0%</option>
-                                <option value="1">1%</option>
-                                <option value="2">2%</option>
-                                <option value="3">3%</option>
-                                <option value="4">4%</option>
-                                <option value="5">5%</option>
-                                <option value="6">6%</option>
-                                <option value="7">7%</option>
-                                <option value="8">8%</option>
-                                <option value="9">9%</option>
-                                <option value="10">10%</option>
-                                <option value="11">11%</option>
-                                <option value="12">12%</option>
-                                <option value="13">13%</option>
-                                <option value="14">14%</option>
-                                <option value="15">15%</option>
-                                <option value="16">16%</option>
-                                <option value="17">17%</option>
-                                <option value="18">18%</option>
-                            </select>
+                            <input type="number" id="discount-monthly" class="form-control-custom" placeholder="%" min="1" max="18">
                         </div>
                     </div>
                 </div>

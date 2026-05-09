@@ -199,8 +199,31 @@ function handleDiscountStamp(type, percentage) {
 
 function initEventListeners() {
     // Listen for discount changes
-    document.getElementById('discount-setup')?.addEventListener('change', updateTotals);
-    document.getElementById('discount-monthly')?.addEventListener('change', updateTotals);
+    ['discount-setup', 'discount-monthly'].forEach(id => {
+        const input = document.getElementById(id);
+        if (!input) return;
+
+        input.addEventListener('input', (e) => {
+            const val = e.target.value;
+            if (val === '') {
+                updateTotals();
+                return;
+            }
+
+            const num = parseInt(val);
+            if (isNaN(num) || num < 1 || num > 18) {
+                // Trigger shake
+                input.classList.add('shake');
+                setTimeout(() => {
+                    input.classList.remove('shake');
+                    e.target.value = '';
+                    updateTotals();
+                }, 400);
+            } else {
+                updateTotals();
+            }
+        });
+    });
 
     document.querySelectorAll('.preset-btn').forEach(btn => {
         btn.addEventListener('click', () => {
@@ -239,22 +262,35 @@ async function savePackage() {
     btn.disabled = true;
 
     try {
-        const cleanSetup = document.getElementById('total-setup').innerText.replace(/[$,]/g, '');
-        const cleanMonthly = document.getElementById('total-monthly').innerText.replace(/[$,]/g, '');
+        // Calculate totals from scratch to ensure accuracy
+        let baseSetup = 0;
+        let baseMonthly = 0;
+        SERVICES.forEach(s => {
+            if (selectedServices.has(s.id)) {
+                baseSetup += s.setup;
+                baseMonthly += s.monthly;
+            }
+        });
+
+        const discountSetup = parseFloat(document.getElementById('discount-setup').value || 0);
+        const discountMonthly = parseFloat(document.getElementById('discount-monthly').value || 0);
+
+        const finalSetup = baseSetup * (1 - (discountSetup / 100));
+        const finalMonthly = baseMonthly * (1 - (discountMonthly / 100));
 
         const packageData = {
             client_name: clientName,
             closer: document.getElementById('closer-select').value,
-            discount_setup: parseFloat(document.getElementById('discount-setup').value || 0),
-            discount_monthly: parseFloat(document.getElementById('discount-monthly').value || 0),
+            discount_setup: discountSetup,
+            discount_monthly: discountMonthly,
             // Omit top-level package_type to avoid schema cache error
             services: SERVICES.filter(s => selectedServices.has(s.id)).map(s => ({
                 id: s.id,
                 name: s.name,
                 tier: currentBaseTier // Workaround: store tier inside services JSONB
             })),
-            total_setup: parseFloat(cleanSetup),
-            total_monthly: parseFloat(cleanMonthly)
+            total_setup: parseFloat(finalSetup.toFixed(2)),
+            total_monthly: parseFloat(finalMonthly.toFixed(2))
         };
 
         // 1. Generate visual summary and upload to Cloudinary
