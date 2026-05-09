@@ -199,8 +199,8 @@ function handleDiscountStamp(type, percentage) {
 
 function initEventListeners() {
     // Listen for discount changes
-    document.getElementById('discount-setup')?.addEventListener('input', updateTotals);
-    document.getElementById('discount-monthly')?.addEventListener('input', updateTotals);
+    document.getElementById('discount-setup')?.addEventListener('change', updateTotals);
+    document.getElementById('discount-monthly')?.addEventListener('change', updateTotals);
 
     document.querySelectorAll('.preset-btn').forEach(btn => {
         btn.addEventListener('click', () => {
