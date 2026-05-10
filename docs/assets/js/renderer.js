@@ -286,6 +286,12 @@
       // Mostrar el tile de notificaciones para admins
       const notifTile = document.getElementById("tile-19");
       if (notifTile) notifTile.classList.remove("hidden");
+
+      // Mostrar Admin Pricing solo para el rol exacto "Admin"
+      if (role === "Admin") {
+        const adminPricingTile = document.getElementById("tile-20");
+        if (adminPricingTile) adminPricingTile.classList.remove("hidden");
+      }
     }
 
     const drawer = document.getElementById("main-drawer");
