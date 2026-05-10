@@ -4,6 +4,7 @@ let allServices = [];
 let presets = { starter: [], premium: [], deluxe: [] };
 let specialists = [];
 let discountRange = { min: 1, max: 18 };
+let currentActiveTier = 'starter';
 
 document.addEventListener('DOMContentLoaded', async () => {
     await loadData();
@@ -58,7 +59,7 @@ function renderAll() {
     renderServicesTable();
     renderSpecialists();
     renderDiscountSettings();
-    renderPresetsChecklists();
+    renderVisualServicesGrid();
 }
 
 function renderServicesTable() {
@@ -66,13 +67,13 @@ function renderServicesTable() {
     tbody.innerHTML = allServices.map(s => `
         <tr>
             <td>
-                <div style="font-weight: 700;">${s.name}</div>
-                <div style="font-size: 0.7rem; color: #888;">ID: ${s.id}</div>
+                <div style="font-weight: 700; color: #fff;">${s.name}</div>
+                <div style="font-size: 0.7rem; color: #aaa;">ID: ${s.id}</div>
             </td>
             <td>$${s.setup.toLocaleString()}</td>
             <td>$${s.monthly.toLocaleString()}</td>
             <td>
-                ${s.image ? `<img src="${s.image}" class="service-img-preview" onerror="this.src='https://via.placeholder.com/50'">` : 'No Image'}
+                ${s.image ? `<img src="${s.image}" class="service-img-preview" onerror="this.src='https://via.placeholder.com/60'">` : 'No Image'}
             </td>
             <td>
                 <button class="btn-custom btn-sm p-2 mr-1" onclick="window.editService('${s.id}')" title="Edit">
@@ -100,20 +101,21 @@ function renderDiscountSettings() {
     document.getElementById('max-discount').value = discountRange.max;
 }
 
-function renderPresetsChecklists() {
-    const tiers = ['starter', 'premium', 'deluxe'];
-    tiers.forEach(tier => {
-        const container = document.getElementById(`${tier}-services-list`);
-        container.innerHTML = allServices.map(s => `
-            <label class="service-checkbox-item">
-                <input type="checkbox" data-tier="${tier}" data-service="${s.id}" ${presets[tier].includes(s.id) ? 'checked' : ''}>
-                <span>${s.name}</span>
-            </label>
-        `).join('');
-    });
+function renderVisualServicesGrid() {
+    const container = document.getElementById('visual-services-grid');
+    const selectedForTier = presets[currentActiveTier] || [];
+
+    container.innerHTML = allServices.map(s => `
+        <div class="visual-service-item ${selectedForTier.includes(s.id) ? 'selected' : ''}"
+             onclick="window.toggleServiceInTier('${s.id}')">
+            ${s.image ? `<img src="${s.image}" onerror="this.style.display='none'">` : '<i class="fas fa-box" style="font-size: 1.5rem; color: #888;"></i>'}
+            <span>${s.name}</span>
+        </div>
+    `).join('');
 }
 
 function initEventListeners() {
+    // Specialist Logic
     document.getElementById('btn-add-specialist').onclick = () => {
         const input = document.getElementById('new-specialist');
         const val = input.value.trim();
@@ -139,22 +141,31 @@ function initEventListeners() {
         }
     };
 
-    document.getElementById('btn-save-presets').onclick = async () => {
-        const updates = ['starter', 'premium', 'deluxe'].map(tier => {
-            const selected = Array.from(document.querySelectorAll(`input[data-tier="${tier}"]:checked`))
-                .map(cb => cb.dataset.service);
-            return { tier, service_ids: selected };
-        });
+    // Preset Tabs Logic
+    document.querySelectorAll('.preset-tab-btn').forEach(btn => {
+        btn.onclick = () => {
+            document.querySelectorAll('.preset-tab-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            currentActiveTier = btn.dataset.tier;
+            renderVisualServicesGrid();
+        };
+    });
 
+    document.getElementById('btn-save-presets').onclick = async () => {
         try {
-            const { error } = await supabase.from('pricing_presets').upsert(updates);
+            const payload = {
+                tier: currentActiveTier,
+                service_ids: presets[currentActiveTier]
+            };
+            const { error } = await supabase.from('pricing_presets').upsert([payload]);
             if (error) throw error;
-            Swal.fire({ icon: 'success', title: 'Presets Updated', toast: true, position: 'top-end', showConfirmButton: false, timer: 2000 });
+            Swal.fire({ icon: 'success', title: `Preset ${currentActiveTier.toUpperCase()} Updated`, toast: true, position: 'top-end', showConfirmButton: false, timer: 2000 });
         } catch (err) {
             Swal.fire('Error', err.message, 'error');
         }
     };
 
+    // Services Catalog Logic
     document.getElementById('btn-new-service').onclick = () => {
         window.openServiceModal();
     };
@@ -167,6 +178,16 @@ window.removeSpecialist = (index) => {
     renderSpecialists();
 };
 
+window.toggleServiceInTier = (serviceId) => {
+    const index = presets[currentActiveTier].indexOf(serviceId);
+    if (index > -1) {
+        presets[currentActiveTier].splice(index, 1);
+    } else {
+        presets[currentActiveTier].push(serviceId);
+    }
+    renderVisualServicesGrid();
+};
+
 window.openServiceModal = (id = null) => {
     const modal = $('#serviceModal');
     const form = document.getElementById('service-form');
@@ -175,7 +196,7 @@ window.openServiceModal = (id = null) => {
 
     if (id) {
         const s = allServices.find(x => x.id === id);
-        document.getElementById('modal-title').innerHTML = '<i class="fas fa-edit"></i> Edit Service';
+        document.getElementById('modal-title').innerHTML = 'Edit Service';
         document.getElementById('service-id-input').value = s.id;
         document.getElementById('service-id-input').readOnly = true;
         document.getElementById('service-name-input').value = s.name;
@@ -185,7 +206,7 @@ window.openServiceModal = (id = null) => {
         document.getElementById('service-description-input').value = s.description || '';
         document.getElementById('service-link-input').value = s.link_url || '';
     } else {
-        document.getElementById('modal-title').innerHTML = '<i class="fas fa-plus"></i> New Service';
+        document.getElementById('modal-title').innerHTML = 'New Service';
         document.getElementById('service-id-input').readOnly = false;
     }
 
@@ -193,7 +214,6 @@ window.openServiceModal = (id = null) => {
 };
 
 async function saveService() {
-    const internalId = document.getElementById('service-id-internal').value;
     const id = document.getElementById('service-id-input').value.trim();
     const name = document.getElementById('service-name-input').value.trim();
     const setup = parseFloat(document.getElementById('service-setup-input').value);
