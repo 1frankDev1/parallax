@@ -103,12 +103,8 @@ function renderServices() {
     if (!grid) return;
 
     grid.innerHTML = SERVICES.map(service => {
-        // If it has a link_url, use it, otherwise use image preview
-        const titleAction = service.link_url
-            ? `onclick="event.stopPropagation(); window.open('${service.link_url}', '_blank')"`
-            : (service.image ? `onclick="event.stopPropagation(); viewServiceImage('${service.name}', '${service.image}')"` : '');
-
-        const titleStyle = (service.link_url || service.image) ? 'style="color: #ff9533; text-decoration: underline; cursor: pointer;"' : '';
+        const titleAction = service.image ? `onclick="event.stopPropagation(); viewServiceImage('${service.name}', '${service.image}')"` : '';
+        const titleStyle = service.image ? 'style="color: #ff9533; text-decoration: underline; cursor: pointer;"' : '';
 
         return `
             <div class="service-card ${selectedServices.has(service.id) ? 'active' : ''}" data-id="${service.id}">
