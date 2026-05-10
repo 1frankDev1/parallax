@@ -108,8 +108,7 @@ function renderVisualServicesGrid() {
     container.innerHTML = allServices.map(s => `
         <div class="visual-service-item ${selectedForTier.includes(s.id) ? 'selected' : ''}"
              onclick="window.toggleServiceInTier('${s.id}')">
-            ${s.image ? `<img src="${s.image}" onerror="this.style.display='none'">` : '<i class="fas fa-box" style="font-size: 1.5rem; color: #888;"></i>'}
-            <span>${s.name}</span>
+            <span style="font-size: 0.85rem;">${s.name}</span>
         </div>
     `).join('');
 }
@@ -204,7 +203,6 @@ window.openServiceModal = (id = null) => {
         document.getElementById('service-monthly-input').value = s.monthly;
         document.getElementById('service-image-input').value = s.image || '';
         document.getElementById('service-description-input').value = s.description || '';
-        document.getElementById('service-link-input').value = s.link_url || '';
     } else {
         document.getElementById('modal-title').innerHTML = 'New Service';
         document.getElementById('service-id-input').readOnly = false;
@@ -220,11 +218,10 @@ async function saveService() {
     const monthly = parseFloat(document.getElementById('service-monthly-input').value);
     const image = document.getElementById('service-image-input').value.trim();
     const description = document.getElementById('service-description-input').value.trim();
-    const link_url = document.getElementById('service-link-input').value.trim();
 
     if (!id || !name) return Swal.fire('Error', 'ID and Name are required', 'error');
 
-    const payload = { id, name, setup, monthly, image, description, link_url };
+    const payload = { id, name, setup, monthly, image, description };
 
     try {
         const { error } = await supabase.from('pricing_services').upsert([payload]);
