@@ -1,39 +1,59 @@
 import { MT_CONFIG } from "./config.js";
 import { supabase } from "./supabase.js";
 
-// Services Data
-const SERVICES = [
-    { id: 'online_orders', name: 'Online Orders', setup: 322.92, monthly: 96.12, image: 'https://menutech.xyz/assets/img/onlineOrders.jpg', description: 'Platform admin, website template, ordering button, mobile ordering, menu build, cash orders, etc.' },
-    { id: 'local_listing', name: 'Local Listing', setup: 279.72, monthly: 85.32, image: 'https://menutech.xyz/assets/img/localListing.jpg', description: 'Google My Business, Apple iMap, Food Booking, Tripadvisor, Facebook, Instagram, more listings.' },
-    { id: 'social_media', name: 'Facebook / Instagram / Threads', setup: 214.92, monthly: 52.92, image: 'https://menutech.xyz/assets/img/socialMedia.jpg', description: 'Social Media package 4 post per Month.' },
-    { id: 'smm', name: 'Social Media Marketing', setup: 106.92, monthly: 33.48, image: 'https://menutech.xyz/assets/img/smm.jpg', description: 'Inviting Blast Through Email, SMS or both.' },
-    { id: 'online_payment', name: 'Online Payment', setup: 106.92, monthly: 48.6, image: 'https://menutech.xyz/assets/img/onlinePayment.jpg', description: 'Online Payment Orders (unlimited).' },
-    { id: 'promotions', name: 'Promotions and Offers', setup: 139.32, monthly: 63.72, image: 'https://menutech.xyz/assets/img/promotionsoffers.jpg', description: '8 Integrated promotions and offers (unlimited).' },
-    { id: 'fb_ads', name: 'Facebook Ads', setup: 0, monthly: 20, image: 'https://menutech.xyz/assets/img/adfb.jpg', description: 'Ad management on Facebook and Instagram.' },
-    { id: 'branded_app', name: 'Branded Mobile App', setup: 189.92, monthly: 49.62, image: 'https://menutech.xyz/assets/img/brandedapp.jpg', description: 'Personalized ordering app for Android and IOS.' },
-    { id: 'website_seo', name: 'Website / SEO / Google Ads', setup: 366.12, monthly: 85.32, image: 'https://menutech.xyz/assets/img/wsg.jpg', description: 'Personalized website, hosting, SEO, Domain registry.' },
-    { id: 'physical_marketing', name: 'Fisical Marketing Kit', setup: 399, monthly: 0, image: 'https://menutech.xyz/assets/img/fmk.jpg', description: 'Table QR Codes, Sheet size Posters, Stickers, Flyers.' },
-    { id: 'delivery_service', name: 'Delivery Service', setup: 214.92, monthly: 85.32, image: 'https://menutech.xyz/assets/img/deliveryservices.jpg', description: 'Delivery Service setup and management.' },
-    { id: 'pos_integration', name: 'POS Platforms Integration', setup: 430.92, monthly: 74.52, image: 'https://menutech.xyz/assets/img/POSpi.jpg', description: 'Integration with many POS platforms.' },
-    { id: 'delivery_shipday', name: 'Delivery Services (Shipday)', setup: 290.52, monthly: 132, image: 'https://menutech.xyz/assets/img/deliveryservices.jpg', description: 'Shipday Delivery With Doordash & Uber Drivers.' },
-    { id: 'restaurant_pos', name: 'Individual Restaurant POS', setup: 2498, monthly: 106.92, image: 'https://menutech.xyz/assets/img/posu.jpg', description: 'Menutech POS Cloud base, Tablet, Printer, Credit card device.' }
-];
+// Dynamic Data from Supabase
+let SERVICES = [];
+let PRESETS = { starter: [], premium: [], deluxe: [] };
+let SELECTED_SPECIALISTS = [];
+let DISCOUNT_LIMITS = { min: 1, max: 18 };
 
-const PRESETS = {
-    starter: ['online_orders', 'local_listing'],
-    premium: ['online_orders', 'local_listing', 'social_media', 'smm', 'online_payment', 'promotions', 'fb_ads', 'branded_app'],
-    deluxe: SERVICES.map(s => s.id)
-};
-
-let selectedServices = new Set(PRESETS.starter);
+let selectedServices = new Set();
 let currentBaseTier = 'Starter';
 
 document.addEventListener('DOMContentLoaded', async () => {
-    renderServices();
-    updateTotals();
-    initEventListeners();
-    await checkEditMode();
+    await initPricing();
 });
+
+async function initPricing() {
+    try {
+        // 1. Fetch Dynamic Configuration
+        const { data: servicesData } = await supabase.from('pricing_services').select('*').order('created_at', { ascending: true });
+        const { data: presetsData } = await supabase.from('pricing_presets').select('*');
+        const { data: settingsData } = await supabase.from('pricing_settings').select('*');
+
+        if (servicesData) SERVICES = servicesData;
+        if (presetsData) {
+            presetsData.forEach(p => { PRESETS[p.tier] = p.service_ids; });
+        }
+        if (settingsData) {
+            settingsData.forEach(s => {
+                if (s.key === 'specialists') SELECTED_SPECIALISTS = s.value;
+                if (s.key === 'discount_range') DISCOUNT_LIMITS = s.value;
+            });
+        }
+
+        // 2. Initial State
+        selectedServices = new Set(PRESETS.starter);
+
+        // 3. UI Setup
+        renderSpecialistDropdown();
+        renderServices();
+        updateTotals();
+        initEventListeners();
+
+        // 4. Check Edit Mode
+        await checkEditMode();
+    } catch (err) {
+        console.error("Error initializing pricing:", err);
+    }
+}
+
+function renderSpecialistDropdown() {
+    const select = document.getElementById('closer-select');
+    if (!select) return;
+
+    select.innerHTML = SELECTED_SPECIALISTS.map(s => `<option value="${s}">${s}</option>`).join('');
+}
 
 async function checkEditMode() {
     const params = new URLSearchParams(window.location.search);
@@ -83,20 +103,24 @@ function renderServices() {
     if (!grid) return;
 
     grid.innerHTML = SERVICES.map(service => {
-        const titleStyle = service.image ? 'style="color: #ff9533; text-decoration: underline; cursor: pointer;"' : '';
-        const titleOnClick = service.image ? `onclick="event.stopPropagation(); viewServiceImage('${service.name}', '${service.image}')"` : '';
+        // If it has a link_url, use it, otherwise use image preview
+        const titleAction = service.link_url
+            ? `onclick="event.stopPropagation(); window.open('${service.link_url}', '_blank')"`
+            : (service.image ? `onclick="event.stopPropagation(); viewServiceImage('${service.name}', '${service.image}')"` : '');
+
+        const titleStyle = (service.link_url || service.image) ? 'style="color: #ff9533; text-decoration: underline; cursor: pointer;"' : '';
 
         return `
             <div class="service-card ${selectedServices.has(service.id) ? 'active' : ''}" data-id="${service.id}">
                 <div class="service-header">
-                    <h3 class="service-name" ${titleStyle} ${titleOnClick}>${service.name}</h3>
+                    <h3 class="service-name" ${titleStyle} ${titleAction}>${service.name}</h3>
                     <div class="service-toggle"></div>
                 </div>
                 <div class="service-pricing">
                     <div class="price-item"><span>Setup:</span> <span class="price-value">$${service.setup.toFixed(2)}</span></div>
                     <div class="price-item"><span>Monthly:</span> <span class="price-value">$${service.monthly.toFixed(2)}</span></div>
                 </div>
-                <p style="font-size: 0.75rem; color: #888; margin-top: 10px;">${service.description}</p>
+                <p style="font-size: 0.75rem; color: #888; margin-top: 10px;">${service.description || ''}</p>
             </div>
         `;
     }).join('');
@@ -157,6 +181,20 @@ function updateTotals() {
         }
     });
 
+    // Special Case: Online Orders Waiver logic
+    // We check IDs based on the original logic if they still exist in the dynamic list
+    const hasSocialMedia = Array.from(selectedServices).some(id => id === 'social_media' || id === 'smm');
+    const hasOnlineOrders = selectedServices.has('online_orders');
+
+    if (hasSocialMedia && hasOnlineOrders) {
+        // Find online orders service and subtract its monthly price from totals
+        const oo = SERVICES.find(s => s.id === 'online_orders');
+        if (oo) {
+            totalMonthly -= oo.monthly;
+            // Also update the summary display if needed, but for now we follow the memory's rule
+        }
+    }
+
     // Apply discounts
     const discSetupPerc = parseFloat(document.getElementById('discount-setup')?.value || 0) / 100;
     const discMonthlyPerc = parseFloat(document.getElementById('discount-monthly')?.value || 0) / 100;
@@ -174,7 +212,7 @@ function updateTotals() {
     // Highlight presets if matching
     document.querySelectorAll('.preset-btn').forEach(btn => {
         const presetId = btn.dataset.preset;
-        const presetServices = PRESETS[presetId];
+        const presetServices = PRESETS[presetId] || [];
         const isMatch = presetServices.length === selectedServices.size && presetServices.every(id => selectedServices.has(id));
         btn.classList.toggle('active', isMatch);
     });
@@ -211,7 +249,7 @@ function initEventListeners() {
             }
 
             const num = parseInt(val);
-            if (isNaN(num) || num < 1 || num > 18) {
+            if (isNaN(num) || num < DISCOUNT_LIMITS.min || num > DISCOUNT_LIMITS.max) {
                 // Trigger shake
                 input.classList.add('shake');
                 setTimeout(() => {
@@ -229,7 +267,7 @@ function initEventListeners() {
         btn.addEventListener('click', () => {
             const presetId = btn.dataset.preset;
             currentBaseTier = presetId.charAt(0).toUpperCase() + presetId.slice(1);
-            selectedServices = new Set(PRESETS[presetId]);
+            selectedServices = new Set(PRESETS[presetId] || []);
             renderServices();
             updateTotals();
         });
@@ -271,6 +309,14 @@ async function savePackage() {
                 baseMonthly += s.monthly;
             }
         });
+
+        // Online Orders Waiver logic in save
+        const hasSocialMedia = Array.from(selectedServices).some(id => id === 'social_media' || id === 'smm');
+        const hasOnlineOrders = selectedServices.has('online_orders');
+        if (hasSocialMedia && hasOnlineOrders) {
+            const oo = SERVICES.find(s => s.id === 'online_orders');
+            if (oo) baseMonthly -= oo.monthly;
+        }
 
         const discountSetup = parseFloat(document.getElementById('discount-setup').value || 0);
         const discountMonthly = parseFloat(document.getElementById('discount-monthly').value || 0);
