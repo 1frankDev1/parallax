@@ -9,6 +9,7 @@ let DISCOUNT_LIMITS = { min: 1, max: 18 };
 
 let selectedServices = new Set();
 let freeServices = new Set();
+let isFreeMonthly = false;
 let currentBaseTier = 'Starter';
 
 document.addEventListener('DOMContentLoaded', async () => {
@@ -82,6 +83,11 @@ async function checkEditMode() {
             // Populate services
             selectedServices = new Set(data.services.map(s => s.id));
             freeServices = new Set(data.services.filter(s => s.is_free).map(s => s.id));
+            isFreeMonthly = data.services.some(s => s.is_free_monthly);
+
+            const wheelchairToggle = document.getElementById('wheelchair-free-monthly');
+            if (wheelchairToggle) wheelchairToggle.checked = isFreeMonthly;
+
             // Try to get tier from top-level or from embedded services data
             currentBaseTier = data.package_type || (data.services && data.services.length > 0 ? data.services[0].tier : 'Starter');
 
@@ -227,14 +233,20 @@ function updateTotals() {
     const discMonthlyPerc = parseFloat(document.getElementById('discount-monthly')?.value || 0) / 100;
 
     const discountedSetup = totalSetup * (1 - discSetupPerc);
-    const discountedMonthly = totalMonthly * (1 - discMonthlyPerc);
+    let discountedMonthly = totalMonthly * (1 - discMonthlyPerc);
+
+    if (isFreeMonthly) {
+        discountedMonthly = 0;
+        const discMonthlyInput = document.getElementById('discount-monthly');
+        if (discMonthlyInput) discMonthlyInput.value = '';
+    }
 
     document.getElementById('total-setup').innerText = `$${discountedSetup.toLocaleString('en-US', {minimumFractionDigits: 2})}`;
     document.getElementById('total-monthly').innerText = `$${discountedMonthly.toLocaleString('en-US', {minimumFractionDigits: 2})}`;
 
     // Animations for stamps
     handleDiscountStamp('setup', discSetupPerc);
-    handleDiscountStamp('monthly', discMonthlyPerc);
+    handleDiscountStamp('monthly', isFreeMonthly ? 1 : discMonthlyPerc);
 
     // Highlight presets if matching
     document.querySelectorAll('.preset-btn').forEach(btn => {
@@ -263,6 +275,15 @@ function handleDiscountStamp(type, percentage) {
 }
 
 function initEventListeners() {
+    // Wheelchair toggle
+    const wheelchairToggle = document.getElementById('wheelchair-free-monthly');
+    if (wheelchairToggle) {
+        wheelchairToggle.addEventListener('change', (e) => {
+            isFreeMonthly = e.target.checked;
+            updateTotals();
+        });
+    }
+
     // Listen for discount changes
     ['discount-setup', 'discount-monthly'].forEach(id => {
         const input = document.getElementById(id);
@@ -364,6 +385,7 @@ async function savePackage() {
                 id: s.id,
                 name: s.name,
                 is_free: freeServices.has(s.id),
+                is_free_monthly: isFreeMonthly,
                 tier: currentBaseTier // Workaround: store tier inside services JSONB
             })),
             total_setup: parseFloat(finalSetup.toFixed(2)),
@@ -474,6 +496,12 @@ async function uploadSummaryImage(clientName, data) {
     ctx.fillText(`Specialist: ${data.closer || 'N/A'}`, 40, 150);
     ctx.fillText(`Date: ${new Date().toLocaleDateString()}`, 40, 175);
 
+    if (data.services.some(s => s.is_free_monthly)) {
+        ctx.fillStyle = '#28a745';
+        ctx.font = 'bold 16px Montserrat, Arial';
+        ctx.fillText('1 free monthy', 40, 200);
+    }
+
     ctx.strokeStyle = '#eeeeee';
     ctx.lineWidth = 1;
     ctx.beginPath();
@@ -521,7 +549,11 @@ async function uploadSummaryImage(clientName, data) {
     ctx.fillStyle = '#ff9533';
     ctx.font = 'bold 20px Montserrat, Arial';
     let monthlyText = `Monthly: $${data.total_monthly.toLocaleString()}`;
-    if (data.discount_monthly > 0) monthlyText += ` (-${data.discount_monthly}%)`;
+    if (data.services.some(s => s.is_free_monthly)) {
+        monthlyText += ` (-100%)`;
+    } else if (data.discount_monthly > 0) {
+        monthlyText += ` (-${data.discount_monthly}%)`;
+    }
     ctx.fillText(monthlyText, 65, boxY + 95);
 
     return new Promise((resolve, reject) => {
