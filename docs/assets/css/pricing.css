@@ -300,3 +300,61 @@
     color: white;
     border-color: var(--pricing-brand);
 }
+
+/* FREE Option Styles */
+.free-indicator {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    border: 2px solid #ccc;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-left: 10px;
+    background: white;
+    position: relative;
+    z-index: 5;
+}
+
+.free-indicator.is-free {
+    background: #28a745;
+    border-color: #28a745;
+}
+
+.free-indicator.is-free::after {
+    content: '✓';
+    color: white;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.stamp-free {
+    position: absolute;
+    top: 40px;
+    right: 10px;
+    background: #28a745;
+    color: white;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-weight: 900;
+    font-size: 0.7rem;
+    transform: rotate(15deg);
+    z-index: 10;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    display: none;
+    text-transform: uppercase;
+}
+
+.service-card.is-free-active {
+    border-color: #28a745 !important;
+}
+
+.service-card.is-free-active .stamp-free {
+    display: block;
+}
+
+.service-card.is-free-active .service-toggle {
+    background: #28a745 !important;
+}

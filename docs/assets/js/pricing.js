@@ -8,6 +8,7 @@ let SELECTED_SPECIALISTS = [];
 let DISCOUNT_LIMITS = { min: 1, max: 18 };
 
 let selectedServices = new Set();
+let freeServices = new Set();
 let currentBaseTier = 'Starter';
 
 document.addEventListener('DOMContentLoaded', async () => {
@@ -80,6 +81,7 @@ async function checkEditMode() {
 
             // Populate services
             selectedServices = new Set(data.services.map(s => s.id));
+            freeServices = new Set(data.services.filter(s => s.is_free).map(s => s.id));
             // Try to get tier from top-level or from embedded services data
             currentBaseTier = data.package_type || (data.services && data.services.length > 0 ? data.services[0].tier : 'Starter');
 
@@ -98,6 +100,18 @@ async function checkEditMode() {
     }
 }
 
+window.toggleFree = function(event, id) {
+    event.stopPropagation();
+    if (freeServices.has(id)) {
+        freeServices.delete(id);
+    } else {
+        freeServices.add(id);
+        selectedServices.add(id); // Auto-select if marked free
+    }
+    renderServices();
+    updateTotals();
+};
+
 function renderServices() {
     const grid = document.getElementById('services-grid');
     if (!grid) return;
@@ -105,11 +119,25 @@ function renderServices() {
     grid.innerHTML = SERVICES.map(service => {
         const titleAction = service.image ? `onclick="event.stopPropagation(); viewServiceImage('${service.name}', '${service.image}')"` : '';
         const titleStyle = service.image ? 'style="color: #ff9533; text-decoration: underline; cursor: pointer;"' : '';
+        const isSelected = selectedServices.has(service.id);
+        const isFree = freeServices.has(service.id);
+
+        const canBeFree = service.id === 'online_orders' || service.id === 'physical_marketing';
+        const freeToggleHtml = canBeFree ? `
+            <div class="free-indicator ${isFree ? 'is-free' : ''}"
+                 onclick="window.toggleFree(event, '${service.id}')"
+                 title="Mark as FREE">
+            </div>
+        ` : '';
 
         return `
-            <div class="service-card ${selectedServices.has(service.id) ? 'active' : ''}" data-id="${service.id}">
+            <div class="service-card ${isSelected ? 'active' : ''} ${isFree ? 'is-free-active' : ''}" data-id="${service.id}">
+                <div class="stamp-free">FREE</div>
                 <div class="service-header">
-                    <h3 class="service-name" ${titleStyle} ${titleAction}>${service.name}</h3>
+                    <div style="display: flex; align-items: center;">
+                        <h3 class="service-name" ${titleStyle} ${titleAction}>${service.name}</h3>
+                        ${freeToggleHtml}
+                    </div>
                     <div class="service-toggle"></div>
                 </div>
                 <div class="service-pricing">
@@ -127,10 +155,11 @@ function renderServices() {
             const id = card.dataset.id;
             if (selectedServices.has(id)) {
                 selectedServices.delete(id);
+                freeServices.delete(id); // Deselecting also removes FREE status
             } else {
                 selectedServices.add(id);
             }
-            card.classList.toggle('active');
+            renderServices(); // Re-render to update FREE indicators/stamps
             updateTotals();
         });
     });
@@ -162,15 +191,16 @@ function updateTotals() {
 
     SERVICES.forEach(service => {
         if (selectedServices.has(service.id)) {
-            let sPrice = service.setup;
-            let mPrice = service.monthly;
+            const isFree = freeServices.has(service.id);
+            let sPrice = isFree ? 0 : service.setup;
+            let mPrice = isFree ? 0 : service.monthly;
 
             totalSetup += sPrice;
             totalMonthly += mPrice;
 
             summaryList.innerHTML += `
                 <div class="selected-item-mini">
-                    <span>${service.name}</span>
+                    <span>${service.name} ${isFree ? '<b style="color:#28a745">(FREE)</b>' : ''}</span>
                     <span>$${mPrice.toFixed(2)}/mo</span>
                 </div>
             `;
@@ -181,8 +211,9 @@ function updateTotals() {
     // We check IDs based on the original logic if they still exist in the dynamic list
     const hasSocialMedia = Array.from(selectedServices).some(id => id === 'social_media' || id === 'smm');
     const hasOnlineOrders = selectedServices.has('online_orders');
+    const isOnlineOrdersManuallyFree = freeServices.has('online_orders');
 
-    if (hasSocialMedia && hasOnlineOrders) {
+    if (hasSocialMedia && hasOnlineOrders && !isOnlineOrdersManuallyFree) {
         // Find online orders service and subtract its monthly price from totals
         const oo = SERVICES.find(s => s.id === 'online_orders');
         if (oo) {
@@ -301,15 +332,18 @@ async function savePackage() {
         let baseMonthly = 0;
         SERVICES.forEach(s => {
             if (selectedServices.has(s.id)) {
-                baseSetup += s.setup;
-                baseMonthly += s.monthly;
+                const isFree = freeServices.has(s.id);
+                baseSetup += isFree ? 0 : s.setup;
+                baseMonthly += isFree ? 0 : s.monthly;
             }
         });
 
         // Online Orders Waiver logic in save
         const hasSocialMedia = Array.from(selectedServices).some(id => id === 'social_media' || id === 'smm');
         const hasOnlineOrders = selectedServices.has('online_orders');
-        if (hasSocialMedia && hasOnlineOrders) {
+        const isOnlineOrdersManuallyFree = freeServices.has('online_orders');
+
+        if (hasSocialMedia && hasOnlineOrders && !isOnlineOrdersManuallyFree) {
             const oo = SERVICES.find(s => s.id === 'online_orders');
             if (oo) baseMonthly -= oo.monthly;
         }
@@ -329,6 +363,7 @@ async function savePackage() {
             services: SERVICES.filter(s => selectedServices.has(s.id)).map(s => ({
                 id: s.id,
                 name: s.name,
+                is_free: freeServices.has(s.id),
                 tier: currentBaseTier // Workaround: store tier inside services JSONB
             })),
             total_setup: parseFloat(finalSetup.toFixed(2)),
@@ -456,7 +491,9 @@ async function uploadSummaryImage(clientName, data) {
     let y = 265;
     const maxServices = 14;
     data.services.slice(0, maxServices).forEach(s => {
-        ctx.fillText(`• ${s.name}`, 55, y);
+        let displayName = s.name;
+        if (s.is_free) displayName += ' (FREE)';
+        ctx.fillText(`• ${displayName}`, 55, y);
         y += 28;
     });
 
