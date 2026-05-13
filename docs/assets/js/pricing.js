@@ -499,7 +499,7 @@ async function uploadSummaryImage(clientName, data) {
     if (data.services.some(s => s.is_free_monthly)) {
         ctx.fillStyle = '#28a745';
         ctx.font = 'bold 16px Montserrat, Arial';
-        ctx.fillText('1 free monthy', 40, 200);
+        ctx.fillText('1 free monthly', 40, 200);
     }
 
     ctx.strokeStyle = '#eeeeee';
