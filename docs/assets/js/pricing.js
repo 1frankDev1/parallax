@@ -132,7 +132,7 @@ function renderServices() {
 
         return `
             <div class="service-card ${isSelected ? 'active' : ''} ${isFree ? 'is-free-active' : ''}" data-id="${service.id}">
-                <div class="stamp-free">FREE</div>
+                <div class="stamp-free ${isFree ? 'animate' : ''}">FREE</div>
                 <div class="service-header">
                     <div style="display: flex; align-items: center;">
                         <h3 class="service-name" ${titleStyle} ${titleAction}>${service.name}</h3>
