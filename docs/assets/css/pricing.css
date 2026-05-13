@@ -334,8 +334,13 @@
 
 .stamp-free {
     position: absolute;
-    top: 50%;
-    left: 50%;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    margin: auto;
+    width: fit-content;
+    height: fit-content;
     background: #ff0000;
     color: white;
     padding: 10px 30px;
@@ -343,7 +348,7 @@
     border-radius: 10px;
     font-weight: 900;
     font-size: 2.5rem;
-    transform: translate(-50%, -50%) rotate(-15deg) scale(5);
+    transform: rotate(-15deg) scale(5);
     opacity: 0;
     pointer-events: none;
     z-index: 100;
@@ -367,20 +372,20 @@
 
 @keyframes stamp-anim {
     0% {
-        transform: translate(-50%, -50%) rotate(-15deg) scale(5);
+        transform: rotate(-15deg) scale(5);
         opacity: 0;
     }
     100% {
-        transform: translate(-50%, -50%) rotate(-15deg) scale(1.1);
+        transform: rotate(-15deg) scale(1.2);
         opacity: 1;
     }
 }
 
 /* Wheelchair Toggle */
 .wheelchair-toggle-container {
-    margin: 20px 0;
+    margin: 10px 0;
     display: flex;
-    justify-content: center;
+    justify-content: flex-start;
 }
 .wheelchair-checkbox {
     cursor: pointer;
@@ -389,17 +394,17 @@
     display: none;
 }
 .wheelchair-icon-wrapper {
-    width: 60px;
-    height: 60px;
-    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    border-radius: 5px;
     background: #f0f0f0;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.8rem;
+    font-size: 1rem;
     transition: all 0.3s;
     color: #aaa;
-    box-shadow: inset 0 2px 5px rgba(0,0,0,0.05);
+    box-shadow: inset 0 1px 3px rgba(0,0,0,0.05);
 }
 .wheelchair-checkbox input:checked + .wheelchair-icon-wrapper {
     background: #28a745;
