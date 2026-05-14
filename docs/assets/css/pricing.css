@@ -453,7 +453,7 @@ body.reload-mode .preset-btn.active {
     color: #fff;
 }
 
-/* Glitch Transition Overlay */
+/* Professional Fade Transition Overlay */
 .shatter-overlay {
     position: fixed;
     top: 0;
@@ -462,37 +462,25 @@ body.reload-mode .preset-btn.active {
     height: 100vh;
     z-index: 9999;
     pointer-events: none;
-    background-color: transparent;
-    transition: background-color 0.3s;
+    background-color: #000;
+    opacity: 0;
+    transition: opacity 0.6s ease-in-out;
+}
+
+.shatter-overlay.visible {
+    opacity: 1;
+    pointer-events: all;
 }
 
 .shatter-overlay.hidden {
     display: none;
 }
 
-.glitch-active {
-    animation: screen-shake 0.4s infinite, glitch-colors 0.2s infinite;
+.fade-out-anim {
+    animation: fade-out-key 0.8s ease-in-out forwards;
 }
 
-@keyframes screen-shake {
-    0% { transform: translate(0,0); }
-    25% { transform: translate(5px, 5px); }
-    50% { transform: translate(-5px, 0); }
-    75% { transform: translate(0, -5px); }
-    100% { transform: translate(0,0); }
-}
-
-@keyframes glitch-colors {
-    0% { background-color: rgba(211, 47, 47, 0.2); }
-    50% { background-color: rgba(255, 149, 51, 0.2); }
-    100% { background-color: rgba(30, 30, 30, 0.2); }
-}
-
-.flash-red {
-    animation: flash-anim 0.8s cubic-bezier(0.19, 1, 0.22, 1) forwards;
-}
-
-@keyframes flash-anim {
-    0% { background-color: rgba(211, 47, 47, 1); opacity: 1; }
-    100% { background-color: transparent; opacity: 0; }
+@keyframes fade-out-key {
+    0% { opacity: 1; }
+    100% { opacity: 0; }
 }
