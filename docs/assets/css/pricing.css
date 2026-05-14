@@ -453,7 +453,7 @@ body.reload-mode .preset-btn.active {
     color: #fff;
 }
 
-/* Shatter Animation */
+/* Glitch Transition Overlay */
 .shatter-overlay {
     position: fixed;
     top: 0;
@@ -462,55 +462,37 @@ body.reload-mode .preset-btn.active {
     height: 100vh;
     z-index: 9999;
     pointer-events: none;
-    overflow: hidden;
+    background-color: transparent;
+    transition: background-color 0.3s;
 }
 
 .shatter-overlay.hidden {
     display: none;
 }
 
-.shard {
-    position: absolute;
-    background: rgba(255, 255, 255, 0.9);
-    clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
-    animation: shard-fall 1.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
-    box-shadow: 0 0 15px rgba(255, 255, 255, 0.8);
+.glitch-active {
+    animation: screen-shake 0.4s infinite, glitch-colors 0.2s infinite;
 }
 
-@keyframes shard-fall {
-    0% {
-        transform: translateY(0) rotate(0deg) scale(1.5);
-        opacity: 1;
-    }
-    100% {
-        transform: translateY(120vh) rotate(720deg) scale(0);
-        opacity: 0;
-    }
+@keyframes screen-shake {
+    0% { transform: translate(0,0); }
+    25% { transform: translate(5px, 5px); }
+    50% { transform: translate(-5px, 0); }
+    75% { transform: translate(0, -5px); }
+    100% { transform: translate(0,0); }
+}
+
+@keyframes glitch-colors {
+    0% { background-color: rgba(211, 47, 47, 0.2); }
+    50% { background-color: rgba(255, 149, 51, 0.2); }
+    100% { background-color: rgba(30, 30, 30, 0.2); }
 }
 
 .flash-red {
-    animation: flash-anim 0.5s ease-out;
+    animation: flash-anim 0.8s cubic-bezier(0.19, 1, 0.22, 1) forwards;
 }
 
 @keyframes flash-anim {
-    0% { background-color: rgba(211, 47, 47, 0.8); }
-    100% { background-color: transparent; }
-}
-
-.reload-secret-btn {
-    width: 6px;
-    height: 6px;
-    background: #ccc;
-    border: none;
-    border-radius: 50%;
-    opacity: 0.1;
-    cursor: pointer;
-    margin-left: 5px;
-    padding: 0;
-    align-self: center;
-    transition: opacity 0.3s;
-}
-
-.reload-secret-btn:hover {
-    opacity: 0.5;
+    0% { background-color: rgba(211, 47, 47, 1); opacity: 1; }
+    100% { background-color: transparent; opacity: 0; }
 }

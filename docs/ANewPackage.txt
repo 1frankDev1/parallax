@@ -2,21 +2,25 @@ INSTRUCCIONES PARA ACTIVAR EL PAQUETE "RELOAD"
 ============================================
 
 1. Ve a la página de pricing.html.
-2. En la sección de paquetes (Starter, Premium, Deluxe), verás un pequeño punto casi invisible a la derecha del botón "Deluxe".
-3. Haz clic en ese punto para activar el Modo Reload.
-4. Verás una animación de "quiebre" de pantalla con un flash rojo y la interfaz cambiará a un tono rojo/oscuro (Modo Especial).
-5. En este modo, los límites de descuento se eliminan (puedes poner 0% a 100%) y el paquete se guardará con el nombre "Reload".
+2. En la sección de paquetes (Starter, Premium, Deluxe), verás un botón vacío a la derecha de "Deluxe".
+3. Haz clic en ese botón para activar el Modo Reload.
+4. Verás una transición de "glitch" y la interfaz cambiará a un tono rojo/oscuro (Modo Especial).
+5. En este modo, los servicios se reordenan (Fisical Marketing Kit aparece después de SMM) y los límites de descuento se eliminan (0% a 100%).
 
-SQL PARA ACTUALIZAR SUPABASE
-============================
+SOLUCIÓN AL ERROR DE BASE DE DATOS (package_type)
+================================================
 
-Ejecuta el siguiente SQL en el editor de Supabase para registrar el preset oficialmente (necesario para la administración):
+Si deseas que el campo 'package_type' sea oficial en tu base de datos y evitar errores futuros al guardar, ejecuta este SQL en Supabase:
+
+ALTER TABLE pricing_packages ADD COLUMN IF NOT EXISTS package_type TEXT;
+
+Nota: El código actual ya ha sido ajustado para guardar el paquete correctamente (dentro del JSON de servicios) incluso si no ejecutas este SQL, para asegurar que no se pierda la información.
+
+SQL PARA ACTUALIZAR PRESETS
+===========================
+
+Ejecuta el siguiente SQL para que el preset aparezca en el panel de administración:
 
 INSERT INTO pricing_presets (tier, service_ids)
 VALUES ('reload', ARRAY['online_orders', 'local_listing', 'social_media', 'smm', 'physical_marketing'])
 ON CONFLICT (tier) DO UPDATE SET service_ids = EXCLUDED.service_ids;
-
-ADMINISTRACIÓN DESDE adminPricing.html
-======================================
-
-El paquete Reload ya ha sido integrado en la interfaz de adminPricing.html. Ahora puedes seleccionarlo en la lista de presets ("Reload") y cambiar sus servicios asignados como cualquier otro paquete.
