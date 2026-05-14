@@ -387,15 +387,21 @@ function activateReloadMode() {
 
     if (overlay) {
         overlay.classList.remove('hidden');
-        overlay.classList.add('glitch-active');
+        void overlay.offsetWidth; // Force reflow
+        overlay.classList.add('visible');
     }
 
+    // Wait for fade in to complete (0.6s transition in CSS)
     setTimeout(() => {
         document.body.classList.add('reload-mode');
+
         if (overlay) {
-            overlay.classList.remove('glitch-active');
-            overlay.classList.add('flash-red');
-            setTimeout(() => overlay.classList.add('hidden'), 800);
+            overlay.classList.remove('visible');
+            overlay.classList.add('fade-out-anim');
+            setTimeout(() => {
+                overlay.classList.add('hidden');
+                overlay.classList.remove('fade-out-anim');
+            }, 800);
         }
 
         currentBaseTier = 'Reload';
