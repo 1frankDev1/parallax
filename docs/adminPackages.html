@@ -495,7 +495,7 @@
                             <div style="display:flex; gap: 10px; align-items: center; margin-top: 4px;">
                                 <span class="tier-tag-small">${p.package_type || (p.services && p.services.length > 0 ? p.services[0].tier : 'Starter')}</span>
                                 ${p.closer ? `<span class="badge badge-info" style="font-size: 0.65rem; text-transform: uppercase;">${p.closer}</span>` : ''}
-                                ${p.services && p.services.some(s => s.is_free_monthly) ? `<span class="badge badge-success" style="font-size: 0.65rem; text-transform: uppercase; background-color: #28a745;">1 FREE MONTHLY</span>` : ''}
+                                ${p.services && p.services.some(s => s.is_free_monthly) ? `<span class="badge badge-success" style="font-size: 0.65rem; text-transform: uppercase; background-color: #28a745;">1 FREE MONTH</span>` : ''}
                             </div>
                             <div class="date-info" style="font-size: 0.8rem; color: #999; margin-top: 5px;"><i class="far fa-calendar-alt"></i> ${new Date(p.created_at).toLocaleDateString()}</div>
                         </div>
