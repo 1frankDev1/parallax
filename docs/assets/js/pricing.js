@@ -3,7 +3,7 @@ import { supabase } from "./supabase.js";
 
 // Dynamic Data from Supabase
 let SERVICES = [];
-let PRESETS = { starter: [], premium: [], deluxe: [] };
+let PRESETS = { starter: [], premium: [], deluxe: [], reload: [] };
 let SELECTED_SPECIALISTS = [];
 let DISCOUNT_LIMITS = { min: 1, max: 18 };
 
@@ -123,7 +123,22 @@ function renderServices() {
     const grid = document.getElementById('services-grid');
     if (!grid) return;
 
-    grid.innerHTML = SERVICES.map(service => {
+    let servicesToRender = [...SERVICES];
+    if (isReloadMode) {
+        // Find FMK and move it after SMM
+        const fmkIndex = servicesToRender.findIndex(s => s.id === 'physical_marketing');
+        if (fmkIndex > -1) {
+            const [fmk] = servicesToRender.splice(fmkIndex, 1);
+            const smmIndex = servicesToRender.findIndex(s => s.id === 'smm');
+            if (smmIndex > -1) {
+                servicesToRender.splice(smmIndex + 1, 0, fmk);
+            } else {
+                servicesToRender.push(fmk);
+            }
+        }
+    }
+
+    grid.innerHTML = servicesToRender.map(service => {
         const titleAction = service.image ? `onclick="event.stopPropagation(); viewServiceImage('${service.name}', '${service.image}')"` : '';
         const titleStyle = service.image ? 'style="color: #ff9533; text-decoration: underline; cursor: pointer;"' : '';
         const isSelected = selectedServices.has(service.id);
@@ -196,7 +211,21 @@ function updateTotals() {
 
     summaryList.innerHTML = '';
 
-    SERVICES.forEach(service => {
+    let servicesToProcess = [...SERVICES];
+    if (isReloadMode) {
+        const fmkIndex = servicesToProcess.findIndex(s => s.id === 'physical_marketing');
+        if (fmkIndex > -1) {
+            const [fmk] = servicesToProcess.splice(fmkIndex, 1);
+            const smmIndex = servicesToProcess.findIndex(s => s.id === 'smm');
+            if (smmIndex > -1) {
+                servicesToProcess.splice(smmIndex + 1, 0, fmk);
+            } else {
+                servicesToProcess.push(fmk);
+            }
+        }
+    }
+
+    servicesToProcess.forEach(service => {
         if (selectedServices.has(service.id)) {
             const isFree = freeServices.has(service.id);
             let sPrice = isFree ? 0 : service.setup;
@@ -356,38 +385,18 @@ function activateReloadMode() {
     isReloadMode = true;
     const overlay = document.getElementById('shatter-overlay');
 
-    // Add screen flash effect
-    const flash = document.createElement('div');
-    flash.className = 'shatter-overlay flash-red';
-    document.body.appendChild(flash);
-    setTimeout(() => flash.remove(), 500);
-
     if (overlay) {
         overlay.classList.remove('hidden');
-        overlay.innerHTML = '';
-        // Create more and bigger shards
-        for (let i = 0; i < 60; i++) {
-            const shard = document.createElement('div');
-            shard.className = 'shard';
-            shard.style.left = Math.random() * 100 + 'vw';
-            shard.style.top = Math.random() * 100 + 'vh';
-
-            const size = Math.random() * 100 + 30;
-            shard.style.width = size + 'px';
-            shard.style.height = size + 'px';
-
-            // Randomize colors slightly (white/red/orange)
-            const colors = ['#fff', '#ff9533', '#d32f2f'];
-            shard.style.background = colors[Math.floor(Math.random() * colors.length)];
-
-            shard.style.animationDelay = Math.random() * 0.3 + 's';
-            overlay.appendChild(shard);
-        }
+        overlay.classList.add('glitch-active');
     }
 
     setTimeout(() => {
         document.body.classList.add('reload-mode');
-        if (overlay) overlay.classList.add('hidden');
+        if (overlay) {
+            overlay.classList.remove('glitch-active');
+            overlay.classList.add('flash-red');
+            setTimeout(() => overlay.classList.add('hidden'), 800);
+        }
 
         currentBaseTier = 'Reload';
         const quoteTitle = document.querySelector('.quote-title');
@@ -407,7 +416,7 @@ function activateReloadMode() {
             color: '#fff',
             confirmButtonColor: '#d32f2f'
         });
-    }, 1200);
+    }, 1000);
 }
 
 async function savePackage() {
@@ -463,7 +472,7 @@ async function savePackage() {
             closer: document.getElementById('closer-select').value,
             discount_setup: discountSetup,
             discount_monthly: discountMonthly,
-            package_type: isReloadMode ? 'Reload' : currentBaseTier,
+            // package_type: isReloadMode ? 'Reload' : currentBaseTier, // Removed to avoid schema error
             services: SERVICES.filter(s => selectedServices.has(s.id)).map(s => ({
                 id: s.id,
                 name: s.name,
