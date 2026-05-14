@@ -411,3 +411,78 @@
     color: white;
     box-shadow: 0 5px 15px rgba(40, 167, 69, 0.3);
 }
+
+/* Reload Mode Theme */
+body.reload-mode {
+    --pricing-brand: #d32f2f;
+    --pricing-bg: #111;
+    --pricing-card-bg: rgba(30, 30, 30, 0.8);
+    --pricing-text: #eee;
+    --pricing-glass-border: rgba(255, 255, 255, 0.1);
+    background-color: #000;
+}
+
+body.reload-mode .clean-pricing.dark {
+    background-color: #111 !important;
+}
+
+body.reload-mode .quote-summary {
+    background: #1a1a1a;
+    color: #fff;
+    box-shadow: 0 10px 40px rgba(211, 47, 47, 0.2);
+}
+
+body.reload-mode .service-name {
+    color: #fff;
+}
+
+body.reload-mode .form-control-custom {
+    background: #222;
+    border-color: #444;
+    color: #fff;
+}
+
+body.reload-mode .preset-btn {
+    background: #222;
+    color: #888;
+    border-color: #444;
+}
+
+body.reload-mode .preset-btn.active {
+    background: var(--pricing-brand);
+    color: #fff;
+}
+
+/* Shatter Animation */
+.shatter-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 9999;
+    pointer-events: none;
+    overflow: hidden;
+}
+
+.shatter-overlay.hidden {
+    display: none;
+}
+
+.shard {
+    position: absolute;
+    background: rgba(255, 255, 255, 0.9);
+    clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+    animation: shard-fall 1.2s ease-in forwards;
+}
+
+@keyframes shard-fall {
+    0% {
+        transform: translateY(0) rotate(0deg) scale(1);
+        opacity: 1;
+    }
+    100% {
+        transform: translateY(120vh) rotate(360deg) scale(0.5);
+        opacity: 0;
+    }
+}

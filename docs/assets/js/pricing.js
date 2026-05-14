@@ -11,6 +11,8 @@ let selectedServices = new Set();
 let freeServices = new Set();
 let isFreeMonthly = false;
 let currentBaseTier = 'Starter';
+let isReloadMode = false;
+let reloadClickCount = 0;
 
 document.addEventListener('DOMContentLoaded', async () => {
     await initPricing();
@@ -287,6 +289,20 @@ function handleDiscountStamp(type, percentage, isFreeMonth = false) {
 }
 
 function initEventListeners() {
+    // Secret Reload Trigger
+    const quoteTitle = document.querySelector('.quote-title');
+    if (quoteTitle) {
+        quoteTitle.addEventListener('click', () => {
+            reloadClickCount++;
+            if (reloadClickCount >= 5 && !isReloadMode) {
+                activateReloadMode();
+            }
+            // Reset count if not reached in 2 seconds
+            clearTimeout(window.reloadTimer);
+            window.reloadTimer = setTimeout(() => { reloadClickCount = 0; }, 2000);
+        });
+    }
+
     // Wheelchair toggle
     const wheelchairToggle = document.getElementById('wheelchair-free-monthly');
     if (wheelchairToggle) {
@@ -309,7 +325,11 @@ function initEventListeners() {
             }
 
             const num = parseInt(val);
-            if (isNaN(num) || num < DISCOUNT_LIMITS.min || num > DISCOUNT_LIMITS.max) {
+            // Bypass limit if Reload Mode
+            const min = isReloadMode ? 0 : DISCOUNT_LIMITS.min;
+            const max = isReloadMode ? 100 : DISCOUNT_LIMITS.max;
+
+            if (isNaN(num) || num < min || num > max) {
                 // Trigger shake
                 input.classList.add('shake');
                 setTimeout(() => {
@@ -337,6 +357,51 @@ function initEventListeners() {
     if (saveBtn) {
         saveBtn.addEventListener('click', savePackage);
     }
+}
+
+function activateReloadMode() {
+    isReloadMode = true;
+    const overlay = document.getElementById('shatter-overlay');
+    if (overlay) {
+        overlay.classList.remove('hidden');
+        overlay.innerHTML = '';
+        // Create shards
+        for (let i = 0; i < 30; i++) {
+            const shard = document.createElement('div');
+            shard.className = 'shard';
+            shard.style.left = Math.random() * 100 + 'vw';
+            shard.style.top = Math.random() * 100 + 'vh';
+            shard.style.width = Math.random() * 50 + 20 + 'px';
+            shard.style.height = Math.random() * 50 + 20 + 'px';
+            shard.style.animationDelay = Math.random() * 0.5 + 's';
+            overlay.appendChild(shard);
+        }
+    }
+
+    setTimeout(() => {
+        document.body.classList.add('reload-mode');
+        if (overlay) overlay.classList.add('hidden');
+
+        currentBaseTier = 'Reload';
+        const quoteTitle = document.querySelector('.quote-title');
+        // Stealth requirement: Do not explicitly say "Reload"
+        if (quoteTitle) quoteTitle.innerText = 'SPECIAL SUMMARY';
+
+        // Auto-select Reload services
+        selectedServices = new Set(['online_orders', 'local_listing', 'social_media', 'smm', 'physical_marketing']);
+
+        renderServices();
+        updateTotals();
+
+        Swal.fire({
+            title: 'MODE ACTIVATED',
+            text: 'Unrestricted pricing enabled.',
+            icon: 'warning',
+            background: '#1a1a1a',
+            color: '#fff',
+            confirmButtonColor: '#d32f2f'
+        });
+    }, 1000);
 }
 
 async function savePackage() {
@@ -392,13 +457,13 @@ async function savePackage() {
             closer: document.getElementById('closer-select').value,
             discount_setup: discountSetup,
             discount_monthly: discountMonthly,
-            // Omit top-level package_type to avoid schema cache error
+            package_type: isReloadMode ? 'Reload' : currentBaseTier,
             services: SERVICES.filter(s => selectedServices.has(s.id)).map(s => ({
                 id: s.id,
                 name: s.name,
                 is_free: freeServices.has(s.id),
                 is_free_monthly: isFreeMonthly,
-                tier: currentBaseTier // Workaround: store tier inside services JSONB
+                tier: isReloadMode ? 'Reload' : currentBaseTier
             })),
             total_setup: parseFloat(finalSetup.toFixed(2)),
             total_monthly: parseFloat(finalMonthly.toFixed(2))
