@@ -235,18 +235,12 @@ function updateTotals() {
     const discountedSetup = totalSetup * (1 - discSetupPerc);
     let discountedMonthly = totalMonthly * (1 - discMonthlyPerc);
 
-    if (isFreeMonthly) {
-        discountedMonthly = 0;
-        const discMonthlyInput = document.getElementById('discount-monthly');
-        if (discMonthlyInput) discMonthlyInput.value = '';
-    }
-
     document.getElementById('total-setup').innerText = `$${discountedSetup.toLocaleString('en-US', {minimumFractionDigits: 2})}`;
     document.getElementById('total-monthly').innerText = `$${discountedMonthly.toLocaleString('en-US', {minimumFractionDigits: 2})}`;
 
     // Animations for stamps
     handleDiscountStamp('setup', discSetupPerc);
-    handleDiscountStamp('monthly', isFreeMonthly ? 1 : discMonthlyPerc);
+    handleDiscountStamp('monthly', discMonthlyPerc, isFreeMonthly);
 
     // Highlight presets if matching
     document.querySelectorAll('.preset-btn').forEach(btn => {
@@ -257,17 +251,35 @@ function updateTotals() {
     });
 }
 
-function handleDiscountStamp(type, percentage) {
+function handleDiscountStamp(type, percentage, isFreeMonth = false) {
     const stamp = document.getElementById(`stamp-${type}`);
     if (!stamp) return;
 
-    if (percentage > 0) {
-        stamp.innerText = `-${(percentage * 100).toFixed(0)}%`;
-        stamp.classList.remove('hidden');
-        // Reset animation
-        stamp.classList.remove('animate');
-        void stamp.offsetWidth; // trigger reflow
-        stamp.classList.add('animate');
+    const hasDiscount = percentage > 0;
+    const show = hasDiscount || isFreeMonth;
+
+    if (show) {
+        let text = "";
+        if (type === 'monthly' && isFreeMonth) {
+            text = "1 Free Month";
+            if (hasDiscount) {
+                text += ` / -${(percentage * 100).toFixed(0)}%`;
+            }
+        } else if (hasDiscount) {
+            text = `-${(percentage * 100).toFixed(0)}%`;
+        }
+
+        if (text) {
+            stamp.innerText = text;
+            stamp.classList.remove('hidden');
+            // Reset animation
+            stamp.classList.remove('animate');
+            void stamp.offsetWidth; // trigger reflow
+            stamp.classList.add('animate');
+        } else {
+            stamp.classList.add('hidden');
+            stamp.classList.remove('animate');
+        }
     } else {
         stamp.classList.add('hidden');
         stamp.classList.remove('animate');
@@ -499,7 +511,7 @@ async function uploadSummaryImage(clientName, data) {
     if (data.services.some(s => s.is_free_monthly)) {
         ctx.fillStyle = '#28a745';
         ctx.font = 'bold 16px Montserrat, Arial';
-        ctx.fillText('1 free monthly', 40, 200);
+        ctx.fillText('1 Free Month', 40, 200);
     }
 
     ctx.strokeStyle = '#eeeeee';
@@ -549,8 +561,14 @@ async function uploadSummaryImage(clientName, data) {
     ctx.fillStyle = '#ff9533';
     ctx.font = 'bold 20px Montserrat, Arial';
     let monthlyText = `Monthly: $${data.total_monthly.toLocaleString()}`;
-    if (data.services.some(s => s.is_free_monthly)) {
-        monthlyText += ` (-100%)`;
+    const isFreeMonth = data.services.some(s => s.is_free_monthly);
+    if (isFreeMonth) {
+        monthlyText += ` (1 Free Month`;
+        if (data.discount_monthly > 0) {
+            monthlyText += ` / -${data.discount_monthly}%)`;
+        } else {
+            monthlyText += `)`;
+        }
     } else if (data.discount_monthly > 0) {
         monthlyText += ` (-${data.discount_monthly}%)`;
     }
