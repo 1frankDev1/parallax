@@ -2,14 +2,15 @@ INSTRUCCIONES PARA ACTIVAR EL PAQUETE "RELOAD"
 ============================================
 
 1. Ve a la página de pricing.html.
-2. En la barra lateral derecha (Package Summary), haz clic 5 veces seguidas en el título "Package Summary".
-3. Verás una animación de "quiebre" de pantalla y la interfaz cambiará a un tono rojo/oscuro (Modo Reload).
-4. En este modo, los límites de descuento se eliminan (puedes poner 0% a 100%) y el paquete se guardará con el nombre "Reload".
+2. En la sección de paquetes (Starter, Premium, Deluxe), verás un pequeño punto casi invisible a la derecha del botón "Deluxe".
+3. Haz clic en ese punto para activar el Modo Reload.
+4. Verás una animación de "quiebre" de pantalla con un flash rojo y la interfaz cambiará a un tono rojo/oscuro (Modo Especial).
+5. En este modo, los límites de descuento se eliminan (puedes poner 0% a 100%) y el paquete se guardará con el nombre "Reload".
 
 SQL PARA ACTUALIZAR SUPABASE
 ============================
 
-Ejecuta el siguiente SQL en el editor de Supabase para registrar el preset oficialmente (aunque el sistema lo activará internamente):
+Ejecuta el siguiente SQL en el editor de Supabase para registrar el preset oficialmente (necesario para la administración):
 
 INSERT INTO pricing_presets (tier, service_ids)
 VALUES ('reload', ARRAY['online_orders', 'local_listing', 'social_media', 'smm', 'physical_marketing'])
@@ -18,10 +19,4 @@ ON CONFLICT (tier) DO UPDATE SET service_ids = EXCLUDED.service_ids;
 ADMINISTRACIÓN DESDE adminPricing.html
 ======================================
 
-Para que el paquete Reload aparezca en la lista de presets de adminPricing.html y puedas cambiar sus servicios manualmente:
-
-1. Busca en docs/adminPricing.html la sección de "preset-selector-tabs".
-2. Agrega este botón al final de esa lista:
-   <button class="preset-tab-btn" data-tier="reload">Reload</button>
-
-3. En docs/assets/js/adminPricing.js, el sistema ya carga todos los presets dinámicamente, así que al agregar el botón y ejecutar el SQL anterior, podrás gestionarlo como cualquier otro paquete.
+El paquete Reload ya ha sido integrado en la interfaz de adminPricing.html. Ahora puedes seleccionarlo en la lista de presets ("Reload") y cambiar sus servicios asignados como cualquier otro paquete.

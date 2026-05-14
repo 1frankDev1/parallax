@@ -12,7 +12,6 @@ let freeServices = new Set();
 let isFreeMonthly = false;
 let currentBaseTier = 'Starter';
 let isReloadMode = false;
-let reloadClickCount = 0;
 
 document.addEventListener('DOMContentLoaded', async () => {
     await initPricing();
@@ -290,16 +289,10 @@ function handleDiscountStamp(type, percentage, isFreeMonth = false) {
 
 function initEventListeners() {
     // Secret Reload Trigger
-    const quoteTitle = document.querySelector('.quote-title');
-    if (quoteTitle) {
-        quoteTitle.addEventListener('click', () => {
-            reloadClickCount++;
-            if (reloadClickCount >= 5 && !isReloadMode) {
-                activateReloadMode();
-            }
-            // Reset count if not reached in 2 seconds
-            clearTimeout(window.reloadTimer);
-            window.reloadTimer = setTimeout(() => { reloadClickCount = 0; }, 2000);
+    const reloadBtn = document.getElementById('btn-reload-secret');
+    if (reloadBtn) {
+        reloadBtn.addEventListener('click', () => {
+            if (!isReloadMode) activateReloadMode();
         });
     }
 
@@ -362,18 +355,32 @@ function initEventListeners() {
 function activateReloadMode() {
     isReloadMode = true;
     const overlay = document.getElementById('shatter-overlay');
+
+    // Add screen flash effect
+    const flash = document.createElement('div');
+    flash.className = 'shatter-overlay flash-red';
+    document.body.appendChild(flash);
+    setTimeout(() => flash.remove(), 500);
+
     if (overlay) {
         overlay.classList.remove('hidden');
         overlay.innerHTML = '';
-        // Create shards
-        for (let i = 0; i < 30; i++) {
+        // Create more and bigger shards
+        for (let i = 0; i < 60; i++) {
             const shard = document.createElement('div');
             shard.className = 'shard';
             shard.style.left = Math.random() * 100 + 'vw';
             shard.style.top = Math.random() * 100 + 'vh';
-            shard.style.width = Math.random() * 50 + 20 + 'px';
-            shard.style.height = Math.random() * 50 + 20 + 'px';
-            shard.style.animationDelay = Math.random() * 0.5 + 's';
+
+            const size = Math.random() * 100 + 30;
+            shard.style.width = size + 'px';
+            shard.style.height = size + 'px';
+
+            // Randomize colors slightly (white/red/orange)
+            const colors = ['#fff', '#ff9533', '#d32f2f'];
+            shard.style.background = colors[Math.floor(Math.random() * colors.length)];
+
+            shard.style.animationDelay = Math.random() * 0.3 + 's';
             overlay.appendChild(shard);
         }
     }
@@ -394,14 +401,13 @@ function activateReloadMode() {
         updateTotals();
 
         Swal.fire({
-            title: 'MODE ACTIVATED',
-            text: 'Unrestricted pricing enabled.',
+            title: 'MODE RELOAD ACTIVATED',
             icon: 'warning',
             background: '#1a1a1a',
             color: '#fff',
             confirmButtonColor: '#d32f2f'
         });
-    }, 1000);
+    }, 1200);
 }
 
 async function savePackage() {
