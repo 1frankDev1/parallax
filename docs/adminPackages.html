@@ -471,16 +471,36 @@
 
         async function fetchData() {
             try {
+                const sessionStr = localStorage.getItem('session');
+                const session = sessionStr ? JSON.parse(sessionStr) : null;
+                const userRole = session ? session.role : '';
+                const username = session ? session.user : '';
+
                 const { data, error } = await supabase.from('pricing_packages').select('*').order('created_at', { ascending: false });
                 if (error) throw error;
-                quoteStore = data;
-                renderCards(data);
+
+                // Filter data based on role
+                let filteredData = data;
+                if (userRole && !userRole.startsWith('Admin')) {
+                    filteredData = data.filter(p => {
+                        // A package belongs to the user if any service metadata has their username in created_by
+                        return p.services && p.services.some(s => s.created_by === username);
+                    });
+                }
+
+                quoteStore = filteredData;
+                renderCards(filteredData);
             } catch (err) {
                 document.getElementById('packages-grid').innerHTML = `<div class="alert alert-danger col-12">Error: ${err.message}</div>`;
             }
         }
 
         function renderCards(pkgs) {
+            const sessionStr = localStorage.getItem('session');
+            const session = sessionStr ? JSON.parse(sessionStr) : null;
+            const userRole = session ? session.role : '';
+            const isAdmin = userRole && userRole.startsWith('Admin');
+
             const container = document.getElementById('packages-grid');
             if (pkgs.length === 0) {
                 container.innerHTML = `<div class="empty-state-card"><i class="fas fa-box-open fa-4x mb-4"></i><h3>No Packages Available</h3></div>`;
@@ -503,9 +523,11 @@
                             <div class="btn-mini-utility" onclick="onEditPackage('${p.id}')" title="Edit">
                                 <i class="fas fa-edit"></i>
                             </div>
+                            ${isAdmin ? `
                             <div class="btn-mini-utility btn-mini-delete" onclick="onDeletePackage('${p.id}')" title="Delete">
                                 <i class="fas fa-trash-alt"></i>
                             </div>
+                            ` : ''}
                         </div>
                     </div>
 
@@ -580,6 +602,15 @@
         }
 
         window.onDeletePackage = async function(id) {
+            const sessionStr = localStorage.getItem('session');
+            const session = sessionStr ? JSON.parse(sessionStr) : null;
+            const userRole = session ? session.role : '';
+
+            if (!userRole || !userRole.startsWith('Admin')) {
+                Swal.fire('Access Denied', 'You do not have permission to delete packages.', 'error');
+                return;
+            }
+
             const confirm = await Swal.fire({
                 title: 'Confirm Deletion',
                 text: "Are you sure you want to delete this quote record permanently?",
