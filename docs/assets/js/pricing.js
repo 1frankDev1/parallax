@@ -86,6 +86,13 @@ async function checkEditMode() {
             freeServices = new Set(data.services.filter(s => s.is_free).map(s => s.id));
             isFreeMonthly = data.services.some(s => s.is_free_monthly);
 
+            // Capture original creator if exists
+            if (data.services && data.services.length > 0 && data.services[0].created_by) {
+                window.originalCreator = data.services[0].created_by;
+            } else {
+                window.originalCreator = null;
+            }
+
             const wheelchairToggle = document.getElementById('wheelchair-free-monthly');
             if (wheelchairToggle) wheelchairToggle.checked = isFreeMonthly;
 
@@ -446,6 +453,10 @@ async function savePackage() {
     btn.disabled = true;
 
     try {
+        const sessionStr = localStorage.getItem('session');
+        const session = sessionStr ? JSON.parse(sessionStr) : null;
+        const currentUser = session ? session.user : 'Unknown';
+
         // Calculate totals from scratch to ensure accuracy
         let baseSetup = 0;
         let baseMonthly = 0;
@@ -484,7 +495,8 @@ async function savePackage() {
                 name: s.name,
                 is_free: freeServices.has(s.id),
                 is_free_monthly: isFreeMonthly,
-                tier: isReloadMode ? 'Reload' : currentBaseTier
+                tier: isReloadMode ? 'Reload' : currentBaseTier,
+                created_by: window.currentEditId ? (window.originalCreator || currentUser) : currentUser
             })),
             total_setup: parseFloat(finalSetup.toFixed(2)),
             total_monthly: parseFloat(finalMonthly.toFixed(2))
