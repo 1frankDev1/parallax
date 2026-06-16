@@ -260,7 +260,8 @@
 
     <div id="notification" class="notification"></div>
 
-    <script src="./assets/js/badge.js"></script>
+    <script src="./assets/js/utils-legacy.js"></script>
+<script src="./assets/js/badge.js"></script>
     <script src="https://menutech.xyz/menutechUI.min.js"></script>
     <script src="./assets/js/renderer.js"></script>
     <script>
@@ -348,6 +349,31 @@
                 fileInput.value = "";
             }
 
+                                        } else {
+                                if (height > maxHeight) {
+                                    width *= maxHeight / height;
+                                    height = maxHeight;
+                                }
+                            }
+
+                            canvas.width = width;
+                            canvas.height = height;
+                            const ctx = canvas.getContext('2d');
+                            ctx.drawImage(img, 0, 0, width, height);
+
+                            canvas.toBlob((blob) => {
+                                const resizedFile = new File([blob], file.name, {
+                                    type: file.type,
+                                    lastModified: Date.now()
+                                });
+                                resolve(resizedFile);
+                            }, file.type);
+                        };
+                    };
+                    reader.onerror = (error) => reject(error);
+                });
+            }
+
             // --- Cloudinary ---
             async function uploadToCloudinary(file) {
                 const cloudName = 'dzklt0a5u';
@@ -355,18 +381,26 @@
                 const uploadPreset = 'Menutech'.trim();
                 const url = `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`;
 
+                let fileToUpload = file;
+                if (file.type.startsWith('image/')) {
+                    try {
+                        fileToUpload = await resizeImage(file);
+                    } catch (e) {
+                        console.warn("Failed to resize image, uploading original", e);
+                    }
+                }
+
                 console.log('Iniciando subida a Cloudinary...', {
                     cloudName,
                     uploadPreset,
-                    fileName: file.name,
-                    fileSize: file.size,
-                    fileType: file.type
+                    fileName: fileToUpload.name,
+                    fileSize: fileToUpload.size,
+                    fileType: fileToUpload.type
                 });
 
                 const formData = new FormData();
-                formData.append('file', file);
+                formData.append('file', fileToUpload);
                 formData.append('upload_preset', uploadPreset);
-                formData.append('transformation', 'w_500,h_500,c_limit');
 
                 try {
                     const response = await fetch(url, {

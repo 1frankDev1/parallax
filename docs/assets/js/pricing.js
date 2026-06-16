@@ -554,10 +554,11 @@ async function savePackage() {
 
 async function uploadSummaryImage(clientName, data) {
     const canvas = document.createElement('canvas');
-    // Reduced from 600x750 to 400x500 to fit within 500x500 and keep 4:5 aspect ratio
+    // Original dimensions were 600x750.
+    // Scaling by 0.666 results in 400x500, which fits the 500x500 limit while preserving aspect ratio.
     const scale = 0.666;
-    canvas.width = 400;
-    canvas.height = 500;
+    canvas.width = 600 * scale;
+    canvas.height = 750 * scale;
     const ctx = canvas.getContext('2d');
 
     // Load Logo with timeout to prevent hanging
@@ -578,88 +579,91 @@ async function uploadSummaryImage(clientName, data) {
         console.warn("Logo failed to load or timed out, continuing without it.", e);
     }
 
-    // Background
-    ctx.fillStyle = '#ffffff';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    // Apply scaling to the context once
+    ctx.scale(scale, scale);
 
-    // Draw Logo in header (Centered)
+    // Background (using original coordinates)
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, 600, 750);
+
+    // Draw Logo in header (Centered) (using original coordinates)
     if (logoLoaded) {
         const logoRatio = logo.width / logo.height;
-        const logoH = 50 * scale;
+        const logoH = 50;
         const logoW = logoH * logoRatio;
-        const logoX = (canvas.width - logoW) / 2;
-        ctx.drawImage(logo, logoX, 15 * scale, logoW, logoH);
+        const logoX = (600 - logoW) / 2;
+        ctx.drawImage(logo, logoX, 15, logoW, logoH);
     } else {
         // Fallback: Just orange line if logo fails
         ctx.strokeStyle = '#ff9533';
-        ctx.lineWidth = 2 * scale;
+        ctx.lineWidth = 2;
         ctx.beginPath();
-        ctx.moveTo(canvas.width / 2 - (50 * scale), 40 * scale);
-        ctx.lineTo(canvas.width / 2 + (50 * scale), 40 * scale);
+        ctx.moveTo(300 - 50, 40);
+        ctx.lineTo(300 + 50, 40);
         ctx.stroke();
     }
 
-    // Header Content
+    // Header Content (using original coordinates)
     ctx.fillStyle = '#111111';
-    ctx.font = `500 ${18 * scale}px Montserrat, Arial`;
+    ctx.font = '500 18px Montserrat, Arial';
     const packageTier = data.services && data.services.length > 0 ? data.services[0].tier : 'Starter';
-    ctx.fillText(`Client: ${clientName}`, 40 * scale, 100 * scale);
-    ctx.fillText(`Package: ${packageTier}`, 40 * scale, 125 * scale);
-    ctx.fillText(`Specialist: ${data.closer || 'N/A'}`, 40 * scale, 150 * scale);
-    ctx.fillText(`Date: ${new Date().toLocaleDateString()}`, 40 * scale, 175 * scale);
+    ctx.fillText(`Client: ${clientName}`, 40, 100);
+    ctx.fillText(`Package: ${packageTier}`, 40, 125);
+    ctx.fillText(`Specialist: ${data.closer || 'N/A'}`, 40, 150);
+    ctx.fillText(`Date: ${new Date().toLocaleDateString()}`, 40, 175);
 
     if (data.services.some(s => s.is_free_monthly)) {
         ctx.fillStyle = '#28a745';
-        ctx.font = `bold ${16 * scale}px Montserrat, Arial`;
-        ctx.fillText('1 Free Month', 40 * scale, 200 * scale);
+        ctx.font = 'bold 16px Montserrat, Arial';
+        ctx.fillText('1 Free Month', 40, 200);
     }
 
     ctx.strokeStyle = '#eeeeee';
-    ctx.lineWidth = 1 * scale;
+    ctx.lineWidth = 1;
     ctx.beginPath();
-    ctx.moveTo(40 * scale, 190 * scale);
-    ctx.lineTo(560 * scale, 190 * scale);
+    ctx.moveTo(40, 190);
+    ctx.lineTo(560, 190);
     ctx.stroke();
 
     // Services
     ctx.fillStyle = '#333333';
-    ctx.font = `bold ${22 * scale}px Montserrat, Arial`;
-    ctx.fillText('Selected Services:', 40 * scale, 230 * scale);
+    ctx.font = 'bold 22px Montserrat, Arial';
+    ctx.fillText('Selected Services:', 40, 230);
 
-    ctx.font = `500 ${16 * scale}px Montserrat, Arial`;
+    ctx.font = '500 16px Montserrat, Arial';
     ctx.fillStyle = '#666666';
-    let y = 265 * scale;
+    let y = 265;
     const maxServices = 14;
     data.services.slice(0, maxServices).forEach(s => {
         let displayName = s.name;
         if (s.is_free) displayName += ' (FREE)';
-        ctx.fillText(`• ${displayName}`, 55 * scale, y);
-        y += 28 * scale;
+        ctx.fillText(`• ${displayName}`, 55, y);
+        y += 28;
     });
 
     // Totals Box (Light Gray)
-    const boxY = 600 * scale;
+    const boxY = 600;
     ctx.fillStyle = '#f7f7f7';
     if (ctx.roundRect) {
         ctx.beginPath();
-        ctx.roundRect(40 * scale, boxY, 520 * scale, 110 * scale, 10 * scale);
+        ctx.roundRect(40, boxY, 520, 110, 10);
         ctx.fill();
     } else {
-        ctx.fillRect(40 * scale, boxY, 520 * scale, 110 * scale);
+        ctx.fillRect(40, boxY, 520, 110);
     }
 
     ctx.fillStyle = '#333333';
-    ctx.font = `bold ${18 * scale}px Montserrat, Arial`;
-    ctx.fillText('TOTALS', 65 * scale, boxY + (35 * scale));
+    ctx.font = 'bold 18px Montserrat, Arial';
+    ctx.fillText('TOTALS', 65, boxY + 35);
 
-    ctx.font = `600 ${16 * scale}px Montserrat, Arial`;
+    ctx.font = '600 16px Montserrat, Arial';
     ctx.fillStyle = '#555555';
     let setupText = `Setup: $${data.total_setup.toLocaleString()}`;
     if (data.discount_setup > 0) setupText += ` (-${data.discount_setup}%)`;
-    ctx.fillText(setupText, 65 * scale, boxY + (65 * scale));
+    ctx.fillText(setupText, 65, boxY + 65);
 
     ctx.fillStyle = '#ff9533';
-    ctx.font = `bold ${20 * scale}px Montserrat, Arial`;
+    ctx.font = 'bold 20px Montserrat, Arial';
     let monthlyText = `Monthly: $${data.total_monthly.toLocaleString()}`;
     const isFreeMonth = data.services.some(s => s.is_free_monthly);
     if (isFreeMonth) {
@@ -672,14 +676,13 @@ async function uploadSummaryImage(clientName, data) {
     } else if (data.discount_monthly > 0) {
         monthlyText += ` (-${data.discount_monthly}%)`;
     }
-    ctx.fillText(monthlyText, 65 * scale, boxY + (95 * scale));
+    ctx.fillText(monthlyText, 65, boxY + 95);
 
     return new Promise((resolve, reject) => {
         canvas.toBlob(async (blob) => {
             const formData = new FormData();
             formData.append('file', blob, 'quote.png');
             formData.append('upload_preset', MT_CONFIG.CLOUDINARY.UPLOAD_PRESET);
-            formData.append('transformation', 'w_500,h_500,c_limit');
 
             try {
                 const controller = new AbortController();
