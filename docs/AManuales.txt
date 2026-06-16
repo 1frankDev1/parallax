@@ -4,7 +4,7 @@ Confirmación de Funcionamiento - Manuales Menutech
 Se han realizado las siguientes mejoras y verificaciones en el sistema de manuales:
 
 1. Subida a Cloudinary:
-   - Todos los archivos subidos desde 'adminManual.html' se envían ahora a Cloudinary (Cloud Name: dbbjxhvz5, Preset: Tragalero).
+   - Todos los archivos subidos desde 'adminManual.html' se envían ahora a Cloudinary (Cloud Name: dzklt0a5u, Preset: Menutech).
    - El sistema detecta automáticamente si es Imagen, Video o PDF.
 
 2. Referencia en Base de Datos y Compatibilidad:
