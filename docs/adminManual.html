@@ -316,7 +316,8 @@
         </button>
     </div>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/tiny-animate/1.1.0/tinyanimate.min.js"></script>
+    <script src="./assets/js/utils-legacy.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/tiny-animate/1.1.0/tinyanimate.min.js"></script>
     <script src="./assets/js/badge.js"></script>
     <script src="https://menutech.xyz/menutechUI.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -583,14 +584,48 @@
             }
         };
 
+                                } else {
+                            if (height > maxHeight) {
+                                width *= maxHeight / height;
+                                height = maxHeight;
+                            }
+                        }
+
+                        canvas.width = width;
+                        canvas.height = height;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, width, height);
+
+                        canvas.toBlob((blob) => {
+                            const resizedFile = new File([blob], file.name, {
+                                type: file.type,
+                                lastModified: Date.now()
+                            });
+                            resolve(resizedFile);
+                        }, file.type);
+                    };
+                };
+                reader.onerror = (error) => reject(error);
+            });
+        }
+
         async function uploadToCloudinary(file) {
             const CLOUDINARY_CLOUD_NAME = "dzklt0a5u";
             const CLOUDINARY_UPLOAD_PRESET = "Menutech";
             const url = `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/auto/upload`;
+
+            let fileToUpload = file;
+            if (file.type.startsWith('image/')) {
+                try {
+                    fileToUpload = await resizeImage(file);
+                } catch (e) {
+                    console.warn("Failed to resize image, uploading original", e);
+                }
+            }
+
             const formData = new FormData();
-            formData.append('file', file);
+            formData.append('file', fileToUpload);
             formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
-            formData.append('transformation', 'w_500,h_500,c_limit');
 
             const response = await fetch(url, {
                 method: 'POST',

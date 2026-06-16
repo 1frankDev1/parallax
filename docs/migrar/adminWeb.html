@@ -191,7 +191,8 @@
         </div>
     </div>
 
-    <script type="module">
+    <script src="../assets/js/utils-legacy.js"></script>
+<script type="module">
         import { MT_CONFIG } from './config.js';
         let sb = null, user = null, userRole = null, activeOwnerId = null, activeDomain = null;
 
@@ -356,15 +357,48 @@
             else { activeDomain = v; showApp(); }
         }
 
+                                } else {
+                            if (height > maxHeight) {
+                                width *= maxHeight / height;
+                                height = maxHeight;
+                            }
+                        }
+
+                        canvas.width = width;
+                        canvas.height = height;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, width, height);
+
+                        canvas.toBlob((blob) => {
+                            const resizedFile = new File([blob], file.name, {
+                                type: file.type,
+                                lastModified: Date.now()
+                            });
+                            resolve(resizedFile);
+                        }, file.type);
+                    };
+                };
+                reader.onerror = (error) => reject(error);
+            });
+        }
+
         async function uploadFiles(files) {
             if (!activeOwnerId) return alert("Select a project context first.");
             const s = document.getElementById('upload-status');
             s.innerHTML = '<div class="loader"></div><p style="margin-top:10px">Uploading...</p>';
             for (const f of files) {
+                let fileToUpload = f;
+                if (f.type.startsWith('image/')) {
+                    try {
+                        fileToUpload = await resizeImage(f);
+                    } catch (e) {
+                        console.warn("Failed to resize image, uploading original", e);
+                    }
+                }
+
                 const fd = new FormData();
-                fd.append('file', f);
+                fd.append('file', fileToUpload);
                 fd.append('upload_preset', MT_CONFIG.CLOUDINARY.UPLOAD_PRESET);
-                fd.append('transformation', 'w_500,h_500,c_limit');
                 const res = await fetch(`https://api.cloudinary.com/v1_1/${MT_CONFIG.CLOUDINARY.CLOUD_NAME}/image/upload`, { method: 'POST', body: fd });
                 const d = await res.json();
                 await sb.from('galeria').insert([{ user_id: activeOwnerId, domain: activeDomain || 'undetermined', image_url: d.secure_url }]);
