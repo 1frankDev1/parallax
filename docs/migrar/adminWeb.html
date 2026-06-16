@@ -364,6 +364,7 @@
                 const fd = new FormData();
                 fd.append('file', f);
                 fd.append('upload_preset', MT_CONFIG.CLOUDINARY.UPLOAD_PRESET);
+                fd.append('transformation', 'w_500,h_500,c_limit');
                 const res = await fetch(`https://api.cloudinary.com/v1_1/${MT_CONFIG.CLOUDINARY.CLOUD_NAME}/image/upload`, { method: 'POST', body: fd });
                 const d = await res.json();
                 await sb.from('galeria').insert([{ user_id: activeOwnerId, domain: activeDomain || 'undetermined', image_url: d.secure_url }]);

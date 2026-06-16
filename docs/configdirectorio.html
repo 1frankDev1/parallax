@@ -503,13 +503,14 @@
             }
 
             async function uploadToCloudinary(file) {
-                const cloudName = 'dbbjxhvz5';
-                const uploadPreset = 'Tragalero'.trim();
+                const cloudName = 'dzklt0a5u';
+                const uploadPreset = 'Menutech'.trim();
                 const url = `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`;
 
                 const formData = new FormData();
                 formData.append('file', file);
                 formData.append('upload_preset', uploadPreset);
+                formData.append('transformation', 'w_500,h_500,c_limit');
 
                 try {
                     const response = await fetch(url, {

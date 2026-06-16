@@ -526,14 +526,15 @@ const client = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 /* ---------------------------------------------------------
    CLOUDINARY CONFIG
 --------------------------------------------------------- */
-const CLOUDINARY_CLOUD_NAME = "dbbjxhvz5";
-const CLOUDINARY_UPLOAD_PRESET = "Tragalero";
+const CLOUDINARY_CLOUD_NAME = "dzklt0a5u";
+const CLOUDINARY_UPLOAD_PRESET = "Menutech";
 
 async function uploadToCloudinary(file) {
     const url = `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/auto/upload`;
     const formData = new FormData();
     formData.append('file', file);
     formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
+    formData.append('transformation', 'w_500,h_500,c_limit');
 
     try {
         const response = await fetch(url, {
