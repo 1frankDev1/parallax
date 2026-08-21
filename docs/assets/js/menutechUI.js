@@ -1420,7 +1420,7 @@ class MenutechChatbot extends HTMLElement {
     this.shadow = this.attachShadow({ mode: 'open' });
     this.render();
     this.bindElements();
-    this.loadKB();
+    this.loadKB(true);
 
     this._voskBundleUrl = 'https://unpkg.com/vosk-browser@0.0.6/dist/bundle.esm.js';
     this._voskAudioProcessorUrl = 'https://unpkg.com/vosk-browser@0.0.6/dist/vosk-audio-processor.js';
@@ -1590,7 +1590,7 @@ class MenutechChatbot extends HTMLElement {
       this.chat.setAttribute('aria-hidden', isOpen ? 'true' : 'false');
       if (!isOpen) {
         this.input.focus();
-        this.loadKB();
+        this.loadKB(true);
         this.startAutoSync();
       } else {
         this.stopAutoSync();
@@ -1605,13 +1605,8 @@ class MenutechChatbot extends HTMLElement {
 
     window.addEventListener('focus', () => {
       if (this.chat && this.chat.style.display === 'flex') {
-        this.loadKB();
+        this.loadKB(false);
       }
-    });
-
-    this.closeBtn.addEventListener('click', () => {
-      this.chat.style.display = 'none';
-      this.chat.setAttribute('aria-hidden', 'true');
     });
 
     this.sendBtn.addEventListener('click', () => {
@@ -1632,7 +1627,7 @@ class MenutechChatbot extends HTMLElement {
       if (bubbles.length === 0) {
         this.history = [];
         localStorage.setItem(this.historyKey, JSON.stringify([]));
-        this.renderHistory();
+        this.renderHistory(true);
         this.showClearedMessage();
         return;
       }
@@ -1640,12 +1635,28 @@ class MenutechChatbot extends HTMLElement {
       setTimeout(() => {
         this.history = [];
         localStorage.setItem(this.historyKey, JSON.stringify([]));
-        this.renderHistory();
+        this.renderHistory(true);
         this.showClearedMessage();
       }, bubbles.length * 60 + 350);
     });
 
     this.initVosk();
+  }
+
+  startAutoSync() {
+    this.stopAutoSync();
+    this._syncInterval = setInterval(() => {
+      if (this.chat && this.chat.style.display === 'flex') {
+        this.loadKB(false);
+      }
+    }, 15000);
+  }
+
+  stopAutoSync() {
+    if (this._syncInterval) {
+      clearInterval(this._syncInterval);
+      this._syncInterval = null;
+    }
   }
 
   async initVosk() {
@@ -1744,23 +1755,7 @@ class MenutechChatbot extends HTMLElement {
       .trim();
   }
 
-  startAutoSync() {
-    this.stopAutoSync();
-    this._syncInterval = setInterval(() => {
-      if (this.chat && this.chat.style.display === 'flex') {
-        this.loadKB();
-      }
-    }, 15000);
-  }
-
-  stopAutoSync() {
-    if (this._syncInterval) {
-      clearInterval(this._syncInterval);
-      this._syncInterval = null;
-    }
-  }
-
-  async loadKB() {
+  async loadKB(autoScroll = false) {
     try {
       const res = await fetch(`${this.supabaseUrl}/rest/v1/chatbot_kb?select=*&order=created_at.desc`, {
         headers: {
@@ -1781,11 +1776,11 @@ class MenutechChatbot extends HTMLElement {
         summary: this.generateSummary(row.q || '')
       }));
 
-      this.renderHistory();
+      this.renderHistory(autoScroll);
     } catch (err) {
       console.error('Error cargando KB de Supabase:', err);
       this.kb = [];
-      this.renderHistory();
+      this.renderHistory(autoScroll);
     }
   }
 
@@ -1816,14 +1811,14 @@ class MenutechChatbot extends HTMLElement {
     this.history.push({ role: 'user', text: item.rawQ });
     this.history.push({ role: 'bot', text: item.a });
     localStorage.setItem(this.historyKey, JSON.stringify(this.history));
-    this.renderHistory();
+    this.renderHistory(true);
   }
 
   userSend(text) {
     if (!text || !text.trim()) return;
     this.history.push({ role: 'user', text });
     localStorage.setItem(this.historyKey, JSON.stringify(this.history));
-    this.renderHistory();
+    this.renderHistory(true);
     const best = this.findBestAnswer(text);
     const THRESHOLD = 0.18;
     if (best.score >= THRESHOLD) {
@@ -1837,7 +1832,7 @@ class MenutechChatbot extends HTMLElement {
   botReply(text) {
     this.history.push({ role: 'bot', text });
     localStorage.setItem(this.historyKey, JSON.stringify(this.history));
-    this.renderHistory();
+    this.renderHistory(true);
   }
 
   renderFAQButtons() {
@@ -1857,7 +1852,9 @@ class MenutechChatbot extends HTMLElement {
     this.bodyEl.appendChild(faqList);
   }
 
-  renderHistory() {
+  renderHistory(autoScroll = false) {
+    const previousScrollTop = this.bodyEl ? this.bodyEl.scrollTop : 0;
+
     this.bodyEl.innerHTML = '';
 
     // Render stored chat bubbles
@@ -1874,7 +1871,11 @@ class MenutechChatbot extends HTMLElement {
     // Render clean FAQ buttons list
     this.renderFAQButtons();
 
-    this.bodyEl.scrollTop = this.bodyEl.scrollHeight;
+    if (autoScroll) {
+      this.bodyEl.scrollTop = this.bodyEl.scrollHeight;
+    } else {
+      this.bodyEl.scrollTop = previousScrollTop;
+    }
   }
 
   escapeHtml(s) {
