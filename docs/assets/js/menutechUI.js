@@ -1591,6 +1591,21 @@ class MenutechChatbot extends HTMLElement {
       if (!isOpen) {
         this.input.focus();
         this.loadKB();
+        this.startAutoSync();
+      } else {
+        this.stopAutoSync();
+      }
+    });
+
+    this.closeBtn.addEventListener('click', () => {
+      this.chat.style.display = 'none';
+      this.chat.setAttribute('aria-hidden', 'true');
+      this.stopAutoSync();
+    });
+
+    window.addEventListener('focus', () => {
+      if (this.chat && this.chat.style.display === 'flex') {
+        this.loadKB();
       }
     });
 
@@ -1727,6 +1742,22 @@ class MenutechChatbot extends HTMLElement {
       .replace(/[\u0300-\u036f]/g, "")
       .toLowerCase()
       .trim();
+  }
+
+  startAutoSync() {
+    this.stopAutoSync();
+    this._syncInterval = setInterval(() => {
+      if (this.chat && this.chat.style.display === 'flex') {
+        this.loadKB();
+      }
+    }, 15000);
+  }
+
+  stopAutoSync() {
+    if (this._syncInterval) {
+      clearInterval(this._syncInterval);
+      this._syncInterval = null;
+    }
   }
 
   async loadKB() {
