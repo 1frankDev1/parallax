@@ -1406,7 +1406,7 @@ customElements.define("menutech-themes", MenutechThemes);
  ******************************/
 
 /*******************************
- * MENUTECH CHATBOT (Exact Original Design + Supabase + FAQ)
+ * MENUTECH CHATBOT (Exact Original Design + Supabase + Clean FAQs)
  ******************************/
 class MenutechChatbot extends HTMLElement {
   constructor() {
@@ -1518,44 +1518,33 @@ class MenutechChatbot extends HTMLElement {
 .iconbtn img,
 .iconbtn svg { width:22px;height:22px;display:block;pointer-events:none; }
 
-/* FAQ Section */
-.faq-wrap {
-  margin-bottom: 12px;
-  padding: 10px 12px;
-  background: #f7f9fc;
-  border: 1px solid #e2e8f0;
-  border-radius: 10px;
-}
-.faq-header {
-  font-size: 11px;
-  font-weight: 700;
-  color: #ff7a00;
-  text-transform: uppercase;
-  margin-bottom: 8px;
-  letter-spacing: 0.5px;
-}
+/* Clean Minimal FAQ Buttons */
 .faq-list {
   display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 10px;
+  margin-bottom: 10px;
 }
 .faq-btn {
   background: #ffffff;
   border: 1px solid #ffd9b3;
   color: #333333;
-  padding: 6px 12px;
-  border-radius: 16px;
-  font-size: 12px;
+  padding: 8px 12px;
+  border-radius: 12px;
+  font-size: 13px;
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: background 0.2s, border-color 0.2s, transform 0.15s;
   text-align: left;
-  line-height: 1.3;
+  line-height: 1.35;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.04);
 }
 .faq-btn:hover {
-  background: #ff7a00;
-  color: #ffffff;
+  background: #fff4eb;
   border-color: #ff7a00;
+  color: #ff7a00;
+  transform: translateY(-1px);
 }
 </style>
 
@@ -1624,7 +1613,7 @@ class MenutechChatbot extends HTMLElement {
     });
 
     this.clearBtn.addEventListener('click', () => {
-      const bubbles = this.shadow.querySelectorAll('.bubble');
+      const bubbles = this.shadow.querySelectorAll('.bubble, .faq-btn');
       if (bubbles.length === 0) {
         this.history = [];
         localStorage.setItem(this.historyKey, JSON.stringify([]));
@@ -1770,10 +1759,10 @@ class MenutechChatbot extends HTMLElement {
   }
 
   generateSummary(q) {
-    if (!q) return 'Pregunta';
+    if (!q) return '';
     let clean = q.trim().replace(/^¿|^\?|\?$|^[^\w\s]+/g, '').trim();
-    if (clean.length <= 32) return clean;
-    return clean.substring(0, 30) + '...';
+    if (clean.length <= 45) return clean;
+    return clean.substring(0, 42) + '...';
   }
 
   tokenize(text) { return (text || '').toLowerCase().replace(/[^\w\s09070107030905]/g, ' ').split(/\s+/).filter(Boolean); }
@@ -1820,34 +1809,21 @@ class MenutechChatbot extends HTMLElement {
     this.renderHistory();
   }
 
-  renderFAQSection() {
+  renderFAQButtons() {
     if (!this.kb || this.kb.length === 0) return;
 
-    const faqWrap = document.createElement('div');
-    faqWrap.className = 'faq-wrap';
+    const faqList = document.createElement('div');
+    faqList.className = 'faq-list';
 
-    let buttonsHtml = this.kb.map(item => `
-      <button class="faq-btn" data-id="${item.id}" title="${this.escapeHtml(item.rawQ)}">
-        💬 ${this.escapeHtml(item.summary)}
-      </button>
-    `).join('');
-
-    faqWrap.innerHTML = `
-      <div class="faq-header">Preguntas Frecuentes</div>
-      <div class="faq-list">${buttonsHtml}</div>
-    `;
-
-    this.bodyEl.appendChild(faqWrap);
-
-    faqWrap.querySelectorAll('.faq-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const id = parseInt(btn.getAttribute('data-id'));
-        const item = this.kb.find(k => k.id === id);
-        if (item) {
-          this.selectFAQ(item);
-        }
-      });
+    this.kb.forEach(item => {
+      const btn = document.createElement('button');
+      btn.className = 'faq-btn';
+      btn.textContent = item.summary || item.rawQ;
+      btn.addEventListener('click', () => this.selectFAQ(item));
+      faqList.appendChild(btn);
     });
+
+    this.bodyEl.appendChild(faqList);
   }
 
   renderHistory() {
@@ -1864,8 +1840,8 @@ class MenutechChatbot extends HTMLElement {
       this.bodyEl.appendChild(div);
     });
 
-    // Render FAQ chips section at bottom of history
-    this.renderFAQSection();
+    // Render clean FAQ buttons list
+    this.renderFAQButtons();
 
     this.bodyEl.scrollTop = this.bodyEl.scrollHeight;
   }
