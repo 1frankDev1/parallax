@@ -1405,15 +1405,15 @@ customElements.define("menutech-themes", MenutechThemes);
  * MENUTECH CHATBOT
  ******************************/
 
-/**
- * MENUTECH CHATBOT (Supabase-Connected + FAQ Summaries)
- */
+/*******************************
+ * MENUTECH CHATBOT (Exact Original Design + Supabase + FAQ)
+ ******************************/
 class MenutechChatbot extends HTMLElement {
   constructor() {
     super();
     this.supabaseUrl = 'https://ojpyfjgkffmzwvukjagf.supabase.co';
     this.supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9qcHlmamdrZmZtend2dWtqYWdmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQxNDIwMzYsImV4cCI6MjA3OTcxODAzNn0.dlVYmoMumBse_O1PLBx0FeNITqY4YktefD6l_uonSgo';
-    this.historyKey = 'menutech_chat_history_v2';
+    this.historyKey = 'menutech_chat_history_v1';
     this.kb = [];
     this.history = JSON.parse(localStorage.getItem(this.historyKey) || '[]');
 
@@ -1422,365 +1422,163 @@ class MenutechChatbot extends HTMLElement {
     this.bindElements();
     this.loadKB();
 
+    this._voskBundleUrl = 'https://unpkg.com/vosk-browser@0.0.6/dist/bundle.esm.js';
+    this._voskAudioProcessorUrl = 'https://unpkg.com/vosk-browser@0.0.6/dist/vosk-audio-processor.js';
+    this._voskModelUrl = 'https://menutech.xyz/vosk/model/';
+
+    this._vosk = null;
+    this._model = null;
+    this._recognizer = null;
+    this._audioCtx = null;
+    this._mediaStream = null;
     this._listening = false;
+    this._sampleRate = 16000;
+    this._voskReady = false;
   }
 
   render() {
     this.shadow.innerHTML = `
 <style>
-:host { all: initial; font-family: 'Plus Jakarta Sans', Inter, system-ui, -apple-system, sans-serif; }
-* { box-sizing: border-box; }
-
-.chat-toggle {
-  position: fixed;
-  right: 22px;
-  bottom: 22px;
-  width: 60px;
-  height: 60px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, #ff7a00, #ff9a3d);
-  color: #fff;
-  border: none;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 8px 25px rgba(255, 122, 0, 0.4);
-  cursor: pointer;
-  z-index: 999999;
-  transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.3s ease;
+:host { all: initial; font-family: Inter, system-ui, Arial, sans-serif; }
+.chat-toggle{
+  position:fixed;
+  right:20px;
+  bottom:20px;
+  width:56px;height:56px;border-radius:50%;
+  background:#fff;color:#fff;border:none;
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 6px 18px rgba(10,10,10,.18);cursor:pointer;
+  z-index:999999;font-size:22px;
 }
-.chat-toggle:hover {
-  transform: scale(1.08) translateY(-2px);
-  box-shadow: 0 12px 30px rgba(255, 122, 0, 0.55);
+.chat-window{
+  position:fixed;right:20px;bottom:88px;width:360px;height:640px;max-height:90vh;
+  background:#ffffff;border-radius:12px;box-shadow:0 16px 40px rgba(10,10,10,.2);
+  display:flex;flex-direction:column;overflow:hidden;
+  z-index:999998;border:1px solid rgba(0,0,0,.06);
 }
-
-.chat-window {
-  position: fixed;
-  right: 22px;
-  bottom: 92px;
-  width: 380px;
-  height: 620px;
-  max-height: calc(85vh - 20px);
-  background: #0f131a;
-  color: #e8ecf3;
-  border-radius: 20px;
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  z-index: 999998;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(16px);
-  animation: chatOpen 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+.chat-header{
+  padding:12px 14px;
+  background: linear-gradient(90deg,#ff7a00,#ff9b3a);
+  color:#fff;display:flex;align-items:center;justify-content:space-between;
 }
-
-@keyframes chatOpen {
-  from { opacity: 0; transform: translateY(20px) scale(0.95); }
-  to { opacity: 1; transform: translateY(0) scale(1); }
+.chat-body{padding:12px;overflow:auto;flex:1;background:linear-gradient(#fff,#fbfbfb)}
+.msg{margin-bottom:10px;display:flex}
+.msg.user{justify-content:flex-end}
+.bubble{
+  max-width:78%;padding:10px 12px;border-radius:12px;
+  background:#f1f5ff;color:#111;
 }
-
-.chat-header {
-  padding: 16px 18px;
-  background: linear-gradient(135deg, #ff7a00 0%, #ff9a3d 100%);
-  color: #fff;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+.msg.user .bubble{
+  background:#ffd9b3;color:#000;
 }
-.chat-header-info {
-  display: flex;
-  align-items: center;
-  gap: 12px;
+.chat-input{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  padding:10px 12px;
+  border-top:1px solid #eee;
+  background:#fff;
+  height:64px;
+  box-sizing:border-box;
 }
-.chat-avatar {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background: #ffffff;
-  padding: 4px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-  object-fit: contain;
+.chat-input input{
+  flex:1;
+  padding:12px 14px;
+  border-radius:10px;
+  border:1px solid #d5d5d5;
+  font-size:15px;
+  min-width:0;
 }
-.chat-title {
-  font-weight: 700;
-  font-size: 15px;
-  letter-spacing: -0.2px;
-  line-height: 1.2;
+.chat-input button.iconbtn{
+  padding:8px;
+  background:transparent;
+  border:none;
+  border-radius:8px;
+  cursor:pointer;
+  font-size:20px;
+  color:#ff7a00;
+  flex-shrink:0;
 }
-.chat-subtitle {
-  font-size: 12px;
-  opacity: 0.9;
-  display: flex;
-  align-items: center;
-  gap: 5px;
+.chat-input button.send{
+  padding:10px 16px;
+  border-radius:10px;
+  border:none;
+  background:#ff7a00;
+  color:#fff;
+  cursor:pointer;
+  font-size:15px;
+  font-weight:600;
+  flex-shrink:0;
 }
-.status-dot {
-  width: 7px;
-  height: 7px;
-  background: #10b981;
-  border-radius: 50%;
-  display: inline-block;
-  box-shadow: 0 0 8px #10b981;
-}
-
-.close-btn {
-  background: rgba(255, 255, 255, 0.2);
-  border: none;
-  color: #fff;
-  width: 30px;
-  height: 30px;
-  border-radius: 50%;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: background 0.2s;
-}
-.close-btn:hover {
-  background: rgba(255, 255, 255, 0.35);
-}
-
-.chat-body {
-  padding: 16px;
-  overflow-y: auto;
-  flex: 1;
-  background: #121721;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  scrollbar-width: thin;
-  scrollbar-color: rgba(255,122,0,0.4) transparent;
-}
-.chat-body::-webkit-scrollbar {
-  width: 5px;
-}
-.chat-body::-webkit-scrollbar-thumb {
-  background: rgba(255,122,0,0.4);
-  border-radius: 10px;
-}
-
-/* FAQ Section Styling */
-.faq-container {
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 122, 0, 0.25);
-  border-radius: 14px;
-  padding: 12px;
-  margin-bottom: 8px;
-  animation: fadeIn 0.4s ease;
-}
-.faq-title {
-  font-size: 12px;
-  font-weight: 700;
-  color: #ff9a3d;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  margin-bottom: 10px;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-.faq-chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-.faq-chip {
-  background: linear-gradient(135deg, rgba(255, 122, 0, 0.12), rgba(255, 154, 61, 0.08));
-  border: 1px solid rgba(255, 122, 0, 0.3);
-  color: #ffe8d6;
-  padding: 7px 12px;
-  border-radius: 20px;
-  font-size: 12.5px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  text-align: left;
-  line-height: 1.3;
-}
-.faq-chip:hover {
-  background: linear-gradient(135deg, #ff7a00, #ff9a3d);
-  color: #ffffff;
-  border-color: #ff7a00;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(255, 122, 0, 0.35);
-}
-.faq-chip-icon {
-  font-size: 13px;
-  opacity: 0.9;
-}
-
-/* Messages */
-.msg {
-  display: flex;
-  align-items: flex-end;
-  gap: 8px;
-  max-width: 88%;
-  animation: msgPop 0.25s ease-out forwards;
-}
-@keyframes msgPop {
-  from { opacity: 0; transform: translateY(8px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-.msg.user {
-  align-self: flex-end;
-  flex-direction: row-reverse;
-}
-.msg.bot {
-  align-self: flex-start;
-}
-
-.msg-avatar {
-  width: 26px;
-  height: 26px;
-  border-radius: 50%;
-  background: #ff7a00;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 12px;
-  color: white;
-  flex-shrink: 0;
-  font-weight: bold;
-}
-
-.bubble {
-  padding: 11px 14px;
-  border-radius: 16px;
-  font-size: 13.5px;
-  line-height: 1.45;
-  word-break: break-word;
-  white-space: pre-wrap;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-}
-.msg.bot .bubble {
-  background: rgba(255, 255, 255, 0.08);
-  color: #e8ecf3;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-bottom-left-radius: 4px;
-}
-.msg.user .bubble {
-  background: linear-gradient(135deg, #ff7a00, #ff9a3d);
-  color: #ffffff;
-  font-weight: 500;
-  border-bottom-right-radius: 4px;
-}
-
-.typing-indicator {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  padding: 8px 12px;
-}
-.typing-dot {
-  width: 6px;
-  height: 6px;
-  background: #ff9a3d;
-  border-radius: 50%;
-  animation: typing 1.4s infinite ease-in-out both;
-}
-.typing-dot:nth-child(1) { animation-delay: 0s; }
-.typing-dot:nth-child(2) { animation-delay: 0.2s; }
-.typing-dot:nth-child(3) { animation-delay: 0.4s; }
-@keyframes typing {
-  0%, 80%, 100% { transform: scale(0); }
-  40% { transform: scale(1); }
-}
-
-.chat-input-area {
-  padding: 12px;
-  background: #181d28;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-.chat-input-area input {
-  flex: 1;
-  padding: 10px 14px;
-  border-radius: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  background: #0f131a;
-  color: #ffffff;
-  font-size: 14px;
-  outline: none;
-  transition: border-color 0.2s, box-shadow 0.2s;
-}
-.chat-input-area input:focus {
-  border-color: #ff7a00;
-  box-shadow: 0 0 10px rgba(255, 122, 0, 0.3);
-}
-.icon-btn {
-  background: transparent;
-  border: none;
-  color: #ff9a3d;
-  cursor: pointer;
-  padding: 8px;
-  border-radius: 10px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: background 0.2s, transform 0.15s;
-}
-.icon-btn:hover {
-  background: rgba(255, 122, 0, 0.15);
-  transform: scale(1.05);
-}
-.send-btn {
-  background: linear-gradient(135deg, #ff7a00, #ff9a3d);
-  color: #fff;
-  border: none;
-  padding: 10px 15px;
-  border-radius: 12px;
-  font-weight: 600;
-  font-size: 13.5px;
-  cursor: pointer;
-  transition: transform 0.2s, box-shadow 0.2s;
-  box-shadow: 0 4px 12px rgba(255, 122, 0, 0.3);
-}
-.send-btn:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 6px 16px rgba(255, 122, 0, 0.45);
-}
-
 @keyframes bubble-delete {
   0% { opacity:1; transform:scale(1); }
   100% { opacity:0; transform:scale(0.7); }
 }
 .bubble.deleting { animation: bubble-delete .35s ease forwards; }
+.iconbtn img,
+.iconbtn svg { width:22px;height:22px;display:block;pointer-events:none; }
+
+/* FAQ Section */
+.faq-wrap {
+  margin-bottom: 12px;
+  padding: 10px 12px;
+  background: #f7f9fc;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+}
+.faq-header {
+  font-size: 11px;
+  font-weight: 700;
+  color: #ff7a00;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+  letter-spacing: 0.5px;
+}
+.faq-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.faq-btn {
+  background: #ffffff;
+  border: 1px solid #ffd9b3;
+  color: #333333;
+  padding: 6px 12px;
+  border-radius: 16px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  text-align: left;
+  line-height: 1.3;
+}
+.faq-btn:hover {
+  background: #ff7a00;
+  color: #ffffff;
+  border-color: #ff7a00;
+}
 </style>
 
-<button id="openBtn" class="chat-toggle" title="Abrir Asistente">
-  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+<button id="openBtn" class="chat-toggle" title="Abrir chat">
+  <img id="openIcon" src="https://menutechdeveloper.github.io/databasewindows/img/icon.png"
+  style="width:32px;height:32px;border-radius:50%" alt="abrir chat" />
 </button>
 
 <div id="chat" class="chat-window" style="display:none" aria-hidden="true">
   <div class="chat-header">
-    <div class="chat-header-info">
-      <img class="chat-avatar" src="https://menutech.services/assets/img/logomt.png" alt="Menutech Avatar" />
-      <div>
-        <div class="chat-title">Asistente Menutech</div>
-        <div class="chat-subtitle"><span class="status-dot"></span> Soporte en Línea</div>
-      </div>
-    </div>
-    <button id="closeBtn" class="close-btn" title="Cerrar">✕</button>
+    <div><strong>Asistente</strong><div style="font-size:12px;opacity:.9">Soporte automatico</div></div>
+    <button id="closeBtn" style="background:transparent;border:none;color:#fff;font-size:18px;cursor:pointer">
+      <img src="https://menutechdeveloper.github.io/libreria/icons/close.svg" style="width:20px;height:20px;filter:invert(1)">
+    </button>
   </div>
 
   <div id="body" class="chat-body"></div>
 
-  <div class="chat-input-area">
-    <button id="clearBtn" class="icon-btn" title="Limpiar historial">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
-    </button>
-    <button id="micBtn" class="icon-btn" title="Hablar">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></svg>
-    </button>
+  <div class="chat-input">
+    <button id="micBtn" class="iconbtn" title="Hablar"><img id="micIcon" src="https://menutechdeveloper.github.io/libreria/icons/mic.svg"></button>
+    <button id="clearBtn" class="iconbtn" title="Limpiar historial"><img src="https://menutechdeveloper.github.io/libreria/icons/trash.svg"></button>
     <input id="messageInput" placeholder="Escribe tu pregunta..." />
-    <button id="sendBtn" class="send-btn">Enviar</button>
+    <button id="sendBtn" class="send">Enviar</button>
   </div>
 </div>
 `;
@@ -1821,15 +1619,125 @@ class MenutechChatbot extends HTMLElement {
     this.input.addEventListener('keydown', e => {
       if (e.key === 'Enter') {
         e.preventDefault();
-        if (this.input.value.trim() !== '') this.sendBtn.click();
+        if (this.input.value.trim() !== "") this.sendBtn.click();
       }
     });
 
     this.clearBtn.addEventListener('click', () => {
-      this.clearHistory();
+      const bubbles = this.shadow.querySelectorAll('.bubble');
+      if (bubbles.length === 0) {
+        this.history = [];
+        localStorage.setItem(this.historyKey, JSON.stringify([]));
+        this.renderHistory();
+        this.showClearedMessage();
+        return;
+      }
+      bubbles.forEach((bub, i) => setTimeout(() => bub.classList.add('deleting'), i * 60));
+      setTimeout(() => {
+        this.history = [];
+        localStorage.setItem(this.historyKey, JSON.stringify([]));
+        this.renderHistory();
+        this.showClearedMessage();
+      }, bubbles.length * 60 + 350);
     });
 
-    this.initVoice();
+    this.initVosk();
+  }
+
+  async initVosk() {
+    try {
+      const mod = await import(this._voskBundleUrl);
+      this._vosk = mod;
+
+      this._model = new this._vosk.Model(this._voskModelUrl);
+      await (this._model.init?.() || Promise.resolve());
+
+      this.micIcon = this.shadow.getElementById("micIcon");
+
+      this.micBtn.addEventListener('click', async () => {
+        if (this._listening) this.stopVosk();
+        else await this.startVosk();
+      });
+
+      this._voskReady = true;
+    } catch (err) {
+      this.micBtn.style.opacity = 0.35;
+      this.micBtn.title = 'Reconocimiento Vosk no disponible';
+    }
+  }
+
+  async startVosk() {
+    if (!this._voskReady) return;
+
+    try {
+      this.micIcon.src = "https://menutechdeveloper.github.io/libreria/icons/mic-listening.svg";
+      this._mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+
+      this._audioCtx = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: this._sampleRate });
+
+      const source = this._audioCtx.createMediaStreamSource(this._mediaStream);
+
+      this._recognizer = new this._vosk.Recognizer({ model: this._model, sampleRate: this._sampleRate });
+      await (this._recognizer.init?.() || Promise.resolve());
+
+      const processor = this._audioCtx.createScriptProcessor(4096, 1, 1);
+
+      source.connect(processor);
+      processor.connect(this._audioCtx.destination);
+
+      processor.onaudioprocess = e => {
+        const data = e.inputBuffer.getChannelData(0);
+        this._recognizer.acceptWaveform(data);
+        const res = this._recognizer.finalResult?.() || {};
+        if (res.text && res.text.trim()) {
+          this.input.value = res.text;
+          this.sendBtn.click();
+          this.stopVosk();
+        }
+      };
+
+      this._workletNode = processor;
+      this._listening = true;
+    } catch (err) {
+      this.stopVosk();
+    }
+  }
+
+  stopVosk() {
+    try {
+      if (this._mediaStream) this._mediaStream.getTracks().forEach(t => t.stop());
+      if (this._workletNode) this._workletNode.disconnect();
+      this._audioCtx?.close();
+    } finally {
+      this._audioCtx = null;
+      this._workletNode = null;
+      this._recognizer = null;
+      this._mediaStream = null;
+      this._listening = false;
+      if (this.micIcon) this.micIcon.src = "https://menutechdeveloper.github.io/libreria/icons/mic.svg";
+    }
+  }
+
+  showClearedMessage() {
+    const msg = document.createElement('div');
+    msg.style.textAlign = "center";
+    msg.style.opacity = "0";
+    msg.style.padding = "10px";
+    msg.style.color = "#ff7a00";
+    msg.style.fontWeight = "600";
+    msg.style.transition = "opacity .4s ease";
+    msg.textContent = "Historial borrado";
+    this.bodyEl.appendChild(msg);
+    requestAnimationFrame(() => msg.style.opacity = "1");
+    setTimeout(() => { msg.style.opacity = "0"; setTimeout(() => msg.remove(), 300); }, 1800);
+  }
+
+  normalize(str){
+    return (str || "")
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .toLowerCase()
+      .trim();
   }
 
   async loadKB() {
@@ -1840,19 +1748,24 @@ class MenutechChatbot extends HTMLElement {
           'Authorization': `Bearer ${this.supabaseKey}`
         }
       });
-      if (!res.ok) throw new Error('Error al consultar Supabase');
+
+      if (!res.ok) throw new Error('Error al conectar con Supabase');
+
       const data = await res.json();
+
       this.kb = data.map(row => ({
         id: row.id,
-        q: row.q || '',
+        rawQ: row.q || '',
+        q: this.normalize(row.q || ''),
         a: row.a || '',
-        summary: this.generateSummary(row.q || ''),
-        normQ: this.normalize(row.q || '')
+        summary: this.generateSummary(row.q || '')
       }));
 
       this.renderHistory();
     } catch (err) {
-      console.error('MenutechChatbot Supabase error:', err);
+      console.error('Error cargando KB de Supabase:', err);
+      this.kb = [];
+      this.renderHistory();
     }
   }
 
@@ -1863,52 +1776,70 @@ class MenutechChatbot extends HTMLElement {
     return clean.substring(0, 30) + '...';
   }
 
-  normalize(str) {
-    return (str || '')
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '')
-      .toLowerCase()
-      .trim();
+  tokenize(text) { return (text || '').toLowerCase().replace(/[^\w\s09070107030905]/g, ' ').split(/\s+/).filter(Boolean); }
+  buildTf(tokens) { const tf = {}; tokens.forEach(t => tf[t] = (tf[t] || 0) + 1); return tf; }
+  dot(a, b) { let s = 0; for (const k in a) if (b[k]) s += a[k] * b[k]; return s; }
+  norm(a) { let s = 0; for (const k in a) s += a[k] * a[k]; return Math.sqrt(s); }
+  cosineSim(aTokens, bTokens) { const A = this.buildTf(aTokens), B = this.buildTf(bTokens); const d = this.dot(A, B); const n = this.norm(A) * this.norm(B); return n === 0 ? 0 : d / n; }
+
+  findBestAnswer(query) {
+    const qTokens = this.tokenize(query);
+    let best = { score: 0, index: -1 };
+    this.kb.forEach((item, i) => {
+      const s = this.cosineSim(qTokens, this.tokenize(item.q + ' ' + item.a));
+      if (s > best.score) { best.score = s; best.index = i; }
+    });
+    return best;
   }
 
-  renderWelcomeMessage() {
-    this.bodyEl.innerHTML = '';
+  selectFAQ(item) {
+    this.history.push({ role: 'user', text: item.rawQ });
+    this.history.push({ role: 'bot', text: item.a });
+    localStorage.setItem(this.historyKey, JSON.stringify(this.history));
+    this.renderHistory();
+  }
 
-    const welcomeBubble = document.createElement('div');
-    welcomeBubble.className = 'msg bot';
-    welcomeBubble.innerHTML = `
-      <div class="msg-avatar">MT</div>
-      <div class="bubble">¡Hola! 👋 Bienvenido a Menutech. ¿En qué te puedo ayudar hoy? Puedes seleccionar una de nuestras <b>Preguntas Frecuentes</b> o escribir tu consulta.</div>
-    `;
-    this.bodyEl.appendChild(welcomeBubble);
+  userSend(text) {
+    if (!text || !text.trim()) return;
+    this.history.push({ role: 'user', text });
+    localStorage.setItem(this.historyKey, JSON.stringify(this.history));
+    this.renderHistory();
+    const best = this.findBestAnswer(text);
+    const THRESHOLD = 0.18;
+    if (best.score >= THRESHOLD) {
+      const kbEntry = this.kb[best.index];
+      this.botReply(kbEntry.a);
+    } else {
+      this.botReply("Lo siento, no tengo una respuesta segura para eso.");
+    }
+  }
 
-    this.renderFAQSection();
-    this.scrollToBottom();
+  botReply(text) {
+    this.history.push({ role: 'bot', text });
+    localStorage.setItem(this.historyKey, JSON.stringify(this.history));
+    this.renderHistory();
   }
 
   renderFAQSection() {
     if (!this.kb || this.kb.length === 0) return;
 
-    const existingFaq = this.bodyEl.querySelector('.faq-container');
-    if (existingFaq) existingFaq.remove();
+    const faqWrap = document.createElement('div');
+    faqWrap.className = 'faq-wrap';
 
-    const faqContainer = document.createElement('div');
-    faqContainer.className = 'faq-container';
-
-    let chipsHtml = this.kb.map(item => `
-      <button class="faq-chip" data-id="${item.id}" title="${this.escapeAttr(item.q)}">
-        <span class="faq-chip-icon">💬</span> ${this.escapeHtml(item.summary)}
+    let buttonsHtml = this.kb.map(item => `
+      <button class="faq-btn" data-id="${item.id}" title="${this.escapeHtml(item.rawQ)}">
+        💬 ${this.escapeHtml(item.summary)}
       </button>
     `).join('');
 
-    faqContainer.innerHTML = `
-      <div class="faq-title">💡 Preguntas Frecuentes</div>
-      <div class="faq-chips">${chipsHtml}</div>
+    faqWrap.innerHTML = `
+      <div class="faq-header">Preguntas Frecuentes</div>
+      <div class="faq-list">${buttonsHtml}</div>
     `;
 
-    this.bodyEl.appendChild(faqContainer);
+    this.bodyEl.appendChild(faqWrap);
 
-    faqContainer.querySelectorAll('.faq-chip').forEach(btn => {
+    faqWrap.querySelectorAll('.faq-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         const id = parseInt(btn.getAttribute('data-id'));
         const item = this.kb.find(k => k.id === id);
@@ -1919,221 +1850,42 @@ class MenutechChatbot extends HTMLElement {
     });
   }
 
-  selectFAQ(item) {
-    this.appendUserMessage(item.q);
-    this.saveToHistory('user', item.q);
+  renderHistory() {
+    this.bodyEl.innerHTML = '';
 
-    this.showTypingIndicator();
-    setTimeout(() => {
-      this.removeTypingIndicator();
-      this.appendBotMessage(item.a);
-      this.saveToHistory('bot', item.a);
-      this.scrollToBottom();
-    }, 400);
-  }
-
-  userSend(text) {
-    const query = text.trim();
-    if (!query) return;
-
-    this.appendUserMessage(query);
-    this.saveToHistory('user', query);
-
-    this.showTypingIndicator();
-    setTimeout(() => {
-      this.removeTypingIndicator();
-      const answer = this.findBestAnswer(query);
-      this.appendBotMessage(answer.text);
-      this.saveToHistory('bot', answer.text);
-
-      if (answer.showFaq) {
-        this.renderFAQSection();
-      }
-      this.scrollToBottom();
-    }, 450);
-  }
-
-  findBestAnswer(query) {
-    if (!this.kb || this.kb.length === 0) {
-      return { text: 'Lo siento, no pude cargar la base de datos en este momento. Por favor intenta más tarde.', showFaq: false };
-    }
-
-    const normQuery = this.normalize(query);
-    const qTokens = this.tokenize(normQuery);
-
-    let bestScore = 0;
-    let bestMatch = null;
-
-    this.kb.forEach(item => {
-      const itemTokens = this.tokenize(item.normQ);
-      const score = this.cosineSim(qTokens, itemTokens);
-
-      let substringBoost = 0;
-      if (item.normQ.includes(normQuery) || normQuery.includes(item.normQ)) {
-        substringBoost = 0.4;
-      }
-
-      const totalScore = score + substringBoost;
-      if (totalScore > bestScore) {
-        bestScore = totalScore;
-        bestMatch = item;
-      }
+    // Render stored chat bubbles
+    this.history.forEach(m => {
+      const div = document.createElement('div');
+      div.className = 'msg ' + (m.role === 'user' ? 'user' : 'bot');
+      const bubble = document.createElement('div');
+      bubble.className = 'bubble';
+      bubble.innerHTML = this.escapeHtml(m.text).replace(/\n/g, '<br>');
+      div.appendChild(bubble);
+      this.bodyEl.appendChild(div);
     });
 
-    if (bestScore > 0.25 && bestMatch) {
-      return { text: bestMatch.a, showFaq: false };
-    } else {
-      return {
-        text: 'Lo siento, no encontré una respuesta exacta a tu pregunta. Te comparto nuestras Preguntas Frecuentes para que elijas la opción que buscas:',
-        showFaq: true
-      };
-    }
-  }
+    // Render FAQ chips section at bottom of history
+    this.renderFAQSection();
 
-  tokenize(text) {
-    return (text || '').toLowerCase().replace(/[^\w\s]/g, ' ').split(/\s+/).filter(Boolean);
-  }
-  buildTf(tokens) {
-    const tf = {};
-    tokens.forEach(t => tf[t] = (tf[t] || 0) + 1);
-    return tf;
-  }
-  cosineSim(aTokens, bTokens) {
-    const A = this.buildTf(aTokens), B = this.buildTf(bTokens);
-    let dot = 0;
-    for (const k in A) if (B[k]) dot += A[k] * B[k];
-    let normA = 0; for (const k in A) normA += A[k] * A[k];
-    let normB = 0; for (const k in B) normB += B[k] * B[k];
-    const n = Math.sqrt(normA) * Math.sqrt(normB);
-    return n === 0 ? 0 : dot / n;
-  }
-
-  appendUserMessage(text) {
-    const msg = document.createElement('div');
-    msg.className = 'msg user';
-    msg.innerHTML = `<div class="bubble">${this.escapeHtml(text)}</div>`;
-    this.bodyEl.appendChild(msg);
-    this.scrollToBottom();
-  }
-
-  appendBotMessage(text) {
-    const msg = document.createElement('div');
-    msg.className = 'msg bot';
-    msg.innerHTML = `
-      <div class="msg-avatar">MT</div>
-      <div class="bubble">${this.escapeHtml(text)}</div>
-    `;
-    this.bodyEl.appendChild(msg);
-    this.scrollToBottom();
-  }
-
-  showTypingIndicator() {
-    const indicator = document.createElement('div');
-    indicator.id = 'typingIndicator';
-    indicator.className = 'msg bot';
-    indicator.innerHTML = `
-      <div class="msg-avatar">MT</div>
-      <div class="bubble typing-indicator">
-        <span class="typing-dot"></span>
-        <span class="typing-dot"></span>
-        <span class="typing-dot"></span>
-      </div>
-    `;
-    this.bodyEl.appendChild(indicator);
-    this.scrollToBottom();
-  }
-
-  removeTypingIndicator() {
-    const indicator = this.shadow.getElementById('typingIndicator');
-    if (indicator) indicator.remove();
-  }
-
-  scrollToBottom() {
     this.bodyEl.scrollTop = this.bodyEl.scrollHeight;
   }
 
-  renderHistory() {
-    if (!this.history || this.history.length === 0) {
-      this.renderWelcomeMessage();
-      return;
-    }
-
-    this.bodyEl.innerHTML = '';
-    this.history.forEach(item => {
-      if (item.role === 'user') this.appendUserMessage(item.text);
-      else this.appendBotMessage(item.text);
-    });
-    this.renderFAQSection();
-    this.scrollToBottom();
-  }
-
-  saveToHistory(role, text) {
-    this.history.push({ role, text });
-    if (this.history.length > 20) this.history = this.history.slice(-20);
-    localStorage.setItem(this.historyKey, JSON.stringify(this.history));
-  }
-
-  clearHistory() {
-    this.history = [];
-    localStorage.removeItem(this.historyKey);
-    this.renderWelcomeMessage();
-  }
-
-  initVoice() {
-    if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
-      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-      this.recognition = new SpeechRecognition();
-      this.recognition.lang = 'es-ES';
-      this.recognition.continuous = false;
-      this.recognition.interimResults = false;
-
-      this.recognition.onresult = (event) => {
-        const transcript = event.results[0][0].transcript;
-        this.input.value = transcript;
-        this.sendBtn.click();
-        this._listening = false;
-        this.micBtn.style.color = '#ff9a3d';
-      };
-
-      this.recognition.onerror = () => {
-        this._listening = false;
-        this.micBtn.style.color = '#ff9a3d';
-      };
-
-      this.recognition.onend = () => {
-        this._listening = false;
-        this.micBtn.style.color = '#ff9a3d';
-      };
-
-      this.micBtn.addEventListener('click', () => {
-        if (this._listening) {
-          this.recognition.stop();
-          this._listening = false;
-          this.micBtn.style.color = '#ff9a3d';
-        } else {
-          this.recognition.start();
-          this._listening = true;
-          this.micBtn.style.color = '#ef4444';
-        }
-      });
-    } else {
-      this.micBtn.style.opacity = '0.4';
-      this.micBtn.title = 'Reconocimiento de voz no soportado en este navegador';
-    }
-  }
-
-  escapeHtml(str) {
-    return String(str || '').replace(/[&<>"']/g, s => ({
+  escapeHtml(s) {
+    return (s || '').replace(/[&<>"']/g, c => ({
       '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
-    })[s]);
+    }[c]));
   }
 
-  escapeAttr(str) {
-    return String(str || '').replace(/[&<>"']/g, s => ({
-      '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
-    })[s]);
+  static get observedAttributes() { return ['kb-url', 'icon']; }
+  attributeChangedCallback(name, oldV, newV) {
+    if (name === 'kb-url' && newV) this.kbUrl = newV;
+    if (name === 'icon' && newV) {
+      const img = this.shadow.getElementById('openIcon');
+      if (img) img.src = newV;
+    }
   }
 }
+
 customElements.define('menutech-chatbot', MenutechChatbot);
 
 
