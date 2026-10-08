@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Página de Pruebas - Closer AI Chatbot</title>
+    <link rel="icon" type="image/png" href="./assets/img/Diseño sin título (8).png">
+
+    <!-- Google Model Viewer para renderizar el modelo 3D GLTF -->
+    <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.4.0/model-viewer.min.js"></script>
+
+    <!-- Estilos del Chatbot Closer AI -->
+    <link rel="stylesheet" href="./assets/css/closerChat.css">
+
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: #0f1015;
+            color: #ffffff;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+
+        .test-card {
+            background: #1a1c23;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 600px;
+            width: 90%;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        h1 {
+            color: #ff7a00;
+            margin-bottom: 12px;
+            font-size: 28px;
+        }
+
+        p {
+            color: #a0a5b5;
+            line-height: 1.6;
+            font-size: 15px;
+            margin-bottom: 24px;
+        }
+
+        .badge-test {
+            display: inline-block;
+            background: rgba(255, 122, 0, 0.15);
+            color: #ff7a00;
+            border: 1px solid rgba(255, 122, 0, 0.4);
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+
+        .info-box {
+            background: #121318;
+            border-radius: 12px;
+            padding: 16px;
+            text-align: left;
+            font-size: 13px;
+            color: #8a8f9e;
+            border-left: 3px solid #ff7a00;
+        }
+
+        .info-box ul {
+            margin: 8px 0 0 0;
+            padding-left: 20px;
+        }
+
+        .info-box li {
+            margin-bottom: 4px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="test-card">
+        <span class="badge-test">MÓDULO DE PRUEBAS</span>
+        <h1>Closer AI Chatbot (Gemini)</h1>
+        <p>Esta es la página exclusiva de pruebas para el nuevo chatbot basado en Google Gemini AI con avatar 3D <code>model-viewer</code>.</p>
+
+        <div class="info-box">
+            <strong>Detalles de Integración:</strong>
+            <ul>
+                <li>Ubicación: Esquina inferior derecha.</li>
+                <li>Ruta del modelo 3D GLTF: <code>./assets/iimg/AI.gltf</code></li>
+                <li>Estilos: <code>./assets/css/closerChat.css</code></li>
+                <li>Lógica JS: <code>./assets/js/closerChat.js</code></li>
+                <li>Edge Function Supabase: <code>closer-chat</code> (Gemini AI API secret <code>closer_api</code>).</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Componente Web del Chatbot Closer AI -->
+    <closer-chat></closer-chat>
+
+    <!-- Script del Chatbot Closer AI -->
+    <script src="./assets/js/closerChat.js"></script>
+</body>
+</html>
