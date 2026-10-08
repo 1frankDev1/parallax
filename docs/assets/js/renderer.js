@@ -50,6 +50,7 @@
     const saved = localStorage.getItem("session");
     const path = window.location.pathname;
     const isPublic = path.endsWith("index.html") ||
+                    path.endsWith("login.html") ||
                     path.endsWith("wisbePanel.html") ||
                     path.endsWith("tragaleroPanel.html") ||
                     path === "/" || path.endsWith("/");
@@ -114,7 +115,7 @@
     const saved = localStorage.getItem("session");
     if (!saved) {
       // si no hay sesión y estamos en página protegida, forzar login
-      if (!window.location.pathname.endsWith("index.html") && window.location.pathname !== "/") {
+      if (!window.location.pathname.endsWith("index.html") && !window.location.pathname.endsWith("login.html") && window.location.pathname !== "/") {
         window.location.href = "index.html";
       }
       return false;
@@ -125,6 +126,23 @@
     if (!localSession.user) {
       logout();
       return false;
+    }
+
+    // si la sesión proviene de Supabase Auth
+    if (localSession.isSupabaseAuth) {
+      if (!supabase) return true;
+      try {
+        const { data: { session: authSession } } = await supabase.auth.getSession();
+        if (!authSession) {
+          console.warn("Sesión de Supabase Auth no válida o expirada");
+          logout();
+          return false;
+        }
+        return true;
+      } catch (e) {
+        console.error("Error verificando sesión de Supabase Auth:", e);
+        return true;
+      }
     }
 
     // si supabase no cargó aún, asumimos válido (para no bloquear offline) y reintentamos luego
@@ -568,6 +586,9 @@
   // logout (igual comportamiento visual)
   // ------------------------------
   function logout() {
+    if (supabase && supabase.auth) {
+      supabase.auth.signOut().catch(err => console.error("Error signing out from Supabase Auth:", err));
+    }
     localStorage.removeItem("session");
     session = null;
 
