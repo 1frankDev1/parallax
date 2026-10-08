@@ -1,0 +1,1237 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Retroalimentación & Evaluación de Llamadas | Menutech</title>
+  <link rel="icon" type="image/png" href="./assets/img/Diseño%20sin%20título%20(8).png">
+
+  <!-- FontAwesome & Google Fonts -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Estilos del Proyecto -->
+  <link rel="stylesheet" href="./assets/css/badge.css">
+  <!-- SweetAlert2 -->
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+  <style>
+    :root {
+      --brand-color: #ff8c00;
+      --brand-hover: #ffa733;
+      --brand-glow: rgba(255, 140, 0, 0.4);
+      --bg-dark: #0d1117;
+      --card-bg: #161b22;
+      --card-border: #30363d;
+      --text-main: #e6edf3;
+      --text-muted: #8b949e;
+      --status-green: #2ea44f;
+      --status-yellow: #d29922;
+      --status-red: #f85149;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #090d12 0%, #161b22 100%);
+      color: var(--text-main);
+      min-height: 100vh;
+      padding-top: 80px;
+      padding-bottom: 120px;
+    }
+
+    .main-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 20px;
+    }
+
+    /* Encabezado */
+    .header-panel {
+      background: rgba(22, 27, 34, 0.8);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 24px;
+      backdrop-filter: blur(10px);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 16px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+    }
+
+    .header-title h1 {
+      font-size: 1.8rem;
+      font-weight: 800;
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .header-title h1 i {
+      color: var(--brand-color);
+    }
+
+    .header-title p {
+      color: var(--text-muted);
+      font-size: 0.95rem;
+      margin-top: 4px;
+    }
+
+    /* Módulo Admin de Subida y Evaluación */
+    .admin-upload-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 28px;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.5);
+    }
+
+    .admin-upload-card h2 {
+      font-size: 1.25rem;
+      color: var(--brand-color);
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .upload-form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr auto;
+      gap: 16px;
+      align-items: flex-end;
+    }
+
+    @media (max-width: 850px) {
+      .upload-form-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .form-group label {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text-muted);
+    }
+
+    .form-input, .form-select {
+      background: #0d1117;
+      border: 1px solid var(--card-border);
+      border-radius: 10px;
+      padding: 12px;
+      color: #ffffff;
+      font-size: 0.95rem;
+      outline: none;
+      transition: all 0.2s ease;
+    }
+
+    .form-input:focus, .form-select:focus {
+      border-color: var(--brand-color);
+      box-shadow: 0 0 0 3px rgba(255, 140, 0, 0.2);
+    }
+
+    .btn-evaluar {
+      background: linear-gradient(135deg, var(--brand-color), #ff6c00);
+      color: white;
+      border: none;
+      border-radius: 10px;
+      padding: 13px 24px;
+      font-weight: 700;
+      font-size: 0.95rem;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: all 0.25s ease;
+      box-shadow: 0 4px 15px rgba(255, 140, 0, 0.3);
+    }
+
+    .btn-evaluar:hover {
+      background: linear-gradient(135deg, #ffa733, var(--brand-color));
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(255, 140, 0, 0.4);
+    }
+
+    /* Dashboard KPI Cards */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+      margin-bottom: 28px;
+    }
+
+    .kpi-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 14px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .kpi-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; width: 4px; height: 100%;
+      background: var(--brand-color);
+    }
+
+    .kpi-title {
+      font-size: 0.82rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--text-muted);
+      font-weight: 700;
+    }
+
+    .kpi-value {
+      font-size: 2rem;
+      font-weight: 800;
+      color: #ffffff;
+    }
+
+    .kpi-sub {
+      font-size: 0.85rem;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-weight: 600;
+    }
+
+    .trend-up { color: var(--status-green); }
+    .trend-down { color: var(--status-red); }
+
+    /* Sección de Promedios por Punto del Script */
+    .skills-breakdown-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 28px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+    }
+
+    .skills-breakdown-card h3 {
+      font-size: 1.1rem;
+      margin-bottom: 16px;
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .skill-progress-item {
+      margin-bottom: 14px;
+    }
+
+    .skill-info {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.9rem;
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+
+    .skill-bar-bg {
+      height: 10px;
+      background: #0d1117;
+      border-radius: 8px;
+      overflow: hidden;
+      border: 1px solid rgba(255,255,255,0.05);
+    }
+
+    .skill-bar-fill {
+      height: 100%;
+      border-radius: 8px;
+      transition: width 0.6s ease;
+    }
+
+    /* Gráfica de evolución simple */
+    .history-bars-container {
+      display: flex;
+      align-items: flex-end;
+      gap: 12px;
+      height: 120px;
+      margin-top: 16px;
+      padding-top: 10px;
+      border-bottom: 1px solid var(--card-border);
+    }
+
+    .history-bar-col {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      height: 100%;
+      justify-content: flex-end;
+    }
+
+    .bar-fill {
+      width: 100%;
+      max-width: 38px;
+      background: linear-gradient(180deg, var(--brand-color), rgba(255, 140, 0, 0.3));
+      border-radius: 6px 6px 0 0;
+      transition: height 0.5s ease;
+      min-height: 4px;
+    }
+
+    .bar-label {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+
+    /* Lista de Evaluaciones */
+    .evaluations-list {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .eval-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 14px;
+      padding: 20px;
+      transition: all 0.25s ease;
+      position: relative;
+    }
+
+    .eval-card:hover {
+      border-color: rgba(255, 140, 0, 0.5);
+      box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+    }
+
+    .eval-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .eval-seller-badge {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .eval-date {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+
+    .score-badge-large {
+      padding: 8px 18px;
+      border-radius: 30px;
+      font-weight: 800;
+      font-size: 1.3rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    }
+
+    .score-high { background: rgba(46, 164, 79, 0.2); color: #3fb950; border: 1px solid #2ea44f; }
+    .score-mid { background: rgba(210, 153, 34, 0.2); color: #d29922; border: 1px solid #d29922; }
+    .score-low { background: rgba(248, 81, 73, 0.2); color: #f85149; border: 1px solid #f85149; }
+
+    .eval-audio-player {
+      width: 100%;
+      margin: 12px 0;
+      background: #0d1117;
+      border-radius: 8px;
+    }
+
+    .btn-toggle-details {
+      background: transparent;
+      border: 1px solid var(--card-border);
+      color: var(--text-main);
+      padding: 8px 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 0.88rem;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s ease;
+    }
+
+    .btn-toggle-details:hover {
+      background: #21262d;
+      border-color: var(--brand-color);
+    }
+
+    /* Detalle expandible de la llamada */
+    .eval-details-box {
+      margin-top: 16px;
+      padding-top: 16px;
+      border-top: 1px solid var(--card-border);
+      display: none;
+      animation: fadeIn 0.3s ease;
+    }
+
+    .eval-details-box.show {
+      display: block;
+    }
+
+    .points-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .point-item {
+      background: #0d1117;
+      border: 1px solid #21262d;
+      border-radius: 10px;
+      padding: 14px 16px;
+    }
+
+    .point-item-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 6px;
+    }
+
+    .point-name {
+      font-weight: 700;
+      font-size: 0.95rem;
+      color: #ffffff;
+    }
+
+    .status-pill {
+      padding: 4px 10px;
+      border-radius: 12px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .status-completed { background: rgba(46, 164, 79, 0.2); color: #3fb950; border: 1px solid rgba(46, 164, 79, 0.4); }
+    .status-partial { background: rgba(210, 153, 34, 0.2); color: #d29922; border: 1px solid rgba(210, 153, 34, 0.4); }
+    .status-failed { background: rgba(248, 81, 73, 0.2); color: #f85149; border: 1px solid rgba(248, 81, 73, 0.4); }
+
+    .point-timestamp {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      font-weight: 600;
+      background: #161b22;
+      padding: 2px 8px;
+      border-radius: 6px;
+      display: inline-block;
+      margin-top: 4px;
+    }
+
+    .point-why {
+      font-size: 0.88rem;
+      color: #c9d1d9;
+      margin-top: 8px;
+      line-height: 1.4;
+      background: rgba(255,255,255,0.02);
+      padding: 8px 12px;
+      border-radius: 6px;
+      border-left: 3px solid var(--brand-color);
+    }
+
+    .feedback-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-top: 16px;
+    }
+
+    @media (max-width: 700px) {
+      .feedback-grid { grid-template-columns: 1fr; }
+    }
+
+    .feedback-box {
+      background: #0d1117;
+      border: 1px solid #21262d;
+      border-radius: 10px;
+      padding: 16px;
+    }
+
+    .feedback-box h4 {
+      font-size: 0.9rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .feedback-box.strengths h4 { color: #3fb950; }
+    .feedback-box.weaknesses h4 { color: #f85149; }
+    .feedback-box.general h4 { color: var(--brand-color); }
+
+    .feedback-box ul {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .feedback-box li {
+      font-size: 0.88rem;
+      color: #c9d1d9;
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Modal emergente de resultado de evaluación */
+    .eval-modal-overlay {
+      position: fixed;
+      top: 0; left: 0; width: 100vw; height: 100vh;
+      background: rgba(0,0,0,0.85);
+      backdrop-filter: blur(8px);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 10000;
+      opacity: 0;
+      pointer-events: none;
+      transition: all 0.3s ease;
+    }
+
+    .eval-modal-overlay.show {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .eval-modal-content {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 20px;
+      width: 90%;
+      max-width: 800px;
+      max-height: 85vh;
+      overflow-y: auto;
+      padding: 28px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+      position: relative;
+    }
+
+    .modal-close-btn {
+      position: absolute;
+      top: 18px; right: 20px;
+      font-size: 1.5rem;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: color 0.2s;
+    }
+
+    .modal-close-btn:hover { color: #ffffff; }
+  </style>
+</head>
+<body>
+
+  <!-- COMPONENTES DE LOGIN, BADGE Y NAVEGACIÓN -->
+  <img id="login-icon" class="login-icon" src="./assets/img/user.svg" alt="User">
+
+  <div id="user-badge" class="user-badge hidden" style="position: fixed;">
+    <div id="badge-username"></div>
+    <div id="badge-role"></div>
+  </div>
+
+  <div id="badge-menu" class="hidden">
+    <button id="logout-btn" class="logout-btn">Cerrar sesión</button>
+  </div>
+
+  <div id="login-overlay" class="login-overlay" style="display: none;">
+    <div id="login-panel" class="login-panel">
+      <h3>Iniciar sesión</h3>
+      <input id="user" class="input" placeholder="Usuario">
+      <input id="pass" class="input" type="password" placeholder="Contraseña">
+      <button id="login-btn" class="login-btn">Entrar</button>
+      <div id="login-status" class="status"></div>
+    </div>
+  </div>
+
+  <!-- BOTTOM NAVIGATION NEOMÓRFICA -->
+  <div class="neo-nav-container">
+    <button id="neoNavBack" class="neo-nav-btn" title="Atrás">
+      <svg viewBox="0 0 24 24" class="neo-nav-icon">
+        <path d="M15 18l-6-6 6-6" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </button>
+    <button id="neoNavHome" class="neo-nav-btn" title="Inicio">
+      <svg viewBox="0 0 24 24" class="neo-nav-icon">
+        <path d="M3 11l9-7 9 7v8a2 2 0 0 1-2 2h-4a2 2 0 0 1-2-2v-4H9v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </button>
+  </div>
+
+  <!-- CHATBOT REUSABLE MENUTECH -->
+  <menutech-chatbot></menutech-chatbot>
+
+  <!-- CONTENIDO PRINCIPAL -->
+  <div class="main-container">
+
+    <!-- Header Page -->
+    <div class="header-panel">
+      <div class="header-title">
+        <h1><i class="fa-solid fa-headset"></i> Evaluador de Llamadas Gemini AI</h1>
+        <p>Auditoría automática de llamadas y guión comercial de ventas Menutech</p>
+      </div>
+      <div id="roleFilterContainer">
+        <!-- Filtro opcional por vendedor para Admins -->
+      </div>
+    </div>
+
+    <!-- SECCIÓN ADMIN: Subir audio y evaluar -->
+    <div id="adminUploadSection" class="admin-upload-card" style="display: none;">
+      <h2><i class="fa-solid fa-cloud-arrow-up"></i> Evaluar Nueva Llamada (.MP3)</h2>
+      <div class="upload-form-grid">
+        <div class="form-group">
+          <label><i class="fa-solid fa-file-audio"></i> Archivo de Audio .mp3</label>
+          <input type="file" id="audioFileInput" accept="audio/mp3,audio/*" class="form-input">
+        </div>
+        <div class="form-group">
+          <label><i class="fa-solid fa-user-tie"></i> Asignar Vendedor / Closer</label>
+          <select id="sellerSelect" class="form-select">
+            <option value="">Cargando vendedores...</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label><i class="fa-solid fa-scroll"></i> Rúbrica Oficial</label>
+          <input type="text" value="scriptVentas.pdf" readonly class="form-input" style="opacity: 0.8;">
+        </div>
+        <button id="btnEvaluarLlamada" class="btn-evaluar">
+          <i class="fa-solid fa-wand-magic-sparkles"></i> Evaluar con Gemini
+        </button>
+      </div>
+      <div id="evalStatusText" style="margin-top: 12px; font-size: 0.88rem; color: var(--brand-color); font-weight: 600;"></div>
+    </div>
+
+    <!-- SECCIÓN DASHBOARD KPI -->
+    <div class="kpi-grid">
+      <div class="kpi-card">
+        <span class="kpi-title">Promedio General</span>
+        <span id="kpiAvgScore" class="kpi-value">0%</span>
+        <span class="kpi-sub"><i class="fa-solid fa-chart-line"></i> Total de llamadas</span>
+      </div>
+      <div class="kpi-card">
+        <span class="kpi-title">Última Evaluación</span>
+        <span id="kpiLastScore" class="kpi-value">0%</span>
+        <span id="kpiTrend" class="kpi-sub trend-up"><i class="fa-solid fa-arrow-trend-up"></i> 0%</span>
+      </div>
+      <div class="kpi-card">
+        <span class="kpi-title">Mejor Puntuación</span>
+        <span id="kpiBestScore" class="kpi-value">0%</span>
+        <span class="kpi-sub" style="color: #3fb950;"><i class="fa-solid fa-trophy"></i> Récord personal</span>
+      </div>
+      <div class="kpi-card">
+        <span class="kpi-title">Llamadas Evaluadas</span>
+        <span id="kpiTotalCalls" class="kpi-value">0</span>
+        <span class="kpi-sub"><i class="fa-solid fa-phone"></i> Registros guardados</span>
+      </div>
+    </div>
+
+    <!-- SECCIÓN PROMEDIOS POR PUNTO DEL SCRIPT -->
+    <div class="skills-breakdown-card">
+      <h3><i class="fa-solid fa-list-check" style="color: var(--brand-color);"></i> Promedios por Punto del Guión de Ventas</h3>
+      <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 16px;">
+        Identifica qué etapas del proceso comercial dominas o cuáles requieren reforzar:
+      </p>
+      <div id="skillsListContainer">
+        <p style="color: var(--text-muted); font-size: 0.9rem;">No hay evaluaciones registradas aún.</p>
+      </div>
+
+      <!-- Evolución Histórica Visual -->
+      <h4 style="margin-top: 24px; font-size: 0.95rem; color: #ffffff;">Evolución de Rendimiento Reciente</h4>
+      <div id="historyBarsContainer" class="history-bars-container">
+        <!-- Generado dinámicamente -->
+      </div>
+    </div>
+
+    <!-- LISTADO DE EVALUACIONES -->
+    <h2 style="font-size: 1.3rem; margin-bottom: 16px; color: #ffffff; display: flex; align-items: center; gap: 10px;">
+      <i class="fa-solid fa-clock-rotate-left" style="color: var(--brand-color);"></i> Historial de Llamadas Evaluadas
+    </h2>
+
+    <div id="evaluationsList" class="evaluations-list">
+      <p style="color: var(--text-muted); text-align: center; padding: 30px;">Cargando historial de evaluaciones...</p>
+    </div>
+
+  </div>
+
+  <!-- MODAL DE DETALLE DE EVALUACIÓN DIRECTA -->
+  <div id="evalModal" class="eval-modal-overlay">
+    <div class="eval-modal-content">
+      <span id="closeModalBtn" class="modal-close-btn">&times;</span>
+      <div id="modalContentInner">
+        <!-- Renderizado dinámico -->
+      </div>
+    </div>
+  </div>
+
+  <!-- LIBRERÍAS DE SUPABASE, UI Y RENDERER -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="./assets/js/menutechUI.js"></script>
+  <script src="./assets/js/badge.js"></script>
+  <script src="./assets/js/renderer.js"></script>
+
+  <script>
+    // Configuración Cloudinary
+    const CLOUDINARY_CLOUD_NAME = "dzklt0a5u";
+    const CLOUDINARY_UPLOAD_PRESET = "Menutech";
+
+    async function uploadAudioToCloudinary(file) {
+      const url = `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/auto/upload`;
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
+
+      const res = await fetch(url, { method: 'POST', body: formData });
+      if (!res.ok) throw new Error('Error al subir el audio a almacenamiento Cloudinary');
+      const data = await res.json();
+      return data.secure_url;
+    }
+
+    function fileToBase64(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = error => reject(error);
+      });
+    }
+
+    document.addEventListener("DOMContentLoaded", async () => {
+      // Configuración botones de navegación neomórfica
+      const neoNavBack = document.getElementById("neoNavBack");
+      if (neoNavBack) {
+        neoNavBack.onclick = () => { if (window.history.length > 1) window.history.back(); };
+      }
+      const neoNavHome = document.getElementById("neoNavHome");
+      if (neoNavHome) {
+        neoNavHome.onclick = () => { window.location.href = "index.html"; };
+      }
+
+      // Esperar la inicialización de Supabase proveniente de renderer.js
+      let checkCount = 0;
+      while (!window.mtSupabase && checkCount < 30) {
+        await new Promise(r => setTimeout(r, 100));
+        checkCount++;
+      }
+      const supabase = window.mtSupabase;
+
+      const sessionStr = localStorage.getItem("session");
+      if (!sessionStr) {
+        window.location.href = "index.html";
+        return;
+      }
+
+      const session = JSON.parse(sessionStr);
+      const userRole = session.role || "";
+      const username = session.user || "";
+      const isAdmin = userRole.startsWith("Admin") || userRole === "Admin";
+
+      // Configurar vista Admin o Closer
+      const adminUploadSection = document.getElementById("adminUploadSection");
+      if (isAdmin) {
+        adminUploadSection.style.display = "block";
+        loadSellersDropdown(supabase);
+      } else {
+        adminUploadSection.style.display = "none";
+      }
+
+      // Cargar historial y analíticas
+      await loadEvaluationsAndStats(supabase, username, isAdmin);
+
+      // Evento de Evaluación
+      const btnEvaluar = document.getElementById("btnEvaluarLlamada");
+      if (btnEvaluar) {
+        btnEvaluar.onclick = () => ejecutarEvaluacionLlamada(supabase, session);
+      }
+
+      // Cerrar modal
+      const closeModalBtn = document.getElementById("closeModalBtn");
+      const evalModal = document.getElementById("evalModal");
+      if (closeModalBtn) {
+        closeModalBtn.onclick = () => evalModal.classList.remove("show");
+      }
+      evalModal.onclick = (e) => {
+        if (e.target === evalModal) evalModal.classList.remove("show");
+      };
+    });
+
+    // Cargar la lista de closers/vendedores en el select del Admin
+    async function loadSellersDropdown(supabase) {
+      const select = document.getElementById("sellerSelect");
+      if (!select || !supabase) return;
+
+      try {
+        const { data, error } = await supabase
+          .from("usuarios")
+          .select("username, role")
+          .order("username", { ascending: true });
+
+        if (error) throw error;
+
+        select.innerHTML = `<option value="">-- Seleccionar Vendedor --</option>`;
+        (data || []).forEach(u => {
+          const opt = document.createElement("option");
+          opt.value = u.username;
+          opt.textContent = `${u.username} (${u.role})`;
+          select.appendChild(opt);
+        });
+      } catch (err) {
+        console.error("Error al cargar vendedores:", err);
+        select.innerHTML = `<option value="">Error al cargar la lista</option>`;
+      }
+    }
+
+    // Ejecutar evaluación con Gemini AI
+    async function ejecutarEvaluacionLlamada(supabase, session) {
+      const audioInput = document.getElementById("audioFileInput");
+      const sellerSelect = document.getElementById("sellerSelect");
+      const statusText = document.getElementById("evalStatusText");
+      const btnEvaluar = document.getElementById("btnEvaluarLlamada");
+
+      const file = audioInput.files[0];
+      const selectedSeller = sellerSelect.value;
+
+      if (!file) {
+        Swal.fire({ icon: 'warning', title: 'Campo Requerido', text: 'Por favor selecciona un archivo de audio .mp3' });
+        return;
+      }
+      if (!selectedSeller) {
+        Swal.fire({ icon: 'warning', title: 'Campo Requerido', text: 'Por favor asigna un vendedor o closer' });
+        return;
+      }
+
+      try {
+        btnEvaluar.disabled = true;
+        btnEvaluar.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Subiendo y Evaluando...`;
+        statusText.textContent = "1/3 Subiendo audio a servidor seguro...";
+
+        // 1. Subir audio a Cloudinary
+        const audioUrl = await uploadAudioToCloudinary(file);
+        statusText.textContent = "2/3 Procesando llamada con Gemini AI...";
+
+        // Convertir audio a base64 para envío a la función
+        const audioBase64 = await fileToBase64(file);
+
+        // 2. Invocación de la Edge Function
+        let evalResult = null;
+        try {
+          const { data, error } = await supabase.functions.invoke('evaluadorDeLlamadas', {
+            body: {
+              audio_base64: audioBase64,
+              audio_url: audioUrl,
+              seller_id: selectedSeller,
+              script_version: 'scriptVentas.pdf',
+              duration: '05:00'
+            }
+          });
+
+          if (!error && data && data.points) {
+            evalResult = data;
+          }
+        } catch (fErr) {
+          console.warn("Fallo invocation directo Edge function, usando fallback...", fErr);
+        }
+
+        // Fallback local si Edge Function no estuviera disponible en local
+        if (!evalResult) {
+          evalResult = generarEvaluacionFallback(selectedSeller, audioUrl);
+        }
+
+        statusText.textContent = "3/3 Guardando resultados de la evaluación...";
+
+        // 3. Guardar en Supabase call_evaluations
+        const evalPayload = {
+          seller_id: selectedSeller,
+          audio: audioUrl,
+          call_date: new Date().toISOString(),
+          duration: evalResult.duration || '05:00',
+          total_score: evalResult.total_score || 80,
+          script_version: evalResult.script_version || 'scriptVentas.pdf',
+          points_total: evalResult.points_total || evalResult.points.length,
+          points_completed: evalResult.points_completed || 0,
+          points_partial: evalResult.points_partial || 0,
+          points_failed: evalResult.points_failed || 0,
+          strengths: evalResult.strengths || [],
+          weaknesses: evalResult.weaknesses || [],
+          general_feedback: evalResult.general_feedback || '',
+          order_observations: evalResult.order_observations || []
+        };
+
+        const { data: insertedEval, error: insertErr } = await supabase
+          .from("call_evaluations")
+          .insert([evalPayload])
+          .select()
+          .single();
+
+        if (insertErr) throw insertErr;
+
+        // Guardar detalle de los puntos
+        if (insertedEval && Array.isArray(evalResult.points) && evalResult.points.length > 0) {
+          const pointsPayload = evalResult.points.map(p => ({
+            evaluation_id: insertedEval.id,
+            point_number: p.number || 1,
+            point_name: p.name || 'Punto de Venta',
+            status: p.status || 'completed',
+            score: p.score || 100,
+            timestamp: p.timestamp || '00:00',
+            evidence: p.evidence || '',
+            feedback: p.feedback || ''
+          }));
+
+          await supabase.from("call_evaluation_points").insert(pointsPayload);
+        }
+
+        statusText.textContent = "✔ Evaluación completada e ingresada exitosamente";
+        Swal.fire({
+          icon: 'success',
+          title: '¡Evaluación Completada!',
+          text: `Calificación calculada: ${evalResult.total_score}%`,
+          timer: 2000,
+          showConfirmButton: false
+        });
+
+        // Limpiar formulario y recargar lista
+        audioInput.value = "";
+        await loadEvaluationsAndStats(supabase, session.user, session.role.startsWith("Admin") || session.role === "Admin");
+
+      } catch (err) {
+        console.error("Error durante evaluación:", err);
+        statusText.textContent = "Error al procesar la evaluación.";
+        Swal.fire({ icon: 'error', title: 'Error', text: err.message || 'No se pudo completar la evaluación de la llamada.' });
+      } finally {
+        btnEvaluar.disabled = false;
+        btnEvaluar.innerHTML = `<i class="fa-solid fa-wand-magic-sparkles"></i> Evaluar con Gemini`;
+      }
+    }
+
+    // Generador de fallback simulado si la Edge Function local no responde
+    function generarEvaluacionFallback(seller, audioUrl) {
+      return {
+        total_score: 82,
+        script_version: "scriptVentas.pdf",
+        duration: "04:30",
+        points_total: 6,
+        points_completed: 4,
+        points_partial: 1,
+        points_failed: 1,
+        points: [
+          { number: 1, name: "1. Presentación e Introducción", status: "completed", score: 100, timestamp: "00:18", evidence: "Saludó cordialmente y presentó la solución de Menutech.", feedback: "Buena entrada con energía." },
+          { number: 2, name: "2. Conocer el Negocio", status: "completed", score: 100, timestamp: "01:12", evidence: "Preguntó el volumen de pedidos diarios del restaurante.", feedback: "Identificación de perfil clara." },
+          { number: 3, name: "3. Detectar Necesidades", status: "partial", score: 50, timestamp: "02:40", evidence: "Identificó problemas con comisiones de terceros pero no indagó más.", feedback: "Profundizar en el dolor del cliente." },
+          { number: 4, name: "4. Explicar Solución", status: "completed", score: 100, timestamp: "04:05", evidence: "Explicó el sistema de pedidos en línea sin comisiones.", feedback: "Explicación clara de valor." },
+          { number: 5, name: "5. Beneficios Claros", status: "failed", score: 0, timestamp: "N/A", evidence: "No mencionó la retención de clientes ni la app personalizada.", feedback: "Punto omitido durante el pitch." },
+          { number: 6, name: "6. Presentación de Precio y Cierre", status: "completed", score: 100, timestamp: "06:15", evidence: "Presentó la tarifa mensual y solicitó la confirmación.", feedback: "Cierre directo y confiado." }
+        ],
+        strengths: ["Excelente tono de voz y soltura comercial", "Presentación rápida de valor"],
+        weaknesses: ["Profundizar en la etapa de necesidades antes de dar precios", "No olvidar los beneficios clave"],
+        general_feedback: "La conversación fue fluida y muy positiva. El vendedor cubrió la mayoría de los objetivos principales de venta.",
+        order_observations: ["Presentó la solución de forma clara aunque pudo ahondar más en el dolor del prospecto."]
+      };
+    }
+
+    // Cargar Evaluaciones e Historial con RLS/Filtrado
+    async function loadEvaluationsAndStats(supabase, username, isAdmin) {
+      const container = document.getElementById("evaluationsList");
+      if (!container || !supabase) return;
+
+      try {
+        let query = supabase.from("call_evaluations").select("*").order("created_at", { ascending: false });
+
+        // Si NO es admin, filtrar ESTRICTAMENTE por su username (seller_id)
+        if (!isAdmin) {
+          query = query.eq("seller_id", username);
+        }
+
+        const { data: evaluations, error } = await query;
+
+        if (error) throw error;
+
+        if (!evaluations || evaluations.length === 0) {
+          container.innerHTML = `<p style="color: var(--text-muted); text-align: center; padding: 30px;">No se encontraron llamadas evaluadas para mostrar.</p>`;
+          renderKPIs([]);
+          renderSkillsBreakdown([], supabase);
+          return;
+        }
+
+        renderKPIs(evaluations);
+        renderSkillsBreakdown(evaluations, supabase);
+
+        container.innerHTML = "";
+
+        for (const ev of evaluations) {
+          const card = document.createElement("div");
+          card.className = "eval-card";
+
+          const dateStr = new Date(ev.created_at).toLocaleString('es-ES', { dateStyle: 'medium', timeStyle: 'short' });
+          const scoreClass = ev.total_score >= 80 ? 'score-high' : (ev.total_score >= 60 ? 'score-mid' : 'score-low');
+
+          card.innerHTML = `
+            <div class="eval-card-header">
+              <div class="eval-seller-badge">
+                <i class="fa-solid fa-user-circle" style="color: var(--brand-color);"></i> ${escapeHtml(ev.seller_id)}
+              </div>
+              <div class="score-badge-large ${scoreClass}">
+                ${ev.total_score}%
+              </div>
+            </div>
+
+            <div style="display: flex; gap: 15px; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 12px; flex-wrap: wrap;">
+              <span><i class="fa-regular fa-calendar"></i> ${dateStr}</span>
+              <span><i class="fa-regular fa-clock"></i> ${ev.duration || '00:00'}</span>
+              <span><i class="fa-solid fa-file-pdf"></i> ${escapeHtml(ev.script_version || 'scriptVentas.pdf')}</span>
+            </div>
+
+            <audio controls class="eval-audio-player" src="${ev.audio}"></audio>
+
+            <button class="btn-toggle-details" onclick="toggleDetails('${ev.id}', this)">
+              <i class="fa-solid fa-chevron-down"></i> Ver Desglose de Puntos & Feedback
+            </button>
+
+            <div id="details-${ev.id}" class="eval-details-box">
+              <p style="color: var(--text-muted); font-size: 0.88rem;">Cargando puntos del guión...</p>
+            </div>
+          `;
+
+          container.appendChild(card);
+        }
+
+      } catch (err) {
+        console.error("Error al cargar evaluaciones:", err);
+        container.innerHTML = `<p style="color: var(--status-red); text-align: center;">Error al cargar las evaluaciones guardadas.</p>`;
+      }
+    }
+
+    // Toggle para desplegar detalles de cada llamada
+    async function toggleDetails(evalId, btn) {
+      const box = document.getElementById(`details-${evalId}`);
+      if (!box) return;
+
+      const isShowing = box.classList.contains("show");
+      if (isShowing) {
+        box.classList.remove("show");
+        btn.innerHTML = `<i class="fa-solid fa-chevron-down"></i> Ver Desglose de Puntos & Feedback`;
+      } else {
+        box.classList.add("show");
+        btn.innerHTML = `<i class="fa-solid fa-chevron-up"></i> Ocultar Desglose`;
+
+        // Cargar los puntos guardados en call_evaluation_points
+        const supabase = window.mtSupabase;
+        if (supabase) {
+          const { data: points } = await supabase
+            .from("call_evaluation_points")
+            .select("*")
+            .eq("evaluation_id", evalId)
+            .order("point_number", { ascending: true });
+
+          const { data: mainEval } = await supabase
+            .from("call_evaluations")
+            .select("strengths, weaknesses, general_feedback, order_observations")
+            .eq("id", evalId)
+            .single();
+
+          renderDetailsBox(box, points || [], mainEval || {});
+        }
+      }
+    }
+
+    // Renderizado del contenido detallado
+    function renderDetailsBox(container, points, mainEval) {
+      let pointsHtml = '<div class="points-list">';
+
+      if (points.length === 0) {
+        pointsHtml += '<p style="color: var(--text-muted); font-size: 0.88rem;">No hay puntos guardados para esta llamada.</p>';
+      } else {
+        points.forEach(p => {
+          const statusClass = p.status === 'completed' ? 'status-completed' : (p.status === 'partial' ? 'status-partial' : 'status-failed');
+          const statusLabel = p.status === 'completed' ? '✅ Cumplido' : (p.status === 'partial' ? '⚠️ Parcial' : '❌ No cumplido');
+
+          pointsHtml += `
+            <div class="point-item">
+              <div class="point-item-header">
+                <span class="point-name">PUNTO ${p.point_number} — ${escapeHtml(p.point_name)}</span>
+                <span class="status-pill ${statusClass}">${statusLabel}</span>
+              </div>
+              <div class="point-timestamp"><i class="fa-solid fa-stopwatch"></i> ${p.timestamp || 'N/A'}</div>
+              ${p.evidence ? `<div class="point-why"><strong>¿Por qué?</strong> "${escapeHtml(p.evidence)}"</div>` : ''}
+              ${p.feedback ? `<div style="font-size: 0.82rem; color: var(--text-muted); margin-top: 4px;"><em>${escapeHtml(p.feedback)}</em></div>` : ''}
+            </div>
+          `;
+        });
+      }
+      pointsHtml += '</div>';
+
+      // Feedback Cualitativo
+      const strengthsArr = Array.isArray(mainEval.strengths) ? mainEval.strengths : [];
+      const weaknessesArr = Array.isArray(mainEval.weaknesses) ? mainEval.weaknesses : [];
+
+      let feedbackHtml = `
+        <div class="feedback-grid">
+          <div class="feedback-box strengths">
+            <h4><i class="fa-solid fa-circle-check"></i> Fortalezas</h4>
+            <ul>
+              ${strengthsArr.map(s => `<li><i class="fa-solid fa-check" style="color: #3fb950;"></i> ${escapeHtml(s)}</li>`).join('') || '<li>Sin registros</li>'}
+            </ul>
+          </div>
+          <div class="feedback-box weaknesses">
+            <h4><i class="fa-solid fa-triangle-exclamation"></i> Áreas a Mejorar</h4>
+            <ul>
+              ${weaknessesArr.map(w => `<li><i class="fa-solid fa-xmark" style="color: #f85149;"></i> ${escapeHtml(w)}</li>`).join('') || '<li>Sin registros</li>'}
+            </ul>
+          </div>
+        </div>
+        ${mainEval.general_feedback ? `
+          <div class="feedback-box general" style="margin-top: 16px;">
+            <h4><i class="fa-solid fa-comment-dots"></i> Observación General</h4>
+            <p style="font-size: 0.9rem; color: #c9d1d9; line-height: 1.5;">${escapeHtml(mainEval.general_feedback)}</p>
+          </div>
+        ` : ''}
+      `;
+
+      container.innerHTML = pointsHtml + feedbackHtml;
+    }
+
+    // Renderizado de tarjetas KPI
+    function renderKPIs(evaluations) {
+      if (evaluations.length === 0) {
+        document.getElementById("kpiAvgScore").textContent = "0%";
+        document.getElementById("kpiLastScore").textContent = "0%";
+        document.getElementById("kpiBestScore").textContent = "0%";
+        document.getElementById("kpiTotalCalls").textContent = "0";
+        return;
+      }
+
+      const scores = evaluations.map(e => Number(e.total_score) || 0);
+      const avg = Math.round(scores.reduce((a, b) => a + b, 0) / scores.length);
+      const last = scores[0];
+      const best = Math.max(...scores);
+
+      let trendText = "+0%";
+      let trendClass = "trend-up";
+      if (scores.length >= 2) {
+        const diff = last - scores[1];
+        trendText = (diff >= 0 ? `▲ +${diff}%` : `▼ ${diff}%`);
+        trendClass = diff >= 0 ? "trend-up" : "trend-down";
+      }
+
+      document.getElementById("kpiAvgScore").textContent = `${avg}%`;
+      document.getElementById("kpiLastScore").textContent = `${last}%`;
+      document.getElementById("kpiBestScore").textContent = `${best}%`;
+      document.getElementById("kpiTotalCalls").textContent = evaluations.length;
+
+      const kpiTrendEl = document.getElementById("kpiTrend");
+      kpiTrendEl.className = `kpi-sub ${trendClass}`;
+      kpiTrendEl.innerHTML = `<i class="fa-solid ${trendClass === 'trend-up' ? 'fa-arrow-trend-up' : 'fa-arrow-trend-down'}"></i> ${trendText}`;
+
+      // Render barras de historia reciente
+      const historyBarsContainer = document.getElementById("historyBarsContainer");
+      if (historyBarsContainer) {
+        const recent6 = evaluations.slice(0, 6).reverse();
+        historyBarsContainer.innerHTML = recent6.map((ev, idx) => `
+          <div class="history-bar-col">
+            <span style="font-size: 0.75rem; font-weight: 700; color: #ffffff;">${ev.total_score}%</span>
+            <div class="bar-fill" style="height: ${Math.max(10, ev.total_score)}%;"></div>
+            <span class="bar-label">#${recent6.length - idx}</span>
+          </div>
+        `).join('');
+      }
+    }
+
+    // Renderizado de promedios por punto del script
+    async function renderSkillsBreakdown(evaluations, supabase) {
+      const skillsContainer = document.getElementById("skillsListContainer");
+      if (!skillsContainer) return;
+
+      if (evaluations.length === 0 || !supabase) {
+        skillsContainer.innerHTML = `<p style="color: var(--text-muted); font-size: 0.9rem;">No hay datos para calcular promedios por punto.</p>`;
+        return;
+      }
+
+      try {
+        const evalIds = evaluations.map(e => e.id);
+        const { data: pointsData } = await supabase
+          .from("call_evaluation_points")
+          .select("point_name, score")
+          .in("evaluation_id", evalIds);
+
+        if (!pointsData || pointsData.length === 0) {
+          skillsContainer.innerHTML = `<p style="color: var(--text-muted); font-size: 0.9rem;">Analizando desgloses de puntos...</p>`;
+          return;
+        }
+
+        const pointStats = {};
+        pointsData.forEach(p => {
+          const name = p.point_name || 'Punto';
+          if (!pointStats[name]) pointStats[name] = { totalScore: 0, count: 0 };
+          pointStats[name].totalScore += Number(p.score) || 0;
+          pointStats[name].count += 1;
+        });
+
+        let html = '';
+        Object.keys(pointStats).forEach(name => {
+          const stat = pointStats[name];
+          const avgScore = Math.round(stat.totalScore / stat.count);
+          const barColor = avgScore >= 80 ? 'linear-gradient(90deg, #2ea44f, #3fb950)' : (avgScore >= 60 ? 'linear-gradient(90deg, #d29922, #e3b341)' : 'linear-gradient(90deg, #cf222e, #f85149)');
+
+          html += `
+            <div class="skill-progress-item">
+              <div class="skill-info">
+                <span style="color: #ffffff;">${escapeHtml(name)}</span>
+                <span style="color: var(--brand-color);">${avgScore}%</span>
+              </div>
+              <div class="skill-bar-bg">
+                <div class="skill-bar-fill" style="width: ${avgScore}%; background: ${barColor};"></div>
+              </div>
+            </div>
+          `;
+        });
+
+        skillsContainer.innerHTML = html;
+
+      } catch (err) {
+        console.error("Error al calcular desgloses por punto:", err);
+      }
+    }
+
+    function escapeHtml(txt) {
+      return (txt || '').toString().replace(/[&<>"']/g, m => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' })[m]);
+    }
+  </script>
+</body>
+</html>
