@@ -1,5 +1,5 @@
 /* ====================================================================
-   CLOSER CHAT - GEMINI AI CHATBOT STYLES
+   MENUTECH AI CHATBOT STYLES
    Positioned in the bottom right corner with 3D Model Viewer trigger.
    ==================================================================== */
 
@@ -43,7 +43,7 @@
   border-radius: 50%;
   background: radial-gradient(circle, #2a2d36 0%, #121316 100%);
   border: 2px solid rgba(255, 122, 0, 0.6);
-  box-shadow: 0 0 20px rgba(ff, 122, 0, 0.35), 0 8px 24px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 0 20px rgba(255, 122, 0, 0.35), 0 8px 24px rgba(0, 0, 0, 0.5);
   cursor: pointer;
   overflow: hidden;
   transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s ease, border-color 0.3s ease;
@@ -77,16 +77,7 @@
   background-color: #00e676;
   border: 2px solid #121316;
   box-shadow: 0 0 8px #00e676;
-}
-
-/* Fallback Icon inside Model Trigger */
-.closer-model-fallback {
-  width: 42px;
-  height: 42px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #ff7a00;
+  z-index: 10;
 }
 
 /* Chat Window Modal */
