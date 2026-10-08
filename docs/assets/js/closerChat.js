@@ -1,6 +1,6 @@
 /**
- * CloserChat - Gemini AI Chatbot with 3D Model Viewer
- * Plug-and-play web component and script for integrating Closer Chatbot.
+ * Menutech AI - Gemini Chatbot with 3D Model Viewer
+ * Plug-and-play web component and script for integrating Menutech AI Chatbot.
  */
 
 class CloserChat extends HTMLElement {
@@ -28,7 +28,7 @@ class CloserChat extends HTMLElement {
             <div class="closer-chat-header-info">
               <div class="closer-avatar-mini">🤖</div>
               <div class="closer-header-text">
-                <h3>Closer AI <span style="font-size: 10px; background: rgba(0, 230, 118, 0.2); color: #00e676; padding: 2px 6px; border-radius: 8px;">PRO</span></h3>
+                <h3>Menutech AI <span style="font-size: 10px; background: rgba(0, 230, 118, 0.2); color: #00e676; padding: 2px 6px; border-radius: 8px;">PRO</span></h3>
                 <span>Asistente Inteligente Gemini</span>
               </div>
             </div>
@@ -60,27 +60,17 @@ class CloserChat extends HTMLElement {
         </div>
 
         <!-- 3D Model Trigger in Bottom Right Corner -->
-        <div id="closerTrigger" class="closer-model-trigger" title="Abrir Closer AI Chatbot">
+        <div id="closerTrigger" class="closer-model-trigger" title="Abrir Menutech AI Chatbot">
           <span class="closer-status-badge"></span>
           <model-viewer
-            src="./assets/iimg/AI.gltf"
-            alt="Closer AI 3D Avatar"
+            src="./assets/img/AI.gltf"
+            alt="Menutech AI 3D Avatar"
             auto-rotate
             camera-controls
             disable-zoom
             shadow-intensity="1"
             interaction-prompt="none"
             ar>
-            <!-- Fallback display while GLTF is loading or missing -->
-            <div slot="poster" class="closer-model-fallback">
-              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                <rect x="3" y="11" width="18" height="10" rx="2"></rect>
-                <circle cx="12" cy="5" r="2"></circle>
-                <path d="M12 7v4"></path>
-                <line x1="8" y1="16" x2="8.01" y2="16"></line>
-                <line x1="16" y1="16" x2="16.01" y2="16"></line>
-              </svg>
-            </div>
           </model-viewer>
         </div>
       </div>
@@ -149,9 +139,7 @@ class CloserChat extends HTMLElement {
       welcomeDiv.className = 'closer-msg bot';
       welcomeDiv.innerHTML = `
         <div class="closer-bubble">
-          ¡Hola! 👋 Soy <strong>Closer AI</strong>, tu asistente de inteligencia artificial estilo ChatGPT Pro.
-          <br><br>
-          Puedes hacerme cualquier pregunta sobre cultura general, ideas, código, redacción o lo que necesites. ¿En qué te ayudo hoy?
+          En que puedo ayudarte
         </div>
       `;
       this.chatBody.appendChild(welcomeDiv);
