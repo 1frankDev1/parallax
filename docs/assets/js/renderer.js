@@ -351,12 +351,59 @@
 
     if (logoutBtn) logoutBtn.onclick = () => logout();
 
+    // --- LÓGICA DE PESTAÑAS Y EVENTOS PARA DUAL AUTH ---
+    const tabBasic = document.getElementById("tab-basic");
+    const tabSupa = document.getElementById("tab-supabase");
+    const contentBasic = document.getElementById("content-basic");
+    const contentSupa = document.getElementById("content-supabase");
+
+    if (tabBasic && tabSupa) {
+      tabBasic.onclick = () => {
+        tabBasic.classList.add("active");
+        tabSupa.classList.remove("active");
+        contentBasic.classList.add("active");
+        contentSupa.classList.remove("active");
+      };
+      tabSupa.onclick = () => {
+        tabSupa.classList.add("active");
+        tabBasic.classList.remove("active");
+        contentSupa.classList.add("active");
+        contentBasic.classList.remove("active");
+      };
+    }
+
+    const supaLoginBtn = document.getElementById("supa-login-btn");
+    if (supaLoginBtn) {
+      supaLoginBtn.onclick = doSupabaseLogin;
+    }
+
+    const openRegBtn = document.getElementById("open-register-btn");
+    const closeRegBtn = document.getElementById("close-register-btn");
+    const regModal = document.getElementById("register-modal");
+    const supaRegBtn = document.getElementById("supa-reg-btn");
+
+    if (openRegBtn && regModal) {
+      openRegBtn.onclick = () => regModal.classList.add("visible");
+    }
+    if (closeRegBtn && regModal) {
+      closeRegBtn.onclick = () => regModal.classList.remove("visible");
+    }
+    if (supaRegBtn) {
+      supaRegBtn.onclick = doSupabaseRegister;
+    }
+
     if (loginBtn) {
       loginBtn.onclick = doLogin;
 
       document.addEventListener("keydown", e => {
         const overlayVisible = document.getElementById("login-overlay")?.style.display !== "none";
-        if (e.key === "Enter" && overlayVisible) doLogin();
+        if (e.key === "Enter" && overlayVisible) {
+          if (contentSupa && contentSupa.classList.contains("active")) {
+            doSupabaseLogin();
+          } else {
+            doLogin();
+          }
+        }
       });
     }
 
@@ -419,6 +466,182 @@
         menu.addEventListener('transitionend', onHide);
       }
     });
+  }
+
+  // ------------------------------
+  // doSupabaseLogin: Iniciar sesión con Supabase Auth (email + password)
+  // ------------------------------
+  async function doSupabaseLogin() {
+    const emailEl = document.getElementById("supa-email");
+    const passEl = document.getElementById("supa-pass");
+    const supaBtn = document.getElementById("supa-login-btn");
+    const status = document.getElementById("supa-login-status");
+    const badge = document.getElementById("user-badge");
+
+    if (!emailEl || !passEl || !supaBtn) return;
+
+    const email = String(emailEl.value || "").trim();
+    const pass = String(passEl.value || "").trim();
+
+    if (!email || !pass) {
+      if (status) {
+        status.innerText = "Ingresa correo y contraseña";
+        status.style.color = "#ff4d4d";
+      }
+      return;
+    }
+
+    supaBtn.classList.add("loading");
+    if (status) status.innerText = "";
+
+    if (!supabase) {
+      await initSupabase(2);
+      if (!supabase) {
+        supaBtn.classList.remove("loading");
+        if (status) {
+          status.innerText = "Error de conexión con el servidor";
+          status.style.color = "#ff4d4d";
+        }
+        return;
+      }
+    }
+
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: email,
+        password: pass
+      });
+
+      if (error || !data.user) {
+        supaBtn.classList.remove("loading");
+        if (status) {
+          status.innerText = error ? error.message : "Credenciales incorrectas";
+          status.style.color = "#ff4d4d";
+        }
+        return;
+      }
+
+      let userRole = data.user.user_metadata?.role || "CS";
+
+      // Intentar obtener rol de la tabla usuarios si coincide con email/username
+      const { data: userData } = await supabase
+        .from("usuarios")
+        .select("role")
+        .eq("username", email)
+        .maybeSingle();
+
+      if (userData && userData.role) {
+        userRole = userData.role;
+      }
+
+      session = {
+        user: data.user.email,
+        role: userRole,
+        isSupabaseAuth: true,
+        authId: data.user.id
+      };
+      localStorage.setItem("session", JSON.stringify(session));
+
+      supaBtn.classList.remove("loading");
+      supaBtn.classList.add("success");
+      supaBtn.innerText = "✔";
+
+      if (document.getElementById("login-overlay")) document.getElementById("login-overlay").style.display = "none";
+
+      const badgeUsernameEl = document.getElementById("badge-username");
+      const badgeRoleEl = document.getElementById("badge-role");
+      if (badgeUsernameEl) badgeUsernameEl.innerText = session.user;
+      if (badgeRoleEl) badgeRoleEl.innerText = session.role;
+
+      if (badge) {
+        badge.classList.remove("hidden");
+        setTimeout(() => badge.classList.add("expand"), 10);
+      }
+
+      checkAccessHours(session.role);
+      applyRolePermissions(session.role);
+
+      setTimeout(() => {
+        supaBtn.classList.remove("success");
+        supaBtn.innerText = "Entrar con Supabase";
+      }, 800);
+
+    } catch (err) {
+      console.error("Error en doSupabaseLogin:", err);
+      supaBtn.classList.remove("loading");
+      if (status) {
+        status.innerText = "Error en la autenticación";
+        status.style.color = "#ff4d4d";
+      }
+    }
+  }
+
+  // ------------------------------
+  // doSupabaseRegister: Registro con Supabase Auth (confirmación por correo)
+  // ------------------------------
+  async function doSupabaseRegister() {
+    const emailEl = document.getElementById("reg-email");
+    const passEl = document.getElementById("reg-pass");
+    const regBtn = document.getElementById("supa-reg-btn");
+    const status = document.getElementById("reg-status");
+
+    if (!emailEl || !passEl || !regBtn) return;
+
+    const email = String(emailEl.value || "").trim();
+    const pass = String(passEl.value || "").trim();
+
+    if (!email || !pass) {
+      if (status) {
+        status.innerText = "Ingresa correo y contraseña";
+        status.style.color = "#ff4d4d";
+      }
+      return;
+    }
+
+    regBtn.classList.add("loading");
+    if (status) status.innerText = "";
+
+    if (!supabase) {
+      await initSupabase(2);
+      if (!supabase) {
+        regBtn.classList.remove("loading");
+        if (status) {
+          status.innerText = "Error de conexión con el servidor";
+          status.style.color = "#ff4d4d";
+        }
+        return;
+      }
+    }
+
+    try {
+      const { data, error } = await supabase.auth.signUp({
+        email: email,
+        password: pass
+      });
+
+      regBtn.classList.remove("loading");
+
+      if (error) {
+        if (status) {
+          status.innerText = error.message;
+          status.style.color = "#ff4d4d";
+        }
+        return;
+      }
+
+      if (status) {
+        status.innerText = "✔ Registro exitoso. Se ha enviado un correo de confirmación. Por favor revisa tu bandeja de entrada.";
+        status.style.color = "#2ea44f";
+      }
+
+    } catch (err) {
+      console.error("Error en doSupabaseRegister:", err);
+      regBtn.classList.remove("loading");
+      if (status) {
+        status.innerText = "Error durante el registro";
+        status.style.color = "#ff4d4d";
+      }
+    }
   }
 
   // ------------------------------

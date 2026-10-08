@@ -230,13 +230,14 @@
 }
 
 .login-panel { 
-  width: 300px; 
+  width: 340px;
   padding: 25px; 
   background: #161b22; 
   border: 1px solid #30363d; 
-  border-radius: 12px; 
+  border-radius: 16px;
   color: white;
   animation: fadeIn 0.3s ease-in-out;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
 }
  
 .login-panel h3 { 
@@ -244,7 +245,133 @@
   margin-bottom: 15px; 
   font-size: 18px; 
   font-weight: 600; 
-} 
+  text-align: center;
+}
+
+.auth-tabs {
+  display: flex;
+  background-color: #0d1117;
+  border: 1px solid #30363d;
+  border-radius: 10px;
+  padding: 4px;
+  margin-bottom: 18px;
+}
+
+.tab-btn {
+  flex: 1;
+  padding: 8px 10px;
+  background: transparent;
+  border: none;
+  color: #8b949e;
+  font-size: 12px;
+  font-weight: 600;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.tab-btn.active {
+  background-color: var(--brand-color);
+  color: #ffffff;
+  box-shadow: 0 2px 8px var(--brand-glow);
+}
+
+.tab-content {
+  display: none;
+}
+
+.tab-content.active {
+  display: block;
+  animation: fadeIn 0.3s ease;
+}
+
+.btn-secondary {
+  width: 100%;
+  padding: 10px;
+  background-color: transparent;
+  border: 1px solid #30363d;
+  border-radius: 10px;
+  color: #8b949e;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  margin-top: 10px;
+}
+
+.btn-secondary:hover {
+  border-color: var(--brand-color);
+  color: var(--brand-color);
+}
+
+.register-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(5px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 10001;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s ease;
+}
+
+.register-modal-overlay.visible {
+  opacity: 1;
+  visibility: visible;
+}
+
+.register-modal-content {
+  background-color: #161b22;
+  border: 1px solid #30363d;
+  border-radius: 16px;
+  padding: 25px;
+  width: 90%;
+  max-width: 360px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+  position: relative;
+  color: white;
+}
+
+.register-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.register-modal-header h3 {
+  color: var(--brand-color);
+  font-size: 18px;
+  margin: 0;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  color: #8b949e;
+  font-size: 20px;
+  cursor: pointer;
+}
+
+.close-btn:hover {
+  color: #fff;
+}
+
+.badge-info {
+  display: inline-block;
+  background: rgba(255, 140, 0, 0.15);
+  color: var(--brand-color);
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 11px;
+  margin-top: 6px;
+}
  
 /* INPUTS */ 
 .input { 
@@ -704,10 +831,44 @@
 <div id="login-overlay" class="login-overlay">
     <div id="login-panel" class="login-panel">
         <h3>Iniciar sesión</h3>
-        <input id="user" class="input" placeholder="Usuario">
-        <input id="pass" class="input" type="password" placeholder="Contraseña">
-        <button id="login-btn" class="login-btn">Entrar</button>
-        <div id="login-status" class="status"></div>
+
+        <!-- PESTAÑAS DE AUTENTICACIÓN -->
+        <div class="auth-tabs">
+            <button id="tab-basic" class="tab-btn active" type="button">Login Básico</button>
+            <button id="tab-supabase" class="tab-btn" type="button">Supabase Auth</button>
+        </div>
+
+        <!-- TAB 1: LOGIN BÁSICO -->
+        <div id="content-basic" class="tab-content active">
+            <input id="user" class="input" placeholder="Usuario">
+            <input id="pass" class="input" type="password" placeholder="Contraseña">
+            <button id="login-btn" class="login-btn">Entrar</button>
+            <div id="login-status" class="status"></div>
+        </div>
+
+        <!-- TAB 2: SUPABASE AUTH -->
+        <div id="content-supabase" class="tab-content">
+            <input id="supa-email" class="input" type="email" placeholder="Correo Electrónico">
+            <input id="supa-pass" class="input" type="password" placeholder="Contraseña">
+            <button id="supa-login-btn" class="login-btn">Entrar con Supabase</button>
+            <button id="open-register-btn" class="btn-secondary" type="button">Crear Cuenta / Registrarse</button>
+            <div id="supa-login-status" class="status"></div>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL DE REGISTRO SUPABASE AUTH -->
+<div id="register-modal" class="register-modal-overlay">
+    <div class="register-modal-content">
+        <div class="register-modal-header">
+            <h3>Registro Supabase Auth</h3>
+            <button id="close-register-btn" class="close-btn" type="button">✕</button>
+        </div>
+        <input id="reg-email" class="input" type="email" placeholder="Correo Electrónico">
+        <input id="reg-pass" class="input" type="password" placeholder="Contraseña (mín 6 caracteres)">
+        <span class="badge-info">Se enviará un correo de confirmación.</span>
+        <button id="supa-reg-btn" class="login-btn" style="margin-top: 12px;">Registrarse</button>
+        <div id="reg-status" class="status"></div>
     </div>
 </div>
  
