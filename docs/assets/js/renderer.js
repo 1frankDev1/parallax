@@ -563,7 +563,7 @@
 
       setTimeout(() => {
         supaBtn.classList.remove("success");
-        supaBtn.innerText = "Entrar con Supabase";
+        supaBtn.innerText = "Entrar Seguro";
       }, 800);
 
     } catch (err) {
