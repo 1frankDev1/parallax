@@ -7,7 +7,7 @@
 // 2. Respuesta abierta a cualquier consulta general (conocimiento universal).
 // 3. Conversación fluida de varios turnos (multi-turn history).
 // 4. Análisis de imágenes multimodal (visión por computadora).
-// 5. Sanitización y filtrado de respuestas para eliminar pensamientos internos (<think>, "User says", "Intent", etc.).
+// 5. Sanitización y filtrado de respuestas para eliminar pensamientos internos (<think>, Tone:, Style:, emojis, etc.).
 // 6. Secret de API: closer_api / CLOSER_API / GEMINI_API_KEY / Spirit
 // ====================================================================
 
@@ -55,58 +55,65 @@ function sanitizeAIResponse(text: string): string {
   clean = clean.replace(/<(thought|think|reasoning)[\s\S]*?<\/\1>/gi, '');
   clean = clean.replace(/<(thought|think|reasoning)>[\s\S]*/gi, '');
 
-  // 2. Eliminar secciones de desgloses de intenciones o borradores estilo "question 1:", etc.
+  // 2. Eliminar secciones de metadatos/evaluaciones del prompt (Tone:, Style:, Engagement:, Natural/Warm?, etc.)
+  clean = clean.replace(/(Tone|Style|Engagement|Natural\/Warm\?|No meta-comments\?|Direct\?|User says|Intent|Objective|Role|Greeting)[\s\S]*?(?=\n\n|\n[A-Z¡¿"'\na-z]|$)/gi, '');
+
+  // 3. Eliminar desgloses estilo "question 1:", etc.
   clean = clean.replace(/(question \d+:|knowledge areas:|steps \(|self-correction|drafting:|persona:|constraint:|\"como se hace|\"how to make)[\s\S]*?(?=\n\n[A-Z¡¿"']|Para |El |Hola |¡Hola |$)/gi, '');
 
-  // 3. Eliminar prefijos de razonamiento o etiquetas internas
+  // 4. Eliminar prefijos de razonamiento o etiquetas internas
   clean = clean.replace(/(pensamiento|thought|reasoning|proceso de pensamiento):[\s\S]*?(?=\n\n|\n[A-Z¡¿"']|$)/gi, '');
 
-  // 4. Filtrar líneas de metadatos o viñetas internas de análisis
+  // 5. Filtrar líneas de metadatos o viñetas internas de análisis
   const lines = clean.split('\n');
   const filtered: string[] = [];
   for (const line of lines) {
     const trimmed = line.trim();
     const lower = trimmed.toLowerCase();
 
-    // Si la línea es una viñeta con clave de pensamiento interna
-    if ((trimmed.startsWith('*') || trimmed.startsWith('-')) && (
-      lower.includes('user input') ||
-      lower.includes('user says') ||
-      lower.includes('intent') ||
-      lower.includes('persona') ||
-      lower.includes('constraint') ||
-      lower.includes('thought') ||
-      lower.includes('direct answer') ||
-      lower.includes('reasoning') ||
-      lower.includes('pensamiento') ||
-      lower.includes('spanish') ||
-      lower.includes('objective') ||
-      lower.includes('greeting') ||
-      lower.includes('offer assistance') ||
-      lower.includes('role:') ||
-      lower.includes('standard greeting')
-    )) {
+    // Si la línea contiene metadatos/evaluaciones del modelo
+    if (anyKeywordMatches(lower, [
+      'tone:', 'style:', 'engagement:', 'natural/warm', 'no meta-comments',
+      'direct?', 'user says', 'intent:', 'persona:', 'constraint:', 'thought',
+      'direct answer', 'reasoning:', 'pensamiento:', 'spanish:', 'objective:',
+      'greeting:', 'offer assistance', 'role:', 'standard greeting'
+    ])) {
       continue;
     }
 
     // Si la línea empieza con una viñeta y contiene la respuesta útil
     if (trimmed.startsWith('*') || trimmed.startsWith('-')) {
       const trimmedContent = trimmed.replace(/^[\*\-]\s*/, '');
-      filtered.push(trimmedContent);
+      if (trimmedContent) {
+        filtered.push(trimmedContent);
+      }
     } else {
       filtered.push(line);
     }
   }
 
   clean = filtered.join('\n').trim();
+
+  // 6. Eliminar emojis y caracteres especiales no de texto plano
+  clean = clean.replace(/[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{1F700}-\u{1F77F}\u{1F780}-\u{1F7FF}\u{1F800}-\u{1F8FF}\u{1F900}-\u{1F9FF}\u{1FA00}-\u{1FA6F}\u{1FA70}-\u{1FAFF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]/gu, '');
+
+  // 7. Eliminar bloques json u otros envolventes si existieran accidentalmente
   clean = clean.replace(/^```json[\s\S]*?```$/gi, '').trim();
 
-  // Quitar comillas que envuelven la respuesta final si existen
-  if ((clean.startsWith('"') && clean.endsWith('"')) || (clean.startsWith('“') && clean.endsWith('”')) || (clean.startsWith('¡') && clean.endsWith('"'))) {
-    clean = clean.replace(/^["“]/, '').replace(/["”]$/, '').trim();
+  // 8. Quitar comillas que envuelven la respuesta final si existen
+  clean = clean.trim();
+  if ((clean.startsWith('"') && clean.endsWith('"')) || (clean.startsWith('“') && clean.endsWith('”'))) {
+    clean = clean.substring(1, clean.length - 1).trim();
   }
 
   return clean;
+}
+
+function anyKeywordMatches(str: string, keywords: string[]): boolean {
+  for (const kw of keywords) {
+    if (str.includes(kw)) return true;
+  }
+  return false;
 }
 
 // Descubrimiento dinámico de modelos disponibles vía ListModels API
@@ -281,16 +288,17 @@ Tienes conocimientos amplios y profundos sobre programación, matemáticas, fís
 
 REGLAS ABSOLUTAS E IMPERATIVAS:
 1. Hablas SIEMPRE Y ÚNICAMENTE en español de forma natural, cálida, cercana, fluida y conversacional.
-2. Queda STRICTAMENTE PROHIBIDO incluir pensamientos internos, notas de razonamiento, desgloses del mensaje del usuario (ejemplo: "User says", "Intent", "Objective", "Role", "Greeting"), traducciones al inglés, borradores de pasos, desgloses de preguntas o metacomentarios.
-3. ENTREGABLE FINAL DIRECTO:
-   - Responde SIEMPRE DIRECTAMENTE al usuario con tu mensaje final en español, sin preámbulos sobre lo que estás pensando o analizando.
-4. ESTILO CONVERSACIONAL Y FLUIDO (ESTILO COMPAÑERO / CHATGPT PRO):
+2. SIN EMOJIS: Queda ESTRICTAMENTE PROHIBIDO usar emojis. Responde ÚNICAMENTE con texto plano.
+3. SIN PENSAMIENTOS NI METACOMENTARIOS: Queda ESTRICTAMENTE PROHIBIDO incluir pensamientos internos, notas de razonamiento, tonos, estilos, análisis, desgloses del mensaje del usuario (ejemplo: "Tone:", "Style:", "User says:", "Intent:", "Objective:", "Role:"), traducciones al inglés o borradores.
+4. ENTREGABLE FINAL DIRECTO:
+   - Responde SIEMPRE DIRECTAMENTE al usuario con tu mensaje final en español y texto plano sin emojis, sin preámbulos sobre lo que estás pensando o analizando.
+5. ESTILO CONVERSACIONAL Y FLUIDO (ESTILO COMPAÑERO / CHATGPT PRO):
    - Sé siempre conversacional, empático y cercano, como si estuvieras platicando con un amigo o compañero.
    - Ante preguntas abiertas, dudas generales o temas amplios, responde con claridad e interactúa de manera amigable.
    - Da respuestas precisas, útiles y de alta calidad intelectual a cualquier consulta.
-5. ACCIONES Y CÁLCULOS DIRECTOS:
-   - Si el usuario te realiza un cálculo simple, o hace una pregunta puntual con respuesta directa, responde con precisión de forma clara y con un tono amigable.
-6. ANÁLISIS DE IMÁGENES Y VISIÓN:
+6. ACCIONES Y CÁLCULOS DIRECTOS:
+   - Si el usuario te realiza un cálculo simple, o hace una pregunta puntual con respuesta directa, responde con precisión de forma clara.
+7. ANÁLISIS DE IMÁGENES Y VISIÓN:
    - Si el usuario adjunta o envía una imagen, examínala atentamente con alta precisión.
    - Detecta qué hay en la imagen (cartas, objetos, texto, lugares, personas, documentos, productos) y conversa de manera amigable e inteligente sobre ella, respondiendo a cualquier pregunta o curiosidad que el usuario tenga basándote en la imagen.`
         }
