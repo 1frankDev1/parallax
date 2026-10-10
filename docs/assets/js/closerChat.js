@@ -29,7 +29,6 @@ class CloserChat extends HTMLElement {
               <div class="closer-avatar-mini">🤖</div>
               <div class="closer-header-text">
                 <h3>Menutech AI <span style="font-size: 10px; background: rgba(0, 230, 118, 0.2); color: #00e676; padding: 2px 6px; border-radius: 8px;">PRO</span></h3>
-                <span>Asistente Inteligente Gemini</span>
               </div>
             </div>
             <div class="closer-chat-header-actions">
