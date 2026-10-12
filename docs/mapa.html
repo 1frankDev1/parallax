@@ -462,9 +462,6 @@
       <!-- SIDEBAR -->
       <aside class="sidebar">
           <div class="sidebar-header">
-              <div class="sidebar-title">
-                  <span>Mapa 3D</span> Restaurantes
-              </div>
               <div class="stats-badge" id="rest-count">0 Ubicaciones</div>
           </div>
 
@@ -615,7 +612,7 @@
         }
     }
 
-    async function geocodeAddress(address, restaurant) {
+    async function geocodeAddress(address, restaurant = {}) {
         // If DB already has lat/lng or latitude/longitude columns
         if (restaurant.lat && restaurant.lng) {
             return { lat: parseFloat(restaurant.lat), lng: parseFloat(restaurant.lng) };
@@ -628,42 +625,76 @@
             return null;
         }
 
-        const cleanAddress = address.trim().toLowerCase();
+        const rawAddress = address.trim();
+        const cleanKey = rawAddress.toLowerCase();
         const cache = getGeocodeCache();
 
-        if (cache[cleanAddress]) {
-            return cache[cleanAddress];
+        if (cache[cleanKey]) {
+            return cache[cleanKey];
         }
 
-        // Call Nominatim API (US restricted)
-        try {
-            // Append USA if not present
-            let searchAddress = cleanAddress;
-            if (!searchAddress.includes('usa') && !searchAddress.includes('united states')) {
-                searchAddress += ', USA';
+        async function queryNominatim(q) {
+            let searchStr = q;
+            if (!searchStr.toLowerCase().includes('usa') && !searchStr.toLowerCase().includes('united states')) {
+                searchStr += ', USA';
             }
-
-            const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(searchAddress)}&countrycodes=us&limit=1`;
-            const resp = await fetch(url, {
-                headers: {
-                    'User-Agent': 'Menutech3DMap/1.0 (info@menutech.services)'
+            const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(searchStr)}&countrycodes=us&limit=1`;
+            try {
+                const resp = await fetch(url, {
+                    headers: { 'User-Agent': 'Menutech3DMap/1.0 (info@menutech.services)' }
+                });
+                if (!resp.ok) return null;
+                const results = await resp.json();
+                if (results && results.length > 0) {
+                    return { lat: parseFloat(results[0].lat), lng: parseFloat(results[0].lon) };
                 }
-            });
+            } catch (e) {
+                console.warn('Geocoding query error:', e);
+            }
+            return null;
+        }
 
-            if (!resp.ok) return null;
+        // Attempt 1: Direct query
+        let coords = await queryNominatim(rawAddress);
+        if (coords) {
+            cache[cleanKey] = coords;
+            setGeocodeCache(cache);
+            return coords;
+        }
 
-            const results = await resp.json();
-            if (results && results.length > 0) {
-                const coords = {
-                    lat: parseFloat(results[0].lat),
-                    lng: parseFloat(results[0].lon)
-                };
-                cache[cleanAddress] = coords;
+        // Attempt 2: Strip suite/unit/apartment/suit
+        let cleaned = rawAddress.replace(/\b(suit|suite|ste|apt|unit)\s+[a-zA-Z0-9-]+\b/gi, '')
+                                .replace(/#\s*[a-zA-Z0-9-]+/g, '')
+                                .replace(/\s+/g, ' ').trim();
+        if (cleaned && cleaned !== rawAddress) {
+            coords = await queryNominatim(cleaned);
+            if (coords) {
+                cache[cleanKey] = coords;
                 setGeocodeCache(cache);
                 return coords;
             }
-        } catch (e) {
-            console.warn(`Geocoding error for address "${address}":`, e);
+        }
+
+        // Attempt 3: Remove unit numbers preceding city name (e.g., "5753 S 72nd St 106 Ralston, NE")
+        let cleaned2 = (cleaned || rawAddress).replace(/(\d+[a-zA-Z]?)\s+([A-Z][a-z]+,\s*[A-Z]{2})/gi, '$2');
+        if (cleaned2 && cleaned2 !== cleaned) {
+            coords = await queryNominatim(cleaned2);
+            if (coords) {
+                cache[cleanKey] = coords;
+                setGeocodeCache(cache);
+                return coords;
+            }
+        }
+
+        // Attempt 4: Zipcode fallback
+        const zipMatch = rawAddress.match(/\b\d{5}\b/);
+        if (zipMatch) {
+            coords = await queryNominatim(zipMatch[0]);
+            if (coords) {
+                cache[cleanKey] = coords;
+                setGeocodeCache(cache);
+                return coords;
+            }
         }
 
         return null;
@@ -913,14 +944,52 @@
                 activePopupsMap[r.id] = popup;
             }
         });
+
+        // Automatically fly to location if search filter isolates a single restaurant
+        if (filtered.length === 1 && (searchVal.length > 2 || selectedState || selectedCity)) {
+            const singleRest = filtered[0];
+            const singleCard = listContainer.querySelector(`.rest-card[data-id="${singleRest.id}"]`);
+            selectAndFocusRestaurant(singleRest, singleCard);
+        }
     }
 
-    function selectAndFocusRestaurant(restaurant, cardElement) {
+    async function selectAndFocusRestaurant(restaurant, cardElement) {
         // Highlight active sidebar card
         document.querySelectorAll('.rest-card').forEach(c => c.classList.remove('active'));
         if (cardElement) {
             cardElement.classList.add('active');
             cardElement.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+
+        // On-demand geocoding if coordinates were missing
+        if (!restaurant.coords && restaurant.direccion) {
+            restaurant.coords = await geocodeAddress(restaurant.direccion, restaurant);
+            if (restaurant.coords && map && !activePopupsMap[restaurant.id]) {
+                const el = createMarkerElement(restaurant);
+                const popup = new maplibregl.Popup({
+                    offset: 25,
+                    closeButton: false,
+                    className: 'custom-popup'
+                }).setHTML(createPopupHTML(restaurant));
+
+                const marker = new maplibregl.Marker({ element: el })
+                    .setLngLat([restaurant.coords.lng, restaurant.coords.lat])
+                    .setPopup(popup)
+                    .addTo(map);
+
+                el.addEventListener('mouseenter', () => { if (!popup.isOpen()) popup.addTo(map); });
+                el.addEventListener('mouseleave', () => {
+                    const activeCard = document.querySelector(`.rest-card.active[data-id="${restaurant.id}"]`);
+                    if (!activeCard) popup.remove();
+                });
+                el.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    selectAndFocusRestaurant(restaurant, cardElement);
+                });
+
+                activeMarkers.push(marker);
+                activePopupsMap[restaurant.id] = popup;
+            }
         }
 
         // Highlight marker and trigger its popup
