@@ -503,31 +503,6 @@
                 logoInput.value = "";
             }
 
-                                        } else {
-                                if (height > maxHeight) {
-                                    width *= maxHeight / height;
-                                    height = maxHeight;
-                                }
-                            }
-
-                            canvas.width = width;
-                            canvas.height = height;
-                            const ctx = canvas.getContext('2d');
-                            ctx.drawImage(img, 0, 0, width, height);
-
-                            canvas.toBlob((blob) => {
-                                const resizedFile = new File([blob], file.name, {
-                                    type: file.type,
-                                    lastModified: Date.now()
-                                });
-                                resolve(resizedFile);
-                            }, file.type);
-                        };
-                    };
-                    reader.onerror = (error) => reject(error);
-                });
-            }
-
             async function uploadToCloudinary(file) {
                 const cloudName = 'dzklt0a5u';
                 const uploadPreset = 'Menutech'.trim();
