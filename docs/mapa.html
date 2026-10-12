@@ -539,7 +539,7 @@
     let supabaseClient = null;
     let allRestaurants = [];
     let activeMarkers = [];
-    let activePopups = [];
+    let activePopupsMap = {};
 
     const SUPABASE_URL = 'https://ojpyfjgkffmzwvukjagf.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9qcHlmamdrZmZtend2dWtqYWdmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQxNDIwMzYsImV4cCI6MjA3OTcxODAzNn0.dlVYmoMumBse_O1PLBx0FeNITqY4YktefD6l_uonSgo';
@@ -687,8 +687,9 @@
         return null;
     }
 
-    // Default logo asset fallback
-    const DEFAULT_LOGO = './assets/img/menutech.png';
+    // Primary default logo path and fallback image
+    const DEFAULT_LOGO = './assets/img/mtLogo.png';
+    const FALLBACK_LOGO = './assets/img/menutech.png';
 
     function createMarkerElement(restaurant) {
         const el = document.createElement('div');
@@ -698,7 +699,11 @@
         const img = document.createElement('img');
         img.src = restaurant.logo || DEFAULT_LOGO;
         img.alt = restaurant.nombre || 'Restaurante';
-        img.onerror = () => { img.src = DEFAULT_LOGO; };
+        img.onerror = function() {
+            if (this.src !== FALLBACK_LOGO) {
+                this.src = FALLBACK_LOGO;
+            }
+        };
 
         el.appendChild(img);
         return el;
@@ -740,8 +745,8 @@
     function clearMarkersAndPopups() {
         activeMarkers.forEach(m => m.remove());
         activeMarkers = [];
-        activePopups.forEach(p => p.remove());
-        activePopups = [];
+        Object.values(activePopupsMap).forEach(p => p.remove());
+        activePopupsMap = {};
     }
 
     // Parse US State & City from address string (e.g., "8761 W University Blvd, Odessa, TX 79764, USA")
@@ -922,7 +927,7 @@
                 });
 
                 activeMarkers.push(marker);
-                activePopups.push(popup);
+                activePopupsMap[r.id] = popup;
             }
         });
     }
@@ -935,20 +940,26 @@
             cardElement.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
         }
 
-        // Highlight marker
+        // Highlight marker and trigger its popup
         document.querySelectorAll('.custom-marker').forEach(m => m.classList.remove('selected'));
         const markerEl = document.querySelector(`.custom-marker[data-id="${restaurant.id}"]`);
         if (markerEl) {
             markerEl.classList.add('selected');
         }
 
-        // Fly camera to restaurant location in 3D
+        // Close other popups and open popup for target restaurant
+        Object.values(activePopupsMap).forEach(p => p.remove());
+        if (activePopupsMap[restaurant.id] && map) {
+            activePopupsMap[restaurant.id].addTo(map);
+        }
+
+        // Fly camera directly to restaurant location in 3D view
         if (restaurant.coords && map) {
             map.flyTo({
                 center: [restaurant.coords.lng, restaurant.coords.lat],
-                zoom: 15.5,
+                zoom: 16,
                 pitch: 60,
-                bearing: -20,
+                bearing: -15,
                 duration: 2000,
                 essential: true
             });
