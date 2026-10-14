@@ -13,7 +13,7 @@
     { id: "tile-2",  name: "Pos", url: "https://menutech.biz/p40o7s/index.html", colSpan: 2, rowSpan: 1, bgColor: "#ead8ff", textColor: "#aeaeae", visible: true, order: 2 },
     { id: "tile-3",  name: "Website", url: "https://menutech.biz/w111/website.html", colSpan: 2, rowSpan: 1, bgColor: "#ffdfdf", textColor: "#aeaeae", visible: true, order: 3 },
     { id: "tile-4",  name: "Apps", url: "https://menutech.biz/p104/phone.html", colSpan: 1, rowSpan: 2, bgColor: "#ffe1c7", textColor: "#aeaeae", visible: true, order: 4 },
-    { id: "tile-5",  name: "Directorio", url: "./directorio.html", colSpan: 3, rowSpan: 2, bgColor: "#d4ebf7", textColor: "#aeaeae", visible: true, order: 5 },
+    { id: "tile-5",  name: "Directorio", url: "./mapa.html", colSpan: 3, rowSpan: 2, bgColor: "#d4ebf7", textColor: "#aeaeae", visible: true, order: 5 },
     { id: "tile-6",  name: "T-Shirt", url: "https://menutech.biz/s04/shirt.html", colSpan: 1, rowSpan: 1, bgColor: "#fff7c7", textColor: "#aeaeae", visible: true, order: 6 },
     { id: "tile-7",  name: "Menus", url: "https://menutech.biz/m10/index.html", colSpan: 1, rowSpan: 1, bgColor: "#ffdfdf", textColor: "#aeaeae", visible: true, order: 7 },
     { id: "tile-8",  name: "Flyers", url: "https://menutech.biz/f32/index.html", colSpan: 1, rowSpan: 1, bgColor: "#ead8ff", textColor: "#aeaeae", visible: true, order: 8 },
