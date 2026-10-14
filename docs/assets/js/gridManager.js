@@ -28,7 +28,8 @@
     { id: "tile-17", name: "Manual Menutech", url: "./manual.html", colSpan: 2, rowSpan: 1, bgColor: "#d4ebf7", textColor: "#aeaeae", visible: true, order: 17 },
     { id: "tile-18", name: "packages", url: "./pricing.html", colSpan: 2, rowSpan: 1, bgColor: "#ead8ff", textColor: "#aeaeae", visible: true, order: 18 },
     { id: "tile-19", name: "Notificaciones", url: "./notificaciones.html", colSpan: 2, rowSpan: 1, bgColor: "#ffdfdf", textColor: "#aeaeae", visible: true, order: 19 },
-    { id: "tile-20", name: "Admin Pricing", url: "./adminPricing.html", colSpan: 2, rowSpan: 1, bgColor: "#ffe1c7", textColor: "#aeaeae", visible: true, order: 20 }
+    { id: "tile-20", name: "Admin Pricing", url: "./adminPricing.html", colSpan: 2, rowSpan: 1, bgColor: "#ffe1c7", textColor: "#aeaeae", visible: true, order: 20 },
+    { id: "tile-21", name: "Meeting", url: "https://menutech.whereby.com/org/rooms/create-room", colSpan: 2, rowSpan: 1, bgColor: "#ffdfdf", textColor: "#aeaeae", visible: true, order: 21 }
   ];
 
   let currentSlots = [];
