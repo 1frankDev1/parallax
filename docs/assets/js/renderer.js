@@ -198,7 +198,8 @@
         "tile-10": { text: "Audios", url: "./audios.html" },
         "tile-11": { text: "Ender 2D", url: "./render2D.html" },
         "tile-12": { text: "Render 3D", url: "./render3D.html" },
-        "tile-17": { text: "Manual Menutech", url: "./manual.html" }
+        "tile-17": { text: "Manual Menutech", url: "./manual.html" },
+        "tile-21": { text: "Meeting", url: "https://menutech.whereby.com/org/rooms/create-room" }
       },
       "Closers": {
         "tile-1": { text: "Formularios", url: "./forms.html" },
@@ -213,7 +214,8 @@
         "tile-10": { text: "Audios", url: "./audios.html" },
         "tile-11": { text: "Ender 2D", url: "./render2D.html" },
         "tile-12": { text: "Render 3D", url: "./render3D.html" },
-        "tile-17": { text: "Manual Menutech", url: "./manual.html" }
+        "tile-17": { text: "Manual Menutech", url: "./manual.html" },
+        "tile-21": { text: "Meeting", url: "https://menutech.whereby.com/org/rooms/create-room" }
       },
       "Openers": {
         "tile-1": { text: "Formularios", url: "./forms.html" },
@@ -228,7 +230,8 @@
         "tile-10": { text: "Audios", url: "./audios.html" },
         "tile-11": { text: "Ender 2D", url: "./render2D.html" },
         "tile-12": { text: "Render 3D", url: "./render3D.html" },
-        "tile-17": { text: "Manual Menutech", url: "./manual.html" }
+        "tile-17": { text: "Manual Menutech", url: "./manual.html" },
+        "tile-21": { text: "Meeting", url: "https://menutech.whereby.com/org/rooms/create-room" }
       },
       "Design": {
         "tile-1": { text: "Formularios", url: "./forms.html" },
@@ -243,7 +246,8 @@
         "tile-10": { text: "Audios", url: "./audios.html" },
         "tile-11": { text: "Ender 2D", url: "./render2D.html" },
         "tile-12": { text: "Render 3D", url: "./render3D.html" },
-        "tile-17": { text: "Manual Menutech", url: "./manual.html" }
+        "tile-17": { text: "Manual Menutech", url: "./manual.html" },
+        "tile-21": { text: "Meeting", url: "https://menutech.whereby.com/org/rooms/create-room" }
       },
       "IT": {
         "tile-1": { text: "Formularios", url: "./forms.html" },
@@ -258,7 +262,8 @@
         "tile-10": { text: "Audios", url: "./audios.html" },
         "tile-11": { text: "Ender 2D", url: "./render2D.html" },
         "tile-12": { text: "Render 3D", url: "./render3D.html" },
-        "tile-17": { text: "Manual Menutech", url: "./manual.html" }
+        "tile-17": { text: "Manual Menutech", url: "./manual.html" },
+        "tile-21": { text: "Meeting", url: "https://menutech.whereby.com/org/rooms/create-room" }
       },
       "Admin IT": {
         "tile-1": { text: "Formularios", url: "./forms.html" },
@@ -273,7 +278,8 @@
         "tile-10": { text: "Audios", url: "./audios.html" },
         "tile-11": { text: "Ender 2D", url: "./render2D.html" },
         "tile-12": { text: "Render 3D", url: "./render3D.html" },
-        "tile-17": { text: "Manual Menutech", url: "./manual.html" }
+        "tile-17": { text: "Manual Menutech", url: "./manual.html" },
+        "tile-21": { text: "Meeting", url: "https://menutech.whereby.com/org/rooms/create-room" }
       }
     };
 
